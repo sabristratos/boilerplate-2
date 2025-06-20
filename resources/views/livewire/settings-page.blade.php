@@ -1,5 +1,6 @@
 <section class="max-w-3xl">
     <x-layouts.settings.settings-sidebar :heading="$currentGroup->label" :subheading="$currentGroup->description" :groups="$groups" :currentGroup="$currentGroup">
+
         <div class="space-y-6">
             <form wire:submit="save" class="space-y-6">
                 <div class="space-y-4">

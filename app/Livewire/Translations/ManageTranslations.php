@@ -263,7 +263,8 @@ class ManageTranslations extends Component
 
         if ($this->searchQuery) {
             $query->where(function ($query) {
-                $query->where('key', 'like', "%{$this->searchQuery}%");
+                $query->where('key', 'like', "%{$this->searchQuery}%")
+                      ->orWhere('group', 'like', "%{$this->searchQuery}%");
 
                 // Also search in the default locale's text
                 if (!empty($this->locales)) {

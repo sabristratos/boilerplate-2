@@ -1,0 +1,23 @@
+<?php
+
+return array (
+  'failed' => 'Ces informations d\'identification ne correspondent pas à nos dossiers.',
+  'throttle' => 'Trop de tentatives de connexion. Veuillez réessayer dans :secondes secondes.',
+  'login_title' => 'Connectez-vous à votre compte',
+  'login_description' => 'Entrez votre email et votre mot de passe ci-dessous pour vous connecter.',
+  'register_title' => 'Créer un compte',
+  'register_description' => 'Saisissez vos coordonnées ci-dessous pour créer votre compte.',
+  'forgot_password_title' => 'Mot de passe oublié',
+  'forgot_password_description' => 'Entrez votre email pour recevoir un lien de réinitialisation de mot de passe.',
+  'forgot_password_link_sent' => 'Un lien de réinitialisation sera envoyé si le compte existe.',
+  'return_to_login' => 'Ou, revenez pour vous connecter',
+  'register_prompt' => 'Vous n\'avez pas de compte ?',
+  'login_prompt' => 'Vous avez déjà un compte ?',
+  'reset_password_title' => 'Réinitialiser le mot de passe',
+  'reset_password_description' => 'Veuillez saisir votre nouveau mot de passe ci-dessous',
+  'verify_email_title' => 'Vérifier l\'e-mail',
+  'verify_email_description' => 'Veuillez vérifier votre adresse e-mail en cliquant sur le lien que nous venons de vous envoyer par e-mail.',
+  'verification_link_sent' => 'Un nouveau lien de vérification a été envoyé à l\'adresse e-mail que vous avez fournie lors de votre inscription.',
+  'confirm_password_title' => 'Confirmez le mot de passe',
+  'confirm_password_description' => 'Ceci est une zone sécurisée de l\'application. Veuillez confirmer votre mot de passe avant de continuer.',
+);

@@ -36,9 +36,9 @@
                 <div class="flex items-center gap-2">
                     <flux:select
                         wire:model.live="filterGroup"
-                        placeholder="Filter by group"
                         clearable
                     >
+                        <flux:select.option value="">All groups</flux:select.option>
                         @foreach($groups as $group)
                             <flux:select.option value="{{ $group }}">{{ $group }}</flux:select.option>
                         @endforeach
