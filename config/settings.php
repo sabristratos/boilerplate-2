@@ -1,0 +1,429 @@
+<?php
+
+use App\Enums\SettingGroupKey;
+use App\Enums\SettingType;
+
+return [
+    /*
+    |--------------------------------------------------------------------------
+    | Setting Groups
+    |--------------------------------------------------------------------------
+    |
+    | This is where you can define all the setting groups for your application.
+    | Each group has a key, label, description, and icon.
+    |
+    */
+    'groups' => [
+        SettingGroupKey::GENERAL->value => [
+            'label' => ['en' => 'General', 'fr' => 'Général'],
+            'description' => ['en' => 'General settings for the application', 'fr' => 'Paramètres généraux de l\'application'],
+            'icon' => 'cog',
+            'order_column' => 1,
+        ],
+        SettingGroupKey::APPEARANCE->value => [
+            'label' => ['en' => 'Appearance', 'fr' => 'Apparence'],
+            'description' => ['en' => 'Customize the look and feel of the application', 'fr' => 'Personnalisez l\'apparence de l\'application'],
+            'icon' => 'paint-brush',
+            'order_column' => 3,
+        ],
+        SettingGroupKey::EMAIL->value => [
+            'label' => ['en' => 'Email', 'fr' => 'E-mail'],
+            'description' => ['en' => 'Configure email settings', 'fr' => 'Configurer les paramètres d\'e-mail'],
+            'icon' => 'envelope',
+            'order_column' => 4,
+        ],
+        SettingGroupKey::SECURITY->value => [
+            'label' => ['en' => 'Security', 'fr' => 'Sécurité'],
+            'description' => ['en' => 'Configure security settings', 'fr' => 'Configurer les paramètres de sécurité'],
+            'icon' => 'shield-check',
+            'order_column' => 5,
+        ],
+        SettingGroupKey::SOCIAL->value => [
+            'label' => ['en' => 'Social', 'fr' => 'Réseaux sociaux'],
+            'description' => ['en' => 'Configure social media settings', 'fr' => 'Configurer les paramètres des réseaux sociaux'],
+            'icon' => 'share',
+            'order_column' => 6,
+        ],
+        SettingGroupKey::ADVANCED->value => [
+            'label' => ['en' => 'Advanced', 'fr' => 'Avancé'],
+            'description' => ['en' => 'Advanced settings for the application', 'fr' => 'Paramètres avancés de l\'application'],
+            'icon' => 'wrench',
+            'order_column' => 7,
+        ],
+        SettingGroupKey::CONTACT->value => [
+            'label' => ['en' => 'Contact', 'fr' => 'Contact'],
+            'description' => ['en' => 'Configure contact and social media settings', 'fr' => 'Configurer les informations de contact et les réseaux sociaux'],
+            'icon' => 'phone',
+            'order_column' => 2,
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Settings
+    |--------------------------------------------------------------------------
+    |
+    | This is where you can define all the settings for your application.
+    | Each setting has a key, label, description, type, cast, rules, options,
+    | and permission.
+    |
+    */
+    'settings' => [
+        'general.app_name' => [
+            'group' => SettingGroupKey::GENERAL->value,
+            'label' => ['en' => 'Application Name', 'fr' => 'Nom de l\'application'],
+            'description' => ['en' => 'The name of the application', 'fr' => 'Le nom de l\'application'],
+            'type' => SettingType::TEXT->value,
+            'cast' => 'string',
+            'rules' => 'required|string|max:255',
+            'permission' => 'settings.general.manage',
+            'config' => 'app.name',
+        ],
+        'general.app_url' => [
+            'group' => SettingGroupKey::GENERAL->value,
+            'label' => ['en' => 'Application URL', 'fr' => 'URL de l\'application'],
+            'description' => ['en' => 'The URL of the application', 'fr' => 'L\'URL de l\'application'],
+            'type' => SettingType::URL->value,
+            'cast' => 'string',
+            'rules' => 'required|url',
+            'permission' => 'settings.general.manage',
+            'config' => 'app.url',
+        ],
+        'appearance.theme' => [
+            'group' => SettingGroupKey::APPEARANCE->value,
+            'label' => ['en' => 'Theme', 'fr' => 'Thème'],
+            'description' => ['en' => 'The theme of the application', 'fr' => 'Le thème de l\'application'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'string',
+            'rules' => 'string|in:light,dark,auto',
+            'options' => [
+                'light' => 'Light',
+                'dark' => 'Dark',
+                'auto' => 'Auto',
+            ],
+            'permission' => 'settings.appearance.manage',
+        ],
+        'appearance.primary_color' => [
+            'group' => SettingGroupKey::APPEARANCE->value,
+            'label' => ['en' => 'Primary Color', 'fr' => 'Couleur principale'],
+            'description' => ['en' => 'The primary color of the application', 'fr' => 'La couleur principale de l\'application'],
+            'type' => SettingType::COLOR->value,
+            'cast' => 'string',
+            'rules' => 'string',
+            'permission' => 'settings.appearance.manage',
+        ],
+        'appearance.logo' => [
+            'group' => SettingGroupKey::APPEARANCE->value,
+            'label' => ['en' => 'Application Logo', 'fr' => 'Logo de l\'application'],
+            'description' => ['en' => 'The logo of the application', 'fr' => 'Le logo de l\'application'],
+            'type' => SettingType::MEDIA->value,
+            'cast' => 'string',
+            'rules' => 'nullable',
+            'permission' => 'settings.appearance.manage',
+        ],
+        'appearance.favicon' => [
+            'group' => SettingGroupKey::APPEARANCE->value,
+            'label' => ['en' => 'Application Favicon', 'fr' => 'Favicon de l\'application'],
+            'description' => ['en' => 'The favicon of the application', 'fr' => 'Le favicon de l\'application'],
+            'type' => SettingType::MEDIA->value,
+            'cast' => 'string',
+            'rules' => 'nullable|image|mimes:jpeg,png,jpg|max:512',
+            'permission' => 'settings.appearance.manage',
+        ],
+        'contact.address' => [
+            'group' => SettingGroupKey::CONTACT->value,
+            'label' => ['en' => 'Address', 'fr' => 'Adresse'],
+            'description' => ['en' => 'The physical address of the business', 'fr' => 'L\'adresse physique de l\'entreprise'],
+            'type' => SettingType::TEXTAREA->value,
+            'cast' => 'string',
+            'rules' => 'nullable|string',
+            'permission' => 'settings.contact.manage',
+        ],
+        'contact.google_maps' => [
+            'group' => SettingGroupKey::CONTACT->value,
+            'label' => ['en' => 'Google Maps', 'fr' => 'Google Maps'],
+            'description' => ['en' => 'Google Maps link or embed code', 'fr' => 'Lien ou code d\'intégration Google Maps'],
+            'type' => SettingType::TEXTAREA->value,
+            'cast' => 'string',
+            'rules' => 'nullable|string',
+            'permission' => 'settings.contact.manage',
+        ],
+        'contact.emails' => [
+            'group' => SettingGroupKey::CONTACT->value,
+            'label' => ['en' => 'Email Addresses', 'fr' => 'Adresses e-mail'],
+            'description' => ['en' => 'Manage email addresses for the business', 'fr' => 'Gérer les adresses e-mail de l\'entreprise'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.contact.manage',
+            'subfields' => [
+                'email' => [
+                    'label' => 'Email',
+                    'type' => 'email',
+                    'rules' => 'required|email',
+                ],
+            ],
+        ],
+        'contact.phones' => [
+            'group' => SettingGroupKey::CONTACT->value,
+            'label' => ['en' => 'Phone Numbers', 'fr' => 'Numéros de téléphone'],
+            'description' => ['en' => 'Manage phone numbers for the business', 'fr' => 'Gérer les numéros de téléphone de l\'entreprise'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.contact.manage',
+            'subfields' => [
+                'phone' => [
+                    'label' => 'Phone',
+                    'type' => 'tel',
+                    'rules' => 'required|string',
+                ],
+            ],
+        ],
+        'contact.social_links' => [
+            'group' => SettingGroupKey::CONTACT->value,
+            'label' => ['en' => 'Social Media Links', 'fr' => 'Liens de réseaux sociaux'],
+            'description' => ['en' => 'Manage social media links', 'fr' => 'Gérer les liens de réseaux sociaux'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.contact.manage',
+            'subfields' => [
+                'platform' => [
+                    'label' => 'Platform',
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+                'url' => [
+                    'label' => 'URL',
+                    'type' => 'url',
+                    'rules' => 'required|url',
+                ],
+            ],
+        ],
+        'email.driver' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'Mail Driver', 'fr' => 'Pilote de messagerie'],
+            'description' => ['en' => 'The mail driver to use', 'fr' => 'Le pilote de messagerie à utiliser'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'string',
+            'rules' => 'required|string|in:smtp,sendmail,mailgun,ses,postmark,log,array',
+            'options' => [
+                'smtp' => 'SMTP',
+                'sendmail' => 'Sendmail',
+                'mailgun' => 'Mailgun',
+                'ses' => 'Amazon SES',
+                'postmark' => 'Postmark',
+                'log' => 'Log',
+                'array' => 'Array',
+            ],
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.default',
+        ],
+        'email.host' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'SMTP Host', 'fr' => 'Hôte SMTP'],
+            'description' => ['en' => 'The SMTP host to use', 'fr' => 'L\'hôte SMTP à utiliser'],
+            'type' => SettingType::TEXT->value,
+            'cast' => 'string',
+            'rules' => 'required_if:email.driver,smtp|string',
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.mailers.smtp.host',
+        ],
+        'email.port' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'SMTP Port', 'fr' => 'Port SMTP'],
+            'description' => ['en' => 'The SMTP port to use', 'fr' => 'Le port SMTP à utiliser'],
+            'type' => SettingType::NUMBER->value,
+            'cast' => 'integer',
+            'rules' => 'required_if:email.driver,smtp|integer',
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.mailers.smtp.port',
+        ],
+        'email.username' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'SMTP Username', 'fr' => 'Nom d\'utilisateur SMTP'],
+            'description' => ['en' => 'The SMTP username to use', 'fr' => 'Le nom d\'utilisateur SMTP à utiliser'],
+            'type' => SettingType::TEXT->value,
+            'cast' => 'string',
+            'rules' => 'required_if:email.driver,smtp|string',
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.mailers.smtp.username',
+        ],
+        'email.password' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'SMTP Password', 'fr' => 'Mot de passe SMTP'],
+            'description' => ['en' => 'The SMTP password to use', 'fr' => 'Le mot de passe SMTP à utiliser'],
+            'type' => SettingType::PASSWORD->value,
+            'cast' => 'string',
+            'rules' => 'required_if:email.driver,smtp|string',
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.mailers.smtp.password',
+        ],
+        'email.encryption' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'SMTP Encryption', 'fr' => 'Chiffrement SMTP'],
+            'description' => ['en' => 'The SMTP encryption to use', 'fr' => 'Le chiffrement SMTP à utiliser'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'string',
+            'rules' => 'required_if:email.driver,smtp|string|in:tls,ssl,null',
+            'options' => [
+                'tls' => 'TLS',
+                'ssl' => 'SSL',
+                'null' => 'None',
+            ],
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.mailers.smtp.encryption',
+        ],
+        'email.from_address' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'From Address', 'fr' => 'Adresse de l\'expéditeur'],
+            'description' => ['en' => 'The email address to send emails from', 'fr' => 'L\'adresse e-mail d\'envoi'],
+            'type' => SettingType::EMAIL->value,
+            'cast' => 'string',
+            'rules' => 'required|email',
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.from.address',
+        ],
+        'email.from_name' => [
+            'group' => SettingGroupKey::EMAIL->value,
+            'label' => ['en' => 'From Name', 'fr' => 'Nom de l\'expéditeur'],
+            'description' => ['en' => 'The name to send emails from', 'fr' => 'Le nom d\'envoi des e-mails'],
+            'type' => SettingType::TEXT->value,
+            'cast' => 'string',
+            'rules' => 'required|string',
+            'permission' => 'settings.email.manage',
+            'config' => 'mail.from.name',
+        ],
+        'security.enable_registration' => [
+            'group' => SettingGroupKey::SECURITY->value,
+            'label' => ['en' => 'Enable Registration', 'fr' => 'Activer l\'inscription'],
+            'description' => ['en' => 'Allow users to register', 'fr' => 'Autoriser les utilisateurs à s\'inscrire'],
+            'type' => SettingType::CHECKBOX->value,
+            'cast' => 'boolean',
+            'rules' => 'boolean',
+            'permission' => 'settings.security.manage',
+        ],
+        'security.enable_email_verification' => [
+            'group' => SettingGroupKey::SECURITY->value,
+            'label' => ['en' => 'Enable Email Verification', 'fr' => 'Activer la vérification par e-mail'],
+            'description' => ['en' => 'Require users to verify their email address', 'fr' => 'Exiger que les utilisateurs vérifient leur adresse e-mail'],
+            'type' => SettingType::CHECKBOX->value,
+            'cast' => 'boolean',
+            'rules' => 'boolean',
+            'permission' => 'settings.security.manage',
+        ],
+        'security.enable_two_factor_authentication' => [
+            'group' => SettingGroupKey::SECURITY->value,
+            'label' => ['en' => 'Enable Two-Factor Authentication', 'fr' => 'Activer l\'authentification à deux facteurs'],
+            'description' => ['en' => 'Allow users to enable two-factor authentication', 'fr' => 'Autoriser les utilisateurs à activer l\'authentification à deux facteurs'],
+            'type' => SettingType::CHECKBOX->value,
+            'cast' => 'boolean',
+            'rules' => 'boolean',
+            'permission' => 'settings.security.manage',
+        ],
+        'social.facebook_app_id' => [
+            'group' => SettingGroupKey::SOCIAL->value,
+            'label' => ['en' => 'Facebook App ID', 'fr' => 'ID d\'application Facebook'],
+            'description' => ['en' => 'The Facebook App ID to use for social login', 'fr' => 'L\'ID d\'application Facebook à utiliser pour la connexion sociale'],
+            'type' => SettingType::TEXT->value,
+            'cast' => 'string',
+            'rules' => 'nullable|string',
+            'permission' => 'settings.social.manage',
+        ],
+        'social.facebook_app_secret' => [
+            'group' => SettingGroupKey::SOCIAL->value,
+            'label' => ['en' => 'Facebook App Secret', 'fr' => 'Secret d\'application Facebook'],
+            'description' => ['en' => 'The Facebook App Secret to use for social login', 'fr' => 'Le Secret d\'application Facebook à utiliser pour la connexion sociale'],
+            'type' => SettingType::PASSWORD->value,
+            'cast' => 'string',
+            'rules' => 'nullable|string',
+            'permission' => 'settings.social.manage',
+        ],
+        'social.google_client_id' => [
+            'group' => SettingGroupKey::SOCIAL->value,
+            'label' => ['en' => 'Google Client ID', 'fr' => 'ID client Google'],
+            'description' => ['en' => 'The Google Client ID to use for social login', 'fr' => 'L\'ID client Google à utiliser pour la connexion sociale'],
+            'type' => SettingType::TEXT->value,
+            'cast' => 'string',
+            'rules' => 'nullable|string',
+            'permission' => 'settings.social.manage',
+        ],
+        'social.google_client_secret' => [
+            'group' => SettingGroupKey::SOCIAL->value,
+            'label' => ['en' => 'Google Client Secret', 'fr' => 'Secret client Google'],
+            'description' => ['en' => 'The Google Client Secret to use for social login', 'fr' => 'Le secret client Google à utiliser pour la connexion sociale'],
+            'type' => SettingType::PASSWORD->value,
+            'cast' => 'string',
+            'rules' => 'nullable|string',
+            'permission' => 'settings.social.manage',
+        ],
+        'advanced.timezone' => [
+            'group' => SettingGroupKey::ADVANCED->value,
+            'label' => ['en' => 'Timezone', 'fr' => 'Fuseau horaire'],
+            'description' => ['en' => 'The timezone to use for the application', 'fr' => 'Le fuseau horaire à utiliser pour l\'application'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'string',
+            'rules' => 'required|string|timezone',
+            'options' => array_combine(timezone_identifiers_list(), timezone_identifiers_list()),
+            'permission' => 'settings.advanced.manage',
+            'config' => 'app.timezone',
+            'callout' => [
+                'text' => ['en' => 'Changing the timezone can affect scheduling and timestamps across the website.', 'fr' => 'La modification du fuseau horaire peut affecter la planification et les horodatages sur l\'ensemble du site Web.'],
+                'variant' => 'warning',
+                'icon' => 'exclamation-triangle',
+            ],
+        ],
+        'advanced.cache_driver' => [
+            'group' => SettingGroupKey::ADVANCED->value,
+            'label' => ['en' => 'Cache Driver', 'fr' => 'Pilote de cache'],
+            'description' => ['en' => 'The cache driver to use', 'fr' => 'Le pilote de cache à utiliser'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'string',
+            'rules' => 'required|string|in:file,database,redis,memcached,dynamodb,octane,array,null',
+            'options' => [
+                'file' => 'File',
+                'database' => 'Database',
+                'redis' => 'Redis',
+                'memcached' => 'Memcached',
+                'dynamodb' => 'DynamoDB',
+                'octane' => 'Octane',
+                'array' => 'Array',
+                'null' => 'None',
+            ],
+            'permission' => 'settings.advanced.manage',
+            'config' => 'cache.default',
+            'warning' => 'Changing the cache driver can affect application performance and stability.',
+        ],
+        'advanced.session_driver' => [
+            'group' => SettingGroupKey::ADVANCED->value,
+            'label' => ['en' => 'Session Driver', 'fr' => 'Pilote de session'],
+            'description' => ['en' => 'The session driver to use', 'fr' => 'Le pilote de session à utiliser'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'string',
+            'rules' => 'required|string|in:file,cookie,database,redis,memcached,dynamodb,array',
+            'options' => [
+                'file' => 'File',
+                'cookie' => 'Cookie',
+                'database' => 'Database',
+                'redis' => 'Redis',
+                'memcached' => 'Memcached',
+                'dynamodb' => 'DynamoDB',
+                'array' => 'Array',
+            ],
+            'permission' => 'settings.advanced.manage',
+            'config' => 'session.driver',
+            'warning' => 'Changing the session driver can log out all active users.',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Key
+    |--------------------------------------------------------------------------
+    |
+    | This is the key that will be used to cache the settings.
+    |
+    */
+    'cache_key' => 'settings',
+];
