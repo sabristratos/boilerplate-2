@@ -1,3 +1,10 @@
+import './bootstrap';
+import sort from '@alpinejs/sort'
+
+document.addEventListener('alpine:init', () => {
+    Alpine.plugin(sort)
+})
+
 document.addEventListener('livewire:init', () => {
     Livewire.on('settings-updated', (event) => {
         if (!event || !event.settings) {

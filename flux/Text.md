@@ -23,13 +23,14 @@ Use standard Tailwind to control the color of the text so that you can more easi
 
 ## [Link](https://fluxui.dev/components/text#link)
 
-Use the link component to create clickable text that navigates to other pages or resources.
+Use the button component with the `href` attribute to create clickable text that navigates to other pages or resources. You can use the `ghost` or `subtle` variants to make the button appear as a link.
 
 ## [Link variants](https://fluxui.dev/components/text#link-variants)
 
 Links can be styled differently based on their context and importance.
 
-<flux:link href="#">Default link</flux:link><flux:link href="#" variant="ghost">Ghost link</flux:link><flux:link href="#" variant="subtle">Subtle link</flux:link>
+<flux:button :href="#" variant="ghost">Ghost link</flux:button>
+<flux:button :href="#" variant="subtle">Subtle link</flux:button>
 
 
 ## Reference
@@ -38,15 +39,15 @@ Links can be styled differently based on their context and importance.
 
 |Prop|Description|
 |---|---|
-|size|Size of the text. Options: sm, default, lg, xl. Default: default.|
-|variant|Text variant. Options: strong, subtle. Default: default.|
-|color|Color of the text. Options: default, red, orange, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose. Default: default.|
-|inline|If true, the text element will be a span instead of a p.|
+|size|Size of the text. Options: sm, default, lg, xl. Default: default.|
+|variant|Text variant. Options: strong, subtle. Default: default.|
+|color|Color of the text. Options: default, red, orange, yellow, lime, green, emerald, teal, cyan, sky, blue, indigo, violet, purple, fuchsia, pink, rose. Default: default.|
+|inline|If true, the text element will be a span instead of a p.|
 
 ### [flux:link](https://fluxui.dev/components/text#fluxlink)
 
 |Prop|Description|
 |---|---|
 |href|The URL that the link points to. Required.|
-|variant|Link style variant. Options: default, ghost, subtle. Default: default.|
-|external|If true, the link will open in a new tab.|
+|variant|Link style variant. Options: default, ghost, subtle. Default: default.|
+|external|If true, the link will open in a new tab.|

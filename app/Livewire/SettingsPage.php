@@ -89,28 +89,34 @@ class SettingsPage extends Component
      */
     protected function loadSettings(): void
     {
-        $settings = Config::get('settings.settings', []);
+        $settingsConfig = Config::get('settings.settings', []);
 
-        foreach ($settings as $key => $setting) {
-            // Skip settings that don't belong to the current group
+        foreach ($settingsConfig as $key => $setting) {
             if (($setting['group'] ?? '') !== $this->group) {
                 continue;
             }
 
-            // Skip settings the user doesn't have permission to see
             if (!$this->userCan($setting['permission'] ?? null)) {
                 continue;
             }
 
-            // Get the setting value
+            // For media fields, we don't store the value directly in the state.
+            // The MediaUploader component will handle the media.
+            if ($setting['type'] === SettingType::MEDIA->value) {
+                continue;
+            }
+
             $value = Settings::get($key);
 
-            // For repeater fields, ensure the value is an array
+            // If value is null, use the default value from the config
+            if ($value === null && isset($setting['default'])) {
+                $value = $setting['default'];
+            }
+
             if ($setting['type'] === SettingType::REPEATER->value) {
                 $value = is_array($value) ? $value : [];
             }
 
-            // Set the value in the state
             data_set($this->state, $key, $value);
         }
     }
@@ -249,10 +255,28 @@ class SettingsPage extends Component
     {
         Artisan::call('cache:clear');
 
-        Flux::toast(__('Application cache cleared.'), variant: 'success');
+        Flux::toast(__('messages.cache_cleared_successfully'), variant: 'success');
+    }
 
-        // Close the modal
-        Flux::modal('confirm-clear-cache')->close();
+    /**
+     * Fix the language settings by resetting them to defaults.
+     * This addresses issues with incorrect data structure in the database.
+     *
+     * @return void
+     */
+    public function fixLanguageSettings(): void
+    {
+        // Delete the incorrect setting row
+        Setting::where('key', 'general.available_locales')->delete();
+
+        // Run the settings:sync command to recreate the setting with the correct structure
+        Artisan::call('settings:sync');
+
+        // Reload the settings to update the UI
+        $this->loadSettings();
+        $this->initialState = $this->state;
+
+        Flux::toast(__('Language settings have been reset to defaults.'), variant: 'success');
     }
 
     /**
@@ -262,18 +286,25 @@ class SettingsPage extends Component
      */
     protected function getAuthorizedGroups()
     {
-        return SettingGroup::query()
-            ->orderBy('order_column')
-            ->get()
-            ->filter(function (SettingGroup $group) {
-                // Check if user has permission to see any settings in this group
-                return $group->settings()
-                    ->where(function ($query) {
-                        $query->whereNull('permission')
-                            ->orWhereIn('permission', Auth::user()->getAllPermissions()->pluck('name'));
-                    })
-                    ->exists();
-            });
+        // Get all groups from config
+        $groups = collect(config('settings.groups', []));
+
+        // Filter groups based on user permissions
+        return $groups->filter(function ($group, $key) {
+            // Get all settings for this group
+            $settingsInGroup = $this->getAuthorizedSettings($key);
+
+            // The group should only be shown if there is at least one setting the user can see
+            return $settingsInGroup->isNotEmpty();
+        })->map(function ($group, $key) {
+            return (object) [
+                'key' => $key,
+                'label' => is_array($group['label']) ? ($group['label'][app()->getLocale()] ?? $group['label']['en']) : $group['label'],
+                'description' => is_array($group['description']) ? ($group['description'][app()->getLocale()] ?? $group['description']['en']) : $group['description'],
+                'icon' => $this->getGroupIcon($key),
+                'order_column' => $group['order_column'] ?? 99,
+            ];
+        })->sortBy('order_column');
     }
 
     /**
@@ -284,18 +315,26 @@ class SettingsPage extends Component
      */
     protected function getAuthorizedSettings(string $groupKey)
     {
-        $group = SettingGroup::where('key', $groupKey)->firstOrFail();
+        $settings = collect(config('settings.settings', []));
 
-        return $group->settings()
-            ->where(function ($query) {
-                $query->whereNull('permission')
-                    ->orWhereIn('permission', Auth::user()->getAllPermissions()->pluck('name'));
-            })
-            ->get()
-            ->map(function (Setting $setting) {
-                $setting->value = data_get($this->state, $setting->key);
-                return $setting;
-            });
+        return $settings->filter(function ($setting, $key) use ($groupKey) {
+            return ($setting['group'] ?? '') === $groupKey && $this->userCan($setting['permission'] ?? null);
+        })->map(function ($settingData, $key) {
+            // For media settings, we load the Setting model instance.
+            if ($settingData['type'] === SettingType::MEDIA->value) {
+                $setting = Setting::firstOrCreate(['key' => $key], $settingData);
+            } else {
+                $settingData['key'] = $key;
+                $settingData['value'] = Settings::get($key);
+                $settingData['label'] = is_array($settingData['label']) ? ($settingData['label'][app()->getLocale()] ?? $settingData['label']['en']) : $settingData['label'];
+                $settingData['description'] = isset($settingData['description']) ? (is_array($settingData['description']) ? ($settingData['description'][app()->getLocale()] ?? $settingData['description']['en']) : $settingData['description']) : null;
+                if (isset($settingData['callout']['text'])) {
+                    $settingData['callout']['text'] = is_array($settingData['callout']['text']) ? ($settingData['callout']['text'][app()->getLocale()] ?? $settingData['callout']['text']['en']) : $settingData['callout']['text'];
+                }
+                $setting = (object) $settingData;
+            }
+            return $setting;
+        });
     }
 
     /**
@@ -310,7 +349,8 @@ class SettingsPage extends Component
             return true;
         }
 
-        return Auth::user()->can($permission);
+        // Check if the authenticated user has the required permission
+        return Auth::user() && Auth::user()->can($permission);
     }
 
     /**
@@ -321,44 +361,23 @@ class SettingsPage extends Component
      */
     protected function getGroupIcon(string $groupKey): string
     {
-        $icons = [
-            'general' => 'cog',
-            'appearance' => 'paint-brush',
-            'email' => 'envelope',
-            'security' => 'shield-check',
-            'social' => 'share',
-            'advanced' => 'code-bracket',
-            'contact' => 'phone',
-        ];
-
-        return $icons[$groupKey] ?? 'cog';
+        return match ($groupKey) {
+            SettingGroupKey::GENERAL->value => 'cog',
+            SettingGroupKey::APPEARANCE->value => 'paint-brush',
+            SettingGroupKey::EMAIL->value => 'envelope',
+            SettingGroupKey::SECURITY->value => 'shield-check',
+            SettingGroupKey::SOCIAL->value => 'share',
+            SettingGroupKey::ADVANCED->value => 'wrench',
+            SettingGroupKey::CONTACT->value => 'phone',
+            default => 'adjustments-horizontal',
+        };
     }
 
-    /**
-     * Handle the media-updated event.
-     */
     #[On('media-updated')]
-    public function handleMediaUpdated(string $settingKey)
-    {
-        // Reload the settings to reflect the updated media
-        $this->loadSettings();
-
-        // Dispatch a global event to notify other components of the media change.
-        $this->dispatch('settings-updated', settings: [
-            $settingKey => setting_media_url($settingKey)
-        ]);
-
-        // Show a success message
-        Flux::toast('Media updated successfully.', variant: 'success');
-    }
-
-    /**
-     * Handle the repeater-updated event.
-     */
     #[On('repeater-updated')]
-    public function handleRepeaterUpdated(string $settingKey, array $items)
+    public function reloadSettings()
     {
-        data_set($this->state, $settingKey, $items);
+        $this->loadSettings();
     }
 
     /**
@@ -368,12 +387,19 @@ class SettingsPage extends Component
      */
     public function render()
     {
-        $currentGroup = $this->getAuthorizedGroups()->firstWhere('key', $this->group);
+        // Get all authorized groups
+        $groups = $this->getAuthorizedGroups();
+
+        // Find the current group object
+        $currentGroup = $groups->firstWhere('key', $this->group);
+
+        // Get all settings for the current group
+        $settings = $this->getAuthorizedSettings($this->group);
 
         return view('livewire.settings-page', [
-            'groups' => $this->getAuthorizedGroups(),
-            'settings' => $currentGroup ? $this->getAuthorizedSettings($this->group) : collect(),
+            'groups' => $groups,
             'currentGroup' => $currentGroup,
+            'settings' => $settings,
         ]);
     }
 }

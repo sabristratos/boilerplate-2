@@ -2,20 +2,29 @@
 
 namespace App\Livewire;
 
+use App\Facades\Settings;
 use App\Models\Setting;
 use Flux\Flux;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\Storage;
+use Livewire\WithPagination;
+use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaUploader extends Component
 {
     use WithFileUploads;
+    use WithPagination;
 
     /**
-     * The setting model instance.
+     * The model instance.
      */
-    public Setting $setting;
+    public Model $model;
+
+    /**
+     * The media collection name.
+     */
+    public string $collection;
 
     /**
      * The uploaded file.
@@ -28,10 +37,33 @@ class MediaUploader extends Component
     public $url = null;
 
     /**
-     * The active tab (upload or url).
+     * Modal visibility states.
      */
     public $showUploadModal = false;
     public $showUrlModal = false;
+    public $showExistingMediaModal = false;
+
+    /**
+     * Selected media ID.
+     */
+    public $selectedMediaId = null;
+
+    /**
+     * Selected media IDs for checkbox selection.
+     */
+    public $selectedMediaIds = [];
+
+    /**
+     * Search and pagination for existing media.
+     */
+    public $search = '';
+    public $perPage = 12;
+
+    public function mount(Model $model, string $collection = 'default')
+    {
+        $this->model = $model;
+        $this->collection = $collection;
+    }
 
     /**
      * Validation rules.
@@ -51,39 +83,90 @@ class MediaUploader extends Component
     {
         $this->validate();
 
-        if (!$this->file && !$this->url) {
-            Flux::toast('Please upload a file or provide a URL.', variant: 'danger');
+        if (!$this->file && !$this->url && !$this->selectedMediaId) {
+            Flux::toast('Please upload a file, provide a URL, or select existing media.', variant: 'danger');
             return;
         }
 
         try {
-            // Clear existing media
-            $this->setting->clearMediaCollection('default');
+            $this->model->clearMediaCollection($this->collection);
+            $media = null;
 
             if ($this->file) {
-                // Add the uploaded file to the media collection
-                $this->setting->addMedia($this->file->getRealPath())
+                $media = $this->model->addMedia($this->file->getRealPath())
                     ->usingName($this->file->getClientOriginalName())
-                    ->toMediaCollection('default');
+                    ->toMediaCollection($this->collection);
             } elseif ($this->url) {
-                // Add the remote file to the media collection
-                $this->setting->addMediaFromUrl($this->url)
-                    ->toMediaCollection('default');
+                $media = $this->model->addMediaFromUrl($this->url)
+                    ->toMediaCollection($this->collection);
+            } elseif ($this->selectedMediaId) {
+                $selectedMedia = Media::findOrFail($this->selectedMediaId);
+                $media = $selectedMedia->copy($this->model, $this->collection);
             }
 
-            // Reset the form
-            $this->reset(['file', 'url']);
+            // The component now only needs to know about the model.
+            // The parent component is responsible for handling what happens after.
+            $this->dispatch('media-updated', modelId: $this->model->id, collection: $this->collection);
 
+            $this->reset(['file', 'url', 'selectedMediaId']);
             $this->showUploadModal = false;
             $this->showUrlModal = false;
+            $this->showExistingMediaModal = false;
 
-            // Notify the parent component that the media has been updated
-            $this->dispatch('media-updated', settingKey: $this->setting->key);
-
-            Flux::toast('Media uploaded successfully.', variant: 'success');
+            Flux::toast('Media saved successfully.', variant: 'success');
         } catch (\Exception $e) {
-            Flux::toast('Failed to upload media: ' . $e->getMessage(), variant: 'danger');
+            Flux::toast('Failed to save media: ' . $e->getMessage(), variant: 'danger');
         }
+    }
+
+    /**
+     * Select an existing media item.
+     */
+    public function selectMedia($id)
+    {
+        try {
+            $this->selectedMediaId = $id;
+            $this->save();
+        } catch (\Exception $e) {
+            Flux::toast('Failed to select media: ' . $e->getMessage(), variant: 'danger');
+        }
+    }
+
+    /**
+     * Toggle a media item selection in the checkbox group.
+     */
+    public function toggleMediaSelection($id)
+    {
+        if (in_array($id, $this->selectedMediaIds)) {
+            $this->selectedMediaIds = array_diff($this->selectedMediaIds, [$id]);
+        } else {
+            $this->selectedMediaIds[] = $id;
+        }
+    }
+
+    /**
+     * Confirm the selected media from checkbox group.
+     */
+    public function confirmMediaSelection()
+    {
+        try {
+            if (count($this->selectedMediaIds) > 0) {
+                $this->selectedMediaId = $this->selectedMediaIds[0];
+                $this->save();
+            } else {
+                Flux::toast('Please select at least one media item.', variant: 'danger');
+            }
+        } catch (\Exception $e) {
+            Flux::toast('Failed to confirm media selection: ' . $e->getMessage(), variant: 'danger');
+        }
+    }
+
+    /**
+     * Reset pagination when search changes.
+     */
+    public function updatingSearch()
+    {
+        $this->resetPage();
     }
 
     /**
@@ -92,8 +175,8 @@ class MediaUploader extends Component
     public function remove()
     {
         try {
-            $this->setting->clearMediaCollection('default');
-            $this->dispatch('media-updated', settingKey: $this->setting->key);
+            $this->model->clearMediaCollection($this->collection);
+            $this->dispatch('media-updated', modelId: $this->model->id, collection: $this->collection);
             Flux::toast('Media removed successfully.', variant: 'success');
         } catch (\Exception $e) {
             Flux::toast('Failed to remove media: ' . $e->getMessage(), variant: 'danger');
@@ -105,8 +188,24 @@ class MediaUploader extends Component
      */
     public function render()
     {
+        $query = Media::query();
+
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('name', 'like', '%' . $this->search . '%')
+                  ->orWhere('file_name', 'like', '%' . $this->search . '%')
+                  ->orWhere('mime_type', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        $query->where('mime_type', 'like', 'image/%');
+
+        $media = $query->orderBy('created_at', 'desc')
+                      ->paginate($this->perPage);
+
         return view('livewire.media-uploader', [
-            'mediaUrl' => $this->setting->getFirstMediaUrl('default'),
+            'mediaUrl' => $this->model->getFirstMediaUrl($this->collection),
+            'existingMedia' => $media,
         ]);
     }
 }

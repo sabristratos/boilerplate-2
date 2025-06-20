@@ -437,7 +437,7 @@ A component to highlight important information.
 **Syntax**
 
 ```blade
-<flux:callout icon="information-circle" variant="secondary">
+<flux:callout icon="information-circle" variant="outline">
     <flux:callout.heading>This is important</flux:callout.heading>
     <flux:callout.text>
         Please review the updated terms of service.
@@ -450,50 +450,6 @@ A component to highlight important information.
 | Prop | Description |
 | :--- | :--- |
 | `icon` | Name of an icon to display. |
-| `variant` | `secondary`, `success`, `warning`, `danger`. |
+| `variant` | `outline`, `success`, `warning`, `danger`. |
 | `color` | Any Tailwind color to override the variant. |
-| `inline` | `true` to display actions inline with the text. |
-
-### `flux:tooltip`
-
-Provides additional information on hover.
-
-**Syntax**
-
-```blade
-<flux:tooltip content="This is the tooltip text.">
-    <flux:button icon="information-circle" />
-</flux:tooltip>
-```
-
-**Props**
-| Prop | Description |
-| :--- | :--- |
-| `content` | The text to display in the tooltip. |
-| `position`| `top` (default), `right`, `bottom`, `left`. |
-| `toggleable`| `true` makes the tooltip clickable for touch devices. |
-| `kbd`| Keyboard shortcut hint. |
-
-### `flux:toast`
-
-A feedback message that is temporary and dismissible. Must be placed in the layout file.
-
-**Syntax (Trigger from Livewire)**
-
-```php
-Flux::toast('Your changes have been saved.', variant: 'success');
-```
-
-**Syntax (Blade Component - in layout)**
-
-```blade
-@persist('toast')
-    <flux:toast position="bottom right" />
-@endpersist
-```
-
-**Props**
-| Prop | Description |
-| :--- | :--- |
-| `position` | `bottom right` (default), `bottom left`, `top right`, `top left`. |
-| `duration` | Duration in milliseconds (default: `5000`). `0` for permanent. |
+| `

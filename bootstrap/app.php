@@ -11,8 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Register global middleware
-        $middleware->append(\App\Http\Middleware\ApplySettingsMiddleware::class);
+        $middleware->web(append: [
+            \App\Http\Middleware\ApplySettingsMiddleware::class,
+            \App\Http\Middleware\ApplyLocaleSettings::class,
+        ]);
 
         // Register the role and permission middleware
         $middleware->alias([

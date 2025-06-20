@@ -59,6 +59,8 @@ class SyncSettings extends Command
                     continue;
                 }
 
+                $settingModel = Setting::firstOrNew(['key' => $key]);
+
                 $data = [
                     'setting_group_id' => $group->id,
                     'label' => $setting['label'],
@@ -85,10 +87,22 @@ class SyncSettings extends Command
                     $data['callout'] = $setting['callout'];
                 }
 
+                // If the setting is new and a default value is defined, add it to the data for creation.
+                if (!$settingModel->exists && isset($setting['default'])) {
+                    $data['value'] = $setting['default'];
+                }
+
+                // Use updateOrCreate to sync settings.
+                // This will create the setting with default value or update existing ones without overwriting their value.
                 Setting::updateOrCreate(['key' => $key], $data);
             }
 
             $this->info('Settings synchronized.');
+
+            // Remove old settings that are not in the config file
+            $definedKeys = array_keys($settings);
+            Setting::whereNotIn('key', $definedKeys)->delete();
+            $this->info('Old settings removed.');
         });
 
         $this->info('Settings synchronization complete.');

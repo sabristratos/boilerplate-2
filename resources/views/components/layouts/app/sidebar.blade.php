@@ -12,9 +12,30 @@
             </a>
 
             <flux:navlist variant="outline">
-                <flux:navlist.group :heading="__('Platform')" class="grid">
-                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('Dashboard') }}</flux:navlist.item>
+                <flux:navlist.group :heading="__('navigation.platform')" class="grid">
+                    <flux:navlist.item icon="home" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>{{ __('navigation.dashboard') }}</flux:navlist.item>
+                    <flux:navlist.item icon="photo" :href="route('media.index')" :current="request()->routeIs('media.*')" wire:navigate>{{ __('navigation.media_library') }}</flux:navlist.item>
+                    <flux:navlist.item icon="language" :href="route('admin.translations.index')" :current="request()->routeIs('admin.translations.*')" wire:navigate>{{ __('navigation.translations') }}</flux:navlist.item>
                 </flux:navlist.group>
+
+                @if(isset($resources) && count($resources) > 0)
+                <flux:navlist.group :heading="__('navigation.resources')" class="grid">
+                    @foreach($resources as $resource)
+                        @php
+                            $resourceClass = new $resource();
+                            $uriKey = $resource::uriKey();
+                        @endphp
+                        <flux:navlist.item
+                            icon="{{ str_replace('heroicon-o-', '', $resource::$navigationIcon) }}"
+                            :href="route('admin.resources.'.$uriKey.'.index')"
+                            :current="request()->routeIs('admin.resources.'.$uriKey.'.*')"
+                            wire:navigate
+                        >
+                            {{ $resource::pluralLabel() }}
+                        </flux:navlist.item>
+                    @endforeach
+                </flux:navlist.group>
+                @endif
             </flux:navlist>
 
             <flux:spacer />
@@ -40,8 +61,8 @@
                                 </span>
 
                                 <div class="grid flex-1 text-start text-sm leading-tight">
-                                    <span class="truncate font-semibold">{{ auth()->user()->name }}</span>
-                                    <span class="truncate text-xs">{{ auth()->user()->email }}</span>
+                                    <flux:text class="truncate font-semibold">{{ auth()->user()->name }}</flux:text>
+                                    <flux:text class="truncate text-xs">{{ auth()->user()->email }}</flux:text>
                                 </div>
                             </div>
                         </div>
@@ -50,7 +71,7 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.group', ['group' => 'general'])" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                        <flux:menu.item :href="route('settings.group', ['group' => 'general'])" icon="cog" wire:navigate>{{ __('navigation.settings') }}</flux:menu.item>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />
@@ -58,7 +79,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
                         <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
+                            {{ __('buttons.logout') }}
                         </flux:menu.item>
                     </form>
                 </flux:menu>
@@ -100,7 +121,7 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.group', ['group' => 'general'])" icon="cog" wire:navigate>{{ __('Settings') }}</flux:menu.item>
+                        <flux:menu.item :href="route('settings.group', ['group' => 'general'])" icon="cog" wire:navigate>{{ __('navigation.settings') }}</flux:menu.item>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />
@@ -108,7 +129,7 @@
                     <form method="POST" action="{{ route('logout') }}" class="w-full">
                         @csrf
                         <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle" class="w-full">
-                            {{ __('Log Out') }}
+                            {{ __('buttons.logout') }}
                         </flux:menu.item>
                     </form>
                 </flux:menu>

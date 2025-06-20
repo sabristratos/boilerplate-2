@@ -9,10 +9,11 @@
                             @if(isset($setting->callout) && is_array($setting->callout))
                                 <div class="mb-4">
                                     <flux:callout
-                                        variant="{{ $setting->callout['variant'] ?? 'secondary' }}"
+                                        variant="{{ $setting->callout['variant'] ?? 'outline' }}"
                                         icon="{{ $setting->callout['icon'] ?? null }}"
-                                        text="{{ $setting->callout['text'] ?? '' }}"
-                                    />
+                                    >
+                                        {{ __($setting->callout['text'] ?? '') }}
+                                    </flux:callout>
                                 </div>
                             @endif
 
@@ -22,8 +23,8 @@
                                     <flux:input
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -32,8 +33,8 @@
                                     <flux:textarea
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -42,8 +43,8 @@
                                     <flux:checkbox
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -52,39 +53,55 @@
                                     <flux:radio.group
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     >
                                         @foreach($setting->options ?? [] as $value => $label)
-                                            <flux:radio value="{{ $value }}" label="{{ $label }}" />
+                                            <flux:radio value="{{ $value }}" label="{{ __($label) }}" />
                                         @endforeach
                                     </flux:radio.group>
                                     @break
 
                                 {{-- Select --}}
                                 @case('select')
-                                    <flux:select
-                                        wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
-                                    >
-                                        @foreach($setting->options ?? [] as $value => $label)
-                                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                                        @endforeach
-                                    </flux:select>
+                                    @if ($setting->key === 'general.default_locale' || $setting->key === 'general.fallback_locale')
+                                        @php
+                                            $localesSetting = data_get($state, 'general.available_locales');
+                                            $localeOptions = collect($localesSetting)->pluck('name', 'code')->all();
+                                        @endphp
+                                        <flux:select
+                                            wire:model.live="state.{{ $setting->key }}"
+                                            label="{{ __($setting->label) }}"
+                                            description="{{ __($setting->description ?? '') }}"
+                                        >
+                                            @foreach($localeOptions as $value => $label)
+                                                <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                            @endforeach
+                                        </flux:select>
+                                    @else
+                                        <flux:select
+                                            wire:model.live="state.{{ $setting->key }}"
+                                            :value="$setting->value"
+                                            label="{{ __($setting->label) }}"
+                                            description="{{ __($setting->description ?? '') }}"
+                                        >
+                                            @foreach($setting->options ?? [] as $value => $label)
+                                                <flux:select.option value="{{ $value }}">{{ __($label) }}</flux:select.option>
+                                            @endforeach
+                                        </flux:select>
+                                    @endif
                                     @break
 
                                 {{-- File Upload --}}
                                 @case('file')
-                                    <flux:field label="{{ $setting->label }}" description="{{ $setting->description ?? '' }}">
+                                    <flux:field label="{{ __($setting->label) }}" description="{{ __($setting->description ?? '') }}">
                                         <flux:input
                                             type="file"
                                             wire:model="files.{{ $setting->key }}"
                                         />
                                         @if($state[$setting->key] ?? null)
                                             <div class="mt-2">
-                                                <flux:text>{{ __('Current file') }}: {{ basename($state[$setting->key]) }}</flux:text>
+                                                <flux:text>{{ __('labels.current_file') }}: {{ basename($state[$setting->key]) }}</flux:text>
                                             </div>
                                         @endif
                                     </flux:field>
@@ -96,8 +113,8 @@
                                         type="color"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -107,8 +124,8 @@
                                         type="date"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -118,8 +135,8 @@
                                         type="datetime-local"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -129,8 +146,8 @@
                                         type="email"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -140,8 +157,8 @@
                                         type="number"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -151,14 +168,14 @@
                                         type="password"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
                                 {{-- Range Input --}}
                                 @case('range')
-                                    <flux:field label="{{ $setting->label }}" description="{{ $setting->description ?? '' }}">
+                                    <flux:field label="{{ __($setting->label) }}" description="{{ __($setting->description ?? '') }}">
                                         <flux:input
                                             type="range"
                                             wire:model.live="state.{{ $setting->key }}"
@@ -176,8 +193,8 @@
                                         type="tel"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -187,8 +204,8 @@
                                         type="time"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
@@ -198,20 +215,20 @@
                                         type="url"
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                                     @break
 
                                 {{-- Media Uploader --}}
                                 @case('media')
                                     <div>
-                                        <flux:label>{{ $setting->label }}</flux:label>
+                                        <flux:label>{{ __($setting->label) }}</flux:label>
                                         @if($setting->description)
-                                            <flux:description class="mt-2">{{ $setting->description }}</flux:description>
+                                            <flux:description class="mt-2">{{ __($setting->description) }}</flux:description>
                                         @endif
                                         <div class="mt-2">
-                                            <livewire:media-uploader :setting="$setting" :key="$setting->key" />
+                                            <livewire:media-uploader :model="$setting" :key="$setting->key" />
                                         </div>
                                     </div>
                                     @break
@@ -219,15 +236,15 @@
                                 {{-- Repeater --}}
                                 @case('repeater')
                                     <flux:field>
-                                        <flux:label>{{ $setting->label }}</flux:label>
+                                        <flux:label>{{ __($setting->label) }}</flux:label>
                                         @if($setting->description)
-                                            <flux:description>{{ $setting->description }}</flux:description>
+                                            <flux:description>{{ __($setting->description) }}</flux:description>
                                         @endif
                                         <div class="mt-2">
                                             <livewire:setting-repeater
                                                 :settingKey="$setting->key"
                                                 :subfields="$setting->subfields"
-                                                :value="(array) $setting->value"
+                                                :value="(array) data_get($state, $setting->key, [])"
                                                 :key="'repeater-' . $setting->key"
                                             />
                                         </div>
@@ -239,70 +256,69 @@
                                     <flux:input
                                         wire:model.live="state.{{ $setting->key }}"
                                         :value="$setting->value"
-                                        label="{{ $setting->label }}"
-                                        description="{{ $setting->description ?? '' }}"
+                                        label="{{ __($setting->label) }}"
+                                        description="{{ __($setting->description ?? '') }}"
                                     />
                             @endswitch
                             </div>
                         @endforeach
 
+                        {{-- Special actions for General tab --}}
+                        @if($currentGroup->key === 'general')
+                            <div class="py-2">
+                                <flux:field label="Fix Language Settings" description="Reset language settings to defaults if you're experiencing issues with language dropdowns or available locales.">
+                                    <flux:button
+                                        type="button"
+                                        variant="danger"
+                                        wire:click="fixLanguageSettings"
+                                    >
+                                        Reset Language Settings
+                                    </flux:button>
+                                </flux:field>
+                            </div>
+                        @endif
+
                         {{-- Special actions for Advanced tab --}}
                         @if($currentGroup->key === 'advanced')
-                            <div class="py-4 border-t border-gray-200 dark:border-gray-700">
-                                <flux:heading size="md">{{ __('System Actions') }}</flux:heading>
-                                <div class="mt-4">
-                                    <flux:modal.trigger name="confirm-clear-cache">
-                                        <flux:button
-                                            variant="danger"
-                                            icon="trash"
-                                        >
-                                            {{ __('Clear Application Cache') }}
-                                        </flux:button>
-                                    </flux:modal.trigger>
-                                </div>
+                            <div class="py-2">
+                                <flux:field :label="__('labels.clear_cache_action')" :description="__('labels.clear_cache_action_desc')">
+                                    <flux:button
+                                        type="button"
+                                        variant="danger"
+                                        wire:click="clearCache"
+                                    >
+                                        {{ __('buttons.clear_cache') }}
+                                    </flux:button>
+                                </flux:field>
                             </div>
                         @endif
                 </div>
 
-                {{-- Save Button --}}
-                <div class="flex justify-end">
-                    <flux:button type="submit" icon="check" variant="primary">
-                        {{ __('Save Settings') }}
-                    </flux:button>
+                <div class="flex items-center justify-between border-t border-zinc-200 pt-6 dark:border-zinc-700">
+                    <div class="flex items-center gap-3">
+                        <flux:button type="submit" variant="primary">
+                            {{ __('buttons.save_settings') }}
+                        </flux:button>
+
+                        <x-action-message class="me-3" on="settings-updated">
+                            {{ __('messages.saved') }}
+                        </x-action-message>
+                    </div>
                 </div>
             </form>
+
+            <flux:modal name="confirm-save" :title="__('messages.confirm_save.title')">
+                <div x-html="$wire.confirmationWarning"></div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <flux:button variant="outline" wire:click="$dispatch('close', { id: 'confirm-save' })">
+                        {{ __('buttons.cancel') }}
+                    </flux:button>
+                    <flux:button wire:click="confirmedSave" variant="primary">
+                        {{ __('buttons.confirm_save') }}
+                    </flux:button>
+                </div>
+            </flux:modal>
+
         </div>
     </x-layouts.settings.settings-sidebar>
-
-    <flux:modal name="confirm-save" class="md:w-96" @cancel="$wire.cancelChanges()">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg" class="mb-2">{{ __('Are you sure?') }}</flux:heading>
-                <flux:text x-html="$wire.confirmationWarning"></flux:text>
-            </div>
-            <div class="flex gap-2">
-                <flux:spacer />
-                <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                </flux:modal.close>
-                <flux:button wire:click="confirmedSave" variant="primary">{{ __('Confirm') }}</flux:button>
-            </div>
-        </div>
-    </flux:modal>
-
-    <flux:modal name="confirm-clear-cache" class="md:w-96">
-        <div class="space-y-6">
-            <div>
-                <flux:heading size="lg">{{ __('Are you sure?') }}</flux:heading>
-                <flux:text class="mt-2">{{ __('Are you sure you want to clear the application cache?') }}</flux:text>
-            </div>
-            <div class="flex gap-2">
-                <flux:spacer />
-                <flux:modal.close>
-                    <flux:button variant="ghost">{{ __('Cancel') }}</flux:button>
-                </flux:modal.close>
-                <flux:button wire:click="clearCache" variant="danger">{{ __('Clear Cache') }}</flux:button>
-            </div>
-        </div>
-    </flux:modal>
 </section>

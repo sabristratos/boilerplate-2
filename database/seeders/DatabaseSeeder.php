@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Testimonial;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -14,8 +15,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // Seed roles and permissions
-        $this->call(RolesAndPermissionsSeeder::class);
+        // Add a default user
+        User::factory()->create([
+            'name' => 'Admin User',
+            'email' => 'admin@admin.com',
+        ]);
+
+        Testimonial::factory(10)->create();
+
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+        ]);
 
         // Create a test user with Super Admin role
         $user = User::factory()->create([
@@ -44,6 +54,13 @@ class DatabaseSeeder extends Seeder
         $regularUser->assignRole('user');
 
         // Sync settings
+        $this->command->info('Syncing application settings...');
         Artisan::call('settings:sync');
+        $this->command->info('Settings synced successfully.');
+
+        // Sync translations
+        $this->command->info('Syncing translations from files...');
+        Artisan::call('translations:sync-from-files');
+        $this->command->info('Translations synced successfully.');
     }
 }

@@ -5,21 +5,21 @@
                 @foreach ($subfields as $key => $subfield)
                     <flux:input
                         wire:model.live="items.{{ $index }}.{{ $key }}"
-                        label="{{ $subfield['label'] }}"
+                        label="{{ __($subfield['label']) }}"
                         type="{{ $subfield['type'] ?? 'text' }}"
-                        placeholder="{{ $subfield['label'] }}"
+                        placeholder="{{ __($subfield['label']) }}"
                     />
                 @endforeach
             </div>
             <div class="pt-6">
-                <flux:button wire:click="removeItem({{ $index }})" variant="danger" size="sm" icon="trash" />
+                <flux:button wire:click="removeItem({{ $index }})" variant="danger" size="sm" icon="trash" tooltip="{{ __('buttons.remove') }}" />
             </div>
         </div>
     @endforeach
 
     <div class="mt-4">
         <flux:button wire:click="addItem" variant="subtle" icon="plus">
-            Add Item
+            {{ __('buttons.add_item') }}
         </flux:button>
     </div>
 </div> 

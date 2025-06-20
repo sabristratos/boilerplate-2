@@ -1,0 +1,211 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+Of course. Here is a clear and direct guide on how to properly write translation keys for your Laravel application, with a focus on creating a system that is easy to sync with a database and simple for an AI to understand and use.
+
+---
+
+# Laravel Translation Key Naming Convention
+
+This guide establishes a standardized naming convention for translation keys. The primary goal is to create a system that is clear, consistent, and easily manageable for syncing between Laravel's `lang` files and a database-driven UI.
+
+Following these conventions ensures that translation keys are predictable and can be efficiently processed by both developers and AI tools.
+
+## General Rules
+
+1.  **Dot Notation for Structure**: Always use dot notation (`.`) to create a hierarchical structure. The filename acts as the first segment of the key.
+    * **Example**: The `save` key in the `buttons.php` file is referenced as `buttons.save`.
+
+2.  **Lowercase and Snake Case**: All key segments should be in `snake_case` (lowercase words separated by underscores).
+    * **Good**: `buttons.save_changes`, `messages.delete_confirm_title`
+    * **Bad**: `buttons.saveChanges`, `messages.deleteConfirmTitle`
+
+3.  **Describe Purpose, Not Text**: Keys should identify the element or its purpose, not the English text it represents. This makes the key independent of any single language.
+    * **Good**: `profile.update_success_message`
+    * **Bad**: `profile.your_profile_has_been_updated`
+
+## File & Key Structure
+
+Keys should be organized into logical groups, with each group residing in its own file within the `lang/{locale}/` directory (e.g., `lang/en/`).
+
+### 1. Group by Common UI Elements
+
+Create files for UI elements and terms that are reused throughout the application.
+
+**File: `lang/en/buttons.php`**
+For all general-purpose button text.
+
+```php
+<?php
+
+return [
+    'save' => 'Save',
+    'save_changes' => 'Save Changes',
+    'update' => 'Update',
+    'cancel' => 'Cancel',
+    'delete' => 'Delete',
+    'create' => 'Create',
+    'add' => 'Add',
+    'submit' => 'Submit',
+    'login' => 'Log In',
+    'logout' => 'Log Out',
+    'view' => 'View',
+    'edit' => 'Edit',
+    'back' => 'Back',
+    'confirm' => 'Confirm',
+    'search' => 'Search',
+    'apply_filters' => 'Apply Filters',
+    'reset_filters' => 'Reset Filters',
+    'resend_verification_email' => 'Resend Verification Email',
+];
+```
+
+**File: `lang/en/labels.php`**
+For common form labels and table headers.
+
+```php
+<?php
+
+return [
+    'name' => 'Name',
+    'email' => 'Email Address',
+    'password' => 'Password',
+    'password_confirmation' => 'Confirm Password',
+    'role' => 'Role',
+    'roles' => 'Roles',
+    'status' => 'Status',
+    'actions' => 'Actions',
+    'created_at' => 'Created At',
+    'updated_at' => 'Updated At',
+    'remember_me' => 'Remember me',
+];
+```
+
+**File: `lang/en/messages.php`**
+For user feedback, confirmation dialogs, and alerts.
+
+```php
+<?php
+
+return [
+    'delete_confirm_title' => 'Are you sure?',
+    'delete_confirm_text' => 'Are you sure you want to delete this item? This action cannot be undone.',
+    
+    'resource' => [
+        'created' => ':Resource created successfully.',
+        'updated' => ':Resource updated successfully.',
+        'deleted' => ':Resource deleted successfully.',
+    ],
+
+    'errors' => [
+        'generic' => 'An unexpected error occurred. Please try again.',
+        'not_found' => 'The requested resource was not found.',
+        'unauthorized' => 'You are not authorized to perform this action.',
+    ],
+
+    'success' => [
+        'generic' => 'Operation completed successfully.',
+        'cache_cleared' => 'Application cache cleared.',
+    ],
+];
+```
+
+### 2. Group by Page or Feature
+
+Create files for text that is specific to a single page, view, or feature.
+
+**File: `lang/en/dashboard.php`**
+
+```php
+<?php
+
+return [
+    'title' => 'Dashboard',
+    'welcome_message' => 'Welcome back, :name!',
+];
+```
+
+**File: `lang/en/auth.php`** (Can extend Laravel's default file)
+
+```php
+<?php
+
+return [
+    // Existing Laravel keys...
+    'failed' => 'These credentials do not match our records.',
+    'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
+
+    // Custom keys for auth pages
+    'login_title' => 'Log in to your account',
+    'login_description' => 'Enter your email and password below to log in.',
+    'register_title' => 'Create an account',
+    'register_description' => 'Enter your details below to create your account.',
+    'forgot_password_title' => 'Forgot password',
+    'forgot_password_description' => 'Enter your email to receive a password reset link.',
+    'forgot_password_link_sent' => 'A reset link will be sent if the account exists.',
+    'return_to_login' => 'Or, return to log in',
+];
+```
+
+**File: `lang/en/settings.php`**
+
+For a complex feature like settings, you can create nested arrays.
+
+```php
+<?php
+
+return [
+    'title' => 'Settings',
+    'description' => 'Manage your profile and account settings.',
+    'save_button' => 'Save Settings',
+
+    'groups' => [
+        'general' => 'General',
+        'general_desc' => 'General settings for the application.',
+        'appearance' => 'Appearance',
+        'appearance_desc' => 'Customize the look and feel of the application.',
+        'email' => 'Email',
+        'email_desc' => 'Configure email settings.',
+        'security' => 'Security',
+        'security_desc' => 'Configure security settings.',
+    ],
+
+    'fields' => [
+        'app_name_label' => 'Application Name',
+        'app_name_desc' => 'The name of the application.',
+        'app_url_label' => 'Application URL',
+        'app_url_desc' => 'The URL of the application.',
+        'theme_label' => 'Theme',
+        'theme_desc' => 'The theme of the application.',
+        'logo_label' => 'Application Logo',
+        'logo_desc' => 'The logo of the application.',
+    ],
+
+    'actions' => [
+        'clear_cache' => 'Clear Application Cache',
+        'clear_cache_confirm' => 'Are you sure you want to clear the application cache?',
+    ],
+];
+```
+
+## Usage in Blade Files
+
+Use Laravel's `__('key')` helper function to retrieve translations.
+
+```html
+{{-- Simple Key --}}
+<h1>{{ __('dashboard.title') }}</h1>
+
+{{-- Key with Parameters --}}
+<p>{{ __('dashboard.welcome_message', ['name' => Auth::user()->name]) }}</p>
+
+{{-- Nested Keys --}}
+<h2>{{ __('settings.groups.appearance') }}</h2>
+<label>{{ __('settings.fields.theme_label') }}</label>
+
+{{-- Using keys from different files --}}
+<button type="submit">{{ __('buttons.save_changes') }}</button>
+
+```
