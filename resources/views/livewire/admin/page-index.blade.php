@@ -1,33 +1,134 @@
 <div>
-    <flux:card class="p-0">
-        <div class="p-6 flex items-center justify-between">
-            <flux:heading>Pages</flux:heading>
-            <a href="{{ route('admin.pages.create') }}" wire:navigate>
-                <flux:button>New page</flux:button>
-            </a>
+    <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="w-full md:w-1/3">
+            <flux:input
+                wire:model.live.debounce.300ms="search"
+                placeholder="Search..."
+                icon="magnifying-glass"
+                clearable
+            />
         </div>
-        <flux:table>
-            <flux:table.columns>
-                <flux:table.column>Page</flux:table.column>
-                <flux:table.column></flux:table.column>
-            </flux:table.columns>
-            <flux:table.rows>
-                @foreach($this->pages as $page)
-                    <flux:table.row :key="$page->id">
-                        <flux:table.cell>
-                            <div>
-                                <flux:text class="font-semibold">{{ $page->title }}</flux:text>
-                                <flux:text variant="subtle" class="text-xs">{{ $page->slug }}</flux:text>
+
+        <div class="flex items-center gap-2">
+            <flux:button
+                variant="outline"
+                x-on:click="$wire.set('showFiltersModal', true)"
+            >
+                {{ __('buttons.filters') }}
+                @if (count(array_filter($this->filters)) > 0)
+                    <flux:badge color="blue" size="sm">{{ count(array_filter($this->filters)) }}</flux:badge>
+                @endif
+            </flux:button>
+            <flux:select wire:model.live="perPage">
+                <flux:select.option value="10">{{ __('labels.per_page', ['count' => 10]) }}</flux:select.option>
+                <flux:select.option value="25">{{ __('labels.per_page', ['count' => 25]) }}</flux:select.option>
+                <flux:select.option value="50">{{ __('labels.per_page', ['count' => 50]) }}</flux:select.option>
+                <flux:select.option value="100">{{ __('labels.per_page', ['count' => 100]) }}</flux:select.option>
+            </flux:select>
+            <flux:button wire:click="createPage">New page</flux:button>
+        </div>
+    </div>
+    <div class="rounded-lg overflow-hidden py-2">
+        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
+            <thead>
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Title</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">Translations</th>
+                    <th scope="col" class="relative px-6 py-3">
+                        <span class="sr-only">Actions</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+                @forelse($this->pages as $page)
+                    <tr wire:key="page-{{ $page->id }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-zinc-900 dark:text-white">{{ $page->getTranslation('title', $filters['locale'] ?? app()->getLocale()) }}</div>
+                            <div class="text-sm text-zinc-500">{{ $page->getTranslation('slug', $filters['locale'] ?? app()->getLocale()) }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-2">
+                                @foreach($this->locales as $key => $localeName)
+                                    <a href="{{ route('admin.pages.editor', ['page' => $page, 'locale' => $key]) }}" wire:navigate
+                                       class="p-1 rounded-md {{ $page->hasTranslation($key) ? 'bg-green-100 text-green-800' : 'bg-zinc-100 text-zinc-800' }} hover:opacity-80 transition-opacity"
+                                       title="{{ $localeName }}">
+                                        {{ strtoupper($key) }}
+                                    </a>
+                                @endforeach
                             </div>
-                        </flux:table.cell>
-                        <flux:table.cell class="text-right">
-                            <a href="{{ route('admin.pages.editor', $page) }}" wire:navigate>
-                                <flux:button variant="subtle">Edit</flux:button>
-                            </a>
-                        </flux:table.cell>
-                    </flux:table.row>
-                @endforeach
-            </flux:table.rows>
-        </flux:table>
-    </flux:card>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <flux:button href="{{ route('pages.show', $page) }}" target="_blank" variant="ghost" size="xs" icon="eye" square tooltip="View" />
+                            <flux:button href="{{ route('admin.pages.editor', $page) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
+                            <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="Delete" />
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-500">
+                            No pages found.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    @if ($this->pages instanceof \Illuminate\Pagination\AbstractPaginator)
+        <div class="mt-4">
+            {{ $this->pages->links() }}
+        </div>
+    @endif
+
+    <flux:modal wire:model.live.self="showFiltersModal" variant="flyout">
+        <div class="space-y-6">
+            <flux:heading size="lg">{{ __('buttons.filters') }}</flux:heading>
+
+            <div class="space-y-4">
+                <flux:select
+                    id="filter-locale"
+                    wire:model.live="filters.locale"
+                    label="Locale"
+                >
+                    <flux:select.option value="">All Locales</flux:select.option>
+                    @foreach($this->locales as $key => $localeName)
+                        <flux:select.option value="{{ $key }}">{{ $localeName }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <flux:button
+                    wire:click="resetFilters"
+                    variant="outline"
+                >
+                    {{ __('buttons.reset_filters') }}
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
+
+    <flux:modal wire:model.live.self="showDeleteModal">
+        <div class="space-y-6">
+            <div>
+                <flux:heading size="lg">{{ __('messages.delete_confirm_title') }}</flux:heading>
+                <flux:text class="mt-2">{{ __('messages.delete_confirm_text') }}</flux:text>
+            </div>
+
+            <div class="flex justify-end gap-2">
+                <flux:button
+                    wire:click="cancelDelete"
+                    variant="outline"
+                >
+                    {{ __('buttons.cancel') }}
+                </flux:button>
+                <flux:button
+                    wire:click="delete"
+                    variant="danger"
+                >
+                    {{ __('buttons.delete') }}
+                </flux:button>
+            </div>
+        </div>
+    </flux:modal>
 </div>

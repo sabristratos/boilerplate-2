@@ -61,27 +61,31 @@
             <tbody
                 class="divide-y divide-zinc-200 dark:divide-zinc-700"
                 wire:key="sortable-resource-table-body"
-                x-data="{
-                    reorder(event) {
-                        const container = event.target;
-                        const items = container.querySelectorAll('[x-sort\\:item]');
-                        const ids = Array.from(items).map(item => item.getAttribute('x-sort:item'));
-                        this.$wire.call('reorder', ids);
-                    }
-                }"
-                x-sort
-                x-on:sort.stop="reorder($event)"
+                @if($reorderingEnabled)
+                    x-data="{
+                        reorder(event) {
+                            const container = event.target;
+                            const items = container.querySelectorAll('[x-sort\\:item]');
+                            const ids = Array.from(items).map(item => item.getAttribute('x-sort:item'));
+                            this.$wire.call('reorder', ids);
+                        }
+                    }"
+                    x-sort
+                    x-on:sort.stop="reorder($event)"
+                @endif
             >
                 @forelse ($resources as $resource)
-                    <tr wire:key="resource-{{ $resource->id }}" x-sort:item="{{ $resource->id }}">
+                    <tr wire:key="resource-{{ $resource->id }}" @if($reorderingEnabled) x-sort:item="{{ $resource->id }}" @endif>
                         @foreach ($columns as $column)
                             <td class="px-6 py-2 whitespace-nowrap text-sm {{ $column->getAlignment() === 'center' ? 'text-center' : '' }} {{ $column->getAlignment() === 'right' ? 'text-right' : '' }}">
-                                @if ($column->getName() === 'handle')
+                                @if ($column->getName() === 'handle' && $reorderingEnabled)
                                     <div class="flex items-center justify-center">
                                         <button x-sort:handle class="cursor-grab text-zinc-400 hover:text-zinc-600">
                                             <x-flux::icon.grip-vertical class="text-zinc-400 hover:text-zinc-600" />
                                         </button>
                                     </div>
+                                @elseif ($column->getName() === 'handle' && !$reorderingEnabled)
+                                    {{-- Render nothing if reordering is disabled --}}
                                 @else
                                     @php
                                         $value = data_get($resource, $column->getName());

@@ -1,15 +1,19 @@
-@props([
-    'block'
-])
+@props(['block', 'alpine' => false])
 
-@if($block->data['faqs'] ?? false)
-    <section class="container px-4 py-12 mx-auto">
-        <flux:accordion exclusive>
-            @foreach($block->data['faqs'] as $faq)
-                <flux:accordion.item heading="{{ $faq['question'] }}">
-                    {{ $faq['answer'] }}
-                </flux:accordion.item>
-            @endforeach
-        </flux:accordion>
-    </section>
-@endif 
+<div class="px-4 py-8">
+    @if ($alpine)
+        <template x-for="(faq, index) in state.faqs" :key="index">
+            <details class="mb-2">
+                <summary class="font-semibold" x-text="faq.question"></summary>
+                <p class="mt-1" x-text="faq.answer"></p>
+            </details>
+        </template>
+    @else
+        @foreach ($block->data['faqs'] ?? [] as $faq)
+            <details class="mb-2">
+                <summary class="font-semibold">{{ $faq['question'] }}</summary>
+                <p class="mt-1">{{ $faq['answer'] }}</p>
+            </details>
+        @endforeach
+    @endif
+</div> 

@@ -13,6 +13,6 @@ class ContentBlockPolicy
      */
     public function update(User $user, ContentBlock $contentBlock): bool
     {
-        return $user->can('edit pages');
+        return $user->can('edit content');
     }
 }

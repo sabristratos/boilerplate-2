@@ -26,4 +26,11 @@ abstract class Block
     {
         return [];
     }
+
+    public function getTranslatableFields(): array
+    {
+        return [];
+    }
+
+    abstract public function validationRules(): array;
 } 

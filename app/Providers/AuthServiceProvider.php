@@ -22,6 +22,10 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('Super Admin') ? true : null;
+        });
+
         // Register settings permissions
         foreach (SettingGroupKey::cases() as $group) {
             Gate::define("settings.{$group->value}.manage", function ($user) use ($group) {

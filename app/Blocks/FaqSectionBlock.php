@@ -27,4 +27,18 @@ class FaqSectionBlock extends Block
             ],
         ];
     }
+
+    public function getTranslatableFields(): array
+    {
+        return ['faqs'];
+    }
+
+    public function validationRules(): array
+    {
+        return [
+            'faqs' => 'required|array',
+            'faqs.*.question' => 'required|string|max:255',
+            'faqs.*.answer' => 'required|string',
+        ];
+    }
 } 

@@ -34,7 +34,7 @@ class TestimonialResource extends Resource
      *
      * @var string
      */
-    public static $navigationIcon = 'heroicon-o-star';
+    public static $navigationIcon = 'star';
 
     /**
      * Get the URI key for the resource.

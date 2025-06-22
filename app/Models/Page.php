@@ -46,6 +46,11 @@ class Page extends Model implements HasMedia
      */
     public function resolveRouteBinding($value, $field = null)
     {
-        return $this->where("slug", $value)->orWhere("slug->".app()->getLocale(), $value)->firstOrFail();
+        return $this->where("slug->" . app()->getLocale(), $value)->firstOrFail();
+    }
+
+    public function hasTranslation(string $locale): bool
+    {
+        return array_key_exists($locale, $this->getTranslations('title'));
     }
 }

@@ -8,6 +8,7 @@ use App\Facades\Settings;
 use App\Models\ContentBlock;
 use App\Models\Page;
 use Flux\Flux;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Illuminate\Validation\Rule;
@@ -20,6 +21,9 @@ class PageManager extends Component
     use WithFileUploads;
 
     public Page $page;
+    public array $title = [];
+    public array $slug = [];
+    public string $activeLocale;
 
     public ?ContentBlock $editingBlock = null;
 
@@ -45,6 +49,10 @@ class PageManager extends Component
     public function mount(Page $page): void
     {
         $this->page = $page;
+        $this->title = $this->page->getTranslations('title');
+        $this->slug = $this->page->getTranslations('slug');
+        $this->activeLocale = request()->query('locale', config('app.locale'));
+        app()->setLocale($this->activeLocale);
     }
 
     public function getBlocksProperty()
@@ -54,6 +62,12 @@ class PageManager extends Component
 
     public function editBlock(int $blockId): void
     {
+        Log::info('Editing block', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'block_id' => $blockId,
+        ]);
+
         $this->editingBlock = ContentBlock::find($blockId);
 
         if (!$this->editingBlock) {
@@ -68,7 +82,13 @@ class PageManager extends Component
 
         $blockClass = $this->blockManager->find($this->editingBlock->type);
         $this->formTitle = 'Editing: ' . ($blockClass ? $blockClass->getName() : 'Block');
-        $this->state = $this->editingBlock->data;
+
+        // With the locale set in render(), the model's accessor will now correctly
+        // retrieve the translated data, including defaults.
+        $this->state = $this->editingBlock->data ?? [];
+
+        $this->dispatch('block-is-editing', state: $this->state);
+
         $this->blockStatus = $this->editingBlock->status ?? ContentBlockStatus::DRAFT;
         $this->imageUpload = null;
         $this->lastAutosaveTime = now();
@@ -87,14 +107,37 @@ class PageManager extends Component
             return;
         }
 
+        Log::info('Saving block', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'block_id' => $this->editingBlock->id,
+        ]);
+
         $this->authorize('update', $this->editingBlock);
 
-        // Add validation logic here...
+        $blockClass = $this->blockManager->find($this->editingBlock->type);
+        if ($blockClass) {
+            $rules = collect($blockClass->validationRules())
+                ->mapWithKeys(fn ($rule, $key) => ['state.' . $key => $rule])
+                ->all();
 
-        // Update the status
-        $this->editingBlock->status = $this->blockStatus ?? ContentBlockStatus::PUBLISHED;
+            $this->validate($rules);
+        }
 
-        $updateAction->execute($this->editingBlock, $this->state, $this->imageUpload);
+        $updateAction->execute(
+            $this->editingBlock,
+            $this->state,
+            $this->activeLocale,
+            $this->blockStatus,
+            $this->imageUpload,
+            $this->blockManager
+        );
+
+        Log::info('Block saved successfully', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'block_id' => $this->editingBlock->id,
+        ]);
 
         Flux::toast(
             heading: 'Block Updated',
@@ -112,6 +155,14 @@ class PageManager extends Component
 
     public function cancelEdit()
     {
+        if ($this->editingBlock) {
+            Log::info('Cancelled block edit', [
+                'user_id' => auth()->id(),
+                'page_id' => $this->page->id,
+                'block_id' => $this->editingBlock->id,
+            ]);
+        }
+
         $this->editingBlock = null;
         $this->state = [];
         $this->imageUpload = null;
@@ -124,6 +175,12 @@ class PageManager extends Component
 
     public function createBlock(string $type): void
     {
+        Log::info('Creating block', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'block_type' => $type,
+        ]);
+
         $blockClass = $this->blockManager->find($type);
 
         if (!$blockClass) {
@@ -135,10 +192,16 @@ class PageManager extends Component
             return;
         }
 
-        $this->page->contentBlocks()->create([
+        $block = $this->page->contentBlocks()->create([
             'type' => $blockClass->getType(),
             'data' => $blockClass->getDefaultData(),
             'status' => ContentBlockStatus::DRAFT,
+        ]);
+
+        Log::info('Block created successfully', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'block_id' => $block->id,
         ]);
 
         Flux::toast(
@@ -148,24 +211,13 @@ class PageManager extends Component
         );
     }
 
-    public function addFaqItem(): void
-    {
-        $faqs = $this->state['faqs'] ?? [];
-        $faqs[] = ['question' => '', 'answer' => ''];
-        $this->state['faqs'] = $faqs;
-    }
-
-    public function removeFaqItem(int $index): void
-    {
-        $faqs = $this->state['faqs'] ?? [];
-        if (isset($faqs[$index])) {
-            unset($faqs[$index]);
-            $this->state['faqs'] = array_values($faqs);
-        }
-    }
-
     public function updateBlockOrder(array $sort): void
     {
+        Log::info('Updating block order', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'order' => $sort,
+        ]);
         try {
             ContentBlock::setNewOrder($sort);
             Flux::toast(
@@ -174,6 +226,11 @@ class PageManager extends Component
                 duration: 2000
             );
         } catch (\Exception $e) {
+            Log::error('Error updating block order', [
+                'user_id' => auth()->id(),
+                'page_id' => $this->page->id,
+                'error' => $e->getMessage(),
+            ]);
             Flux::toast(
                 heading: 'Error Updating Order',
                 text: 'There was a problem updating the block order. Some blocks may no longer exist.',
@@ -184,6 +241,12 @@ class PageManager extends Component
 
     public function deleteBlock(int $blockId): void
     {
+        Log::info('Deleting block', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+            'block_id' => $blockId,
+        ]);
+
         $block = ContentBlock::find($blockId);
         if ($block) {
             // Check if the block being deleted is currently being edited
@@ -282,8 +345,49 @@ class PageManager extends Component
         }
     }
 
+    public function generateSlug(string $locale): void
+    {
+        if (isset($this->title[$locale])) {
+            $this->slug[$locale] = Str::slug($this->title[$locale]);
+        }
+    }
+
+    public function savePageDetails()
+    {
+        Log::info('Saving page details', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+        ]);
+
+        $this->validate([
+            'title.' . $this->activeLocale => 'required|string|max:255',
+            'slug.' . $this->activeLocale => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('pages', 'slug->' . $this->activeLocale)->ignore($this->page->id),
+            ],
+        ]);
+
+        $this->page->setTranslations('title', $this->title);
+        $this->page->setTranslations('slug', $this->slug);
+        $this->page->save();
+
+        Log::info('Page details saved successfully', [
+            'user_id' => auth()->id(),
+            'page_id' => $this->page->id,
+        ]);
+
+        Flux::toast(
+            heading: 'Page Updated',
+            text: 'The page details were updated successfully.',
+            variant: 'success'
+        );
+    }
+
     public function render()
     {
+        app()->setLocale($this->activeLocale);
         return view('livewire.admin.page-manager');
     }
 }

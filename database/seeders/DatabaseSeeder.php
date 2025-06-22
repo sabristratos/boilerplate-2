@@ -15,16 +15,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+        ]);
+
         // Add a default user
-        User::factory()->create([
+        $user = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@admin.com',
         ]);
+        $user->assignRole('Super Admin');
 
         Testimonial::factory(10)->create();
 
         $this->call([
-            RolesAndPermissionsSeeder::class,
             PageSeeder::class,
         ]);
 

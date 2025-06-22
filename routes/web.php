@@ -10,7 +10,6 @@ use App\Http\Controllers\PageController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\PageIndex;
 use App\Livewire\Admin\PageManager;
-use App\Livewire\Admin\PageCreate;
 use App\Livewire\Auth\Login;
 use App\Livewire\SettingsPage;
 
@@ -38,7 +37,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Page Editor
     Route::get('admin/pages', \App\Livewire\Admin\PageIndex::class)->name('admin.pages.index');
-    Route::get('admin/pages/create', \App\Livewire\Admin\PageCreate::class)->name('admin.pages.create');
     Route::get('admin/pages/{page}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor');
 });
 

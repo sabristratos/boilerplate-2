@@ -3,8 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Page;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Auth;
 
 class PageSeeder extends Seeder
 {
@@ -13,6 +15,9 @@ class PageSeeder extends Seeder
      */
     public function run(): void
     {
+        $user = User::first() ?? User::factory()->create();
+        Auth::login($user);
+
         $page = Page::create([
             'title' => [
                 'en' => 'About Us',
@@ -31,5 +36,7 @@ class PageSeeder extends Seeder
                 'subheading' => 'Learn more about what makes us special.',
             ],
         ]);
+
+        Auth::logout();
     }
 }

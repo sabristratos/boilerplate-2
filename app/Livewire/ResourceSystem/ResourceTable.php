@@ -77,13 +77,20 @@ class ResourceTable extends Component
     public $deleteId = null;
 
     /**
+     * Whether reordering is enabled.
+     *
+     * @var bool
+     */
+    public bool $reorderingEnabled = false;
+
+    /**
      * The querystring properties.
      *
      * @var array
      */
     protected $queryString = [
         'search' => ['except' => ''],
-        'sortBy' => ['except' => null],
+        'sortBy' => ['except' => 'order'],
         'sortDirection' => ['except' => 'asc'],
         'filters' => ['except' => []],
         'perPage' => ['except' => 10],
@@ -98,6 +105,12 @@ class ResourceTable extends Component
     public function mount(Resource $resource)
     {
         $this->resource = get_class($resource);
+        $modelTable = $this->getResourceInstance()::$model::make()->getTable();
+
+        if (Schema::hasColumn($modelTable, 'order')) {
+            $this->sortBy = 'order';
+            $this->reorderingEnabled = true;
+        }
     }
 
     /**
@@ -206,8 +219,8 @@ class ResourceTable extends Component
     {
         $modelClass = $this->resource::$model;
 
-        foreach ($order as $index => $id) {
-            $modelClass::find($id)->update(['order' => $index + 1]);
+        if (in_array(\Spatie\EloquentSortable\SortableTrait::class, class_uses_recursive($modelClass))) {
+            $modelClass::setNewOrder($order);
         }
     }
 
@@ -243,6 +256,12 @@ class ResourceTable extends Component
 
             if ($column && $column->isSortable()) {
                 $query = $column->applySort($query, $this->sortDirection);
+            }
+        } else {
+            // Default sorting if no column is specified
+            $model = $this->getResourceInstance()::$model::make();
+            if (Schema::hasColumn($model->getTable(), 'order')) {
+                $query->orderBy('order');
             }
         }
 

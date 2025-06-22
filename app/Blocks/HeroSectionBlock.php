@@ -31,4 +31,17 @@ class HeroSectionBlock extends Block
             'subheading' => 'Subheading text goes here.',
         ];
     }
+
+    public function getTranslatableFields(): array
+    {
+        return ['heading', 'subheading'];
+    }
+
+    public function validationRules(): array
+    {
+        return [
+            'heading' => 'required|string|max:255',
+            'subheading' => 'nullable|string|max:255',
+        ];
+    }
 } 

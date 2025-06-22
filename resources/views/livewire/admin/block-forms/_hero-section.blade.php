@@ -1,7 +1,22 @@
+@props(['alpine' => false])
+
 <div>
     <div class="space-y-4">
-        <flux:input label="Heading" wire:model.live="state.heading" />
-        <flux:textarea label="Subheading" wire:model.live="state.subheading" rows="3" />
+        @if($alpine)
+            <div>
+                <flux:input x-model="state.heading" label="Heading" />
+            </div>
+            <div>
+                <flux:textarea x-model="state.subheading" label="Subheading" rows="3" />
+            </div>
+        @else
+            <div>
+                <flux:input wire:model.defer="state.heading" label="Heading" />
+            </div>
+            <div>
+                <flux:textarea wire:model.defer="state.subheading" label="Subheading" rows="3" />
+            </div>
+        @endif
 
         <div>
             <flux:label>Image</flux:label>

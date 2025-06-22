@@ -36,7 +36,7 @@ class UserResource extends Resource
      *
      * @var string
      */
-    public static $navigationIcon = 'heroicon-o-user';
+    public static $navigationIcon = 'user';
 
     /**
      * The permission required to view the resource.

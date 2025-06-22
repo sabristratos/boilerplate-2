@@ -25,4 +25,16 @@ class ContentAreaBlock extends Block
             'content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
         ];
     }
+
+    public function getTranslatableFields(): array
+    {
+        return ['content'];
+    }
+
+    public function validationRules(): array
+    {
+        return [
+            'content' => 'required|string',
+        ];
+    }
 } 

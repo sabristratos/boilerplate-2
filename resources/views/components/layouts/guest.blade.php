@@ -12,5 +12,7 @@
         <flux:toast position="bottom right" />
         @endpersist
         @fluxScripts
+
+        <x-admin-bar :page="$page ?? null" />
     </body>
 </html> 

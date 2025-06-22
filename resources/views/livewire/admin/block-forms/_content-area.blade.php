@@ -1,3 +1,9 @@
+@props(['alpine' => false])
+
 <div>
-    <flux:textarea label="Content" wire:model.live="state.content" rows="8" />
+    @if ($alpine)
+        <flux:textarea x-model="state.content" label="Content" rows="8" />
+    @else
+        <flux:textarea wire:model.defer="state.content" label="Content" rows="8" />
+    @endif
 </div>

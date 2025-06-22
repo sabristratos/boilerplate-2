@@ -3,25 +3,25 @@
 namespace App\Livewire;
 
 use Livewire\Component;
+use Livewire\Attributes\Model;
 
 class SettingRepeater extends Component
 {
-    public string $settingKey;
-    public array $subfields;
+    #[Model]
     public array $items = [];
+    public array $fields = [];
 
-    public function mount(string $settingKey, array $subfields, ?array $value = [])
+    public function mount(array $fields = [], array $items = [])
     {
-        $this->settingKey = $settingKey;
-        $this->subfields = $subfields;
-        $this->items = $value ?? [];
+        $this->fields = $fields;
+        $this->items = $items ?? [];
     }
 
     public function addItem()
     {
         $newItem = [];
-        foreach (array_keys($this->subfields) as $key) {
-            $newItem[$key] = '';
+        foreach ($this->fields as $field) {
+            $newItem[$field['name']] = '';
         }
         $this->items[] = $newItem;
     }
@@ -30,17 +30,6 @@ class SettingRepeater extends Component
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
-        $this->updateParent();
-    }
-
-    public function updatedItems()
-    {
-        $this->updateParent();
-    }
-
-    protected function updateParent()
-    {
-        $this->dispatch('repeater-updated', settingKey: $this->settingKey, items: $this->items);
     }
 
     public function render()

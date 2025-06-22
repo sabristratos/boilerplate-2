@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\View;
 use App\Services\BlockManager;
+use App\Services\ResourceManager;
 
 class ResourceManagerServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,10 @@ class ResourceManagerServiceProvider extends ServiceProvider
     {
         $this->app->singleton(BlockManager::class, function ($app) {
             return new BlockManager();
+        });
+
+        $this->app->singleton(ResourceManager::class, function ($app) {
+            return new ResourceManager();
         });
     }
 
@@ -47,7 +52,7 @@ class ResourceManagerServiceProvider extends ServiceProvider
             ->name('admin.')
             ->group(function () {
                 try {
-                    foreach ($this->getResources() as $resource) {
+                    foreach ($this->app->make(ResourceManager::class)->getResources() as $resource) {
                         $uriKey = $resource::uriKey();
                         $permission = $resource::$permission;
 
@@ -93,7 +98,7 @@ class ResourceManagerServiceProvider extends ServiceProvider
     {
         View::composer('components.layouts.app.sidebar', function ($view) {
             try {
-                $view->with('resources', array_map(fn($resource) => new $resource, $this->getResources()));
+                $view->with('resources', $this->app->make(ResourceManager::class)->getResourcesWithInstances());
             } catch (\Exception $e) {
                 // If there's an error (like missing database tables), just provide an empty array
                 $view->with('resources', []);
@@ -109,35 +114,5 @@ class ResourceManagerServiceProvider extends ServiceProvider
     protected function registerBladeComponents()
     {
         $this->loadViewsFrom(__DIR__.'/../../resources/views/resource-system', 'resource-system');
-    }
-
-    /**
-     * Get the resources.
-     *
-     * @return array
-     */
-    protected function getResources()
-    {
-        $resources = [];
-        $path = app_path('Http/Resources/Admin');
-
-        if (!File::isDirectory($path)) {
-            return $resources;
-        }
-
-        try {
-            foreach (File::allFiles($path) as $file) {
-                $class = 'App\\Http\\Resources\\Admin\\' . str_replace('.php', '', $file->getFilename());
-
-                if (class_exists($class) && is_subclass_of($class, 'App\\Services\\ResourceSystem\\Resource')) {
-                    $resources[] = $class;
-                }
-            }
-        } catch (\Exception $e) {
-            // If there's an error (like missing database tables), just return an empty array
-            return [];
-        }
-
-        return $resources;
     }
 }

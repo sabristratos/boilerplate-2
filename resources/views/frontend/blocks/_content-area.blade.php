@@ -1,9 +1,9 @@
-@props([
-    'block'
-])
+@props(['block', 'alpine' => false])
 
-@if($block->data['content'] ?? false)
-    <section class="container px-4 py-12 mx-auto prose dark:prose-invert">
-        {!! $block->data['content'] !!}
-    </section>
-@endif 
+<div class="prose dark:prose-invert max-w-none p-4">
+    @if ($alpine)
+        <div x-html="state.content"></div>
+    @else
+        {!! $block->data['content'] ?? '' !!}
+    @endif
+</div> 
