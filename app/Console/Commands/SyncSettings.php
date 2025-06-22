@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Facades\Settings;
 use App\Models\Setting;
 use App\Models\SettingGroup;
 use Illuminate\Console\Command;
@@ -105,6 +106,8 @@ class SyncSettings extends Command
             $this->info('Old settings removed.');
         });
 
+        Settings::clearCache();
+        $this->info('Settings cache cleared.');
         $this->info('Settings synchronization complete.');
     }
 }

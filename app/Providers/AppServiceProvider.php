@@ -13,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->register(ResourceManagerServiceProvider::class);
+        // ResourceManagerServiceProvider is already registered in bootstrap/providers.php
     }
 
     /**

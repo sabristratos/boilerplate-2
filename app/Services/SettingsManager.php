@@ -6,6 +6,7 @@ use App\Models\Setting;
 use App\Models\SettingGroup;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Schema;
 
 class SettingsManager
 {
@@ -83,6 +84,10 @@ class SettingsManager
     public function getAll(): array
     {
         return Cache::rememberForever($this->getCacheKey(), function () {
+            if (! Schema::hasTable('settings')) {
+                return [];
+            }
+
             return Setting::all()->keyBy('key')->toArray();
         });
     }

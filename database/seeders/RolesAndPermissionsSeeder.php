@@ -23,7 +23,7 @@ class RolesAndPermissionsSeeder extends Seeder
             // User permissions
             'view users', 'create users', 'edit users', 'delete users',
             // Content permissions
-            'view content', 'create content', 'edit content', 'delete content', 'publish content',
+            'view content', 'create content', 'edit content', 'delete content', 'publish content', 'edit pages',
             // Settings permissions
             'view settings', 'edit settings', 'settings.general.manage', 'settings.appearance.manage',
             'settings.email.manage', 'settings.security.manage', 'settings.social.manage',
@@ -47,7 +47,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit content',
             'delete content',
             'publish content',
-            'view settings'
+            'view settings',
+            'edit pages'
         ]);
 
         // Admin role
@@ -62,7 +63,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'edit content',
             'delete content',
             'publish content',
-            'view settings'
+            'view settings',
+            'edit pages'
         ]);
 
         // Super Admin role

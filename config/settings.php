@@ -20,6 +20,12 @@ return [
             'icon' => 'cog',
             'order_column' => 1,
         ],
+        SettingGroupKey::CONTENT->value => [
+            'label' => ['en' => 'Content', 'fr' => 'Contenu'],
+            'description' => ['en' => 'Content management settings', 'fr' => 'Paramètres de gestion de contenu'],
+            'icon' => 'document-text',
+            'order_column' => 2,
+        ],
         SettingGroupKey::APPEARANCE->value => [
             'label' => ['en' => 'Appearance', 'fr' => 'Apparence'],
             'description' => ['en' => 'Customize the look and feel of the application', 'fr' => 'Personnalisez l\'apparence de l\'application'],
@@ -352,6 +358,7 @@ return [
             'cast' => 'boolean',
             'rules' => 'boolean',
             'permission' => 'settings.security.manage',
+            'default' => false,
         ],
         'security.enable_email_verification' => [
             'group' => SettingGroupKey::SECURITY->value,
@@ -463,6 +470,26 @@ return [
             'permission' => 'settings.advanced.manage',
             'config' => 'session.driver',
             'warning' => 'Changing the session driver can log out all active users.',
+        ],
+        'content.autosave_enabled' => [
+            'group' => SettingGroupKey::CONTENT->value,
+            'label' => ['en' => 'Enable Autosave', 'fr' => 'Activer l\'enregistrement automatique'],
+            'description' => ['en' => 'Automatically save content blocks while editing', 'fr' => 'Enregistrer automatiquement les blocs de contenu pendant l\'édition'],
+            'type' => SettingType::CHECKBOX->value,
+            'cast' => 'boolean',
+            'rules' => 'boolean',
+            'permission' => 'settings.content.manage',
+            'default' => true,
+        ],
+        'content.autosave_interval' => [
+            'group' => SettingGroupKey::CONTENT->value,
+            'label' => ['en' => 'Autosave Interval', 'fr' => 'Intervalle d\'enregistrement automatique'],
+            'description' => ['en' => 'Time in seconds between autosaves', 'fr' => 'Temps en secondes entre les enregistrements automatiques'],
+            'type' => SettingType::NUMBER->value,
+            'cast' => 'integer',
+            'rules' => 'required|integer|min:5|max:300',
+            'permission' => 'settings.content.manage',
+            'default' => 30,
         ],
     ],
 

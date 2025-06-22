@@ -1,0 +1,14 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+description: Overarching best practices for TALL stack applications
+
+Adopt a component-first approach by building UI elements as reusable Livewire or Blade components.
+Keep Livewire components focused on a single responsibility to avoid monolithic components.
+Leverage Alpine.js for simple client-side UI interactions like dropdowns or tabs to avoid unnecessary server roundtrips.
+Minimize custom JavaScript by relying on Livewire and Alpine.js as much as possible before writing custom solutions.
+Keep state as close to where it's needed as possible, using Livewire for server-side state and Alpine.js for ephemeral, client-side state.
+For UI text, use a consistent naming convention, such as a text.json file in the lang directory accessed via __('messages.welcome').
+

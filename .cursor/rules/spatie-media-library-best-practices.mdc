@@ -1,0 +1,13 @@
+---
+description: Best practices for Spatie Media Library usage
+globs: 
+alwaysApply: false
+---
+description: Best practices for Spatie Media Library usage
+
+Use the addMediaFromRequest method for efficient and secure media handling from user uploads.
+Define Media Collections to organize media and apply specific conversions and properties.
+Optimize images by defining conversions to create different sizes for various use cases.
+Implement proper validation for media uploads using Laravel's built-in validation rules.
+Use withResponsiveImages() to automatically generate srcset attributes for responsive images in your views.
+

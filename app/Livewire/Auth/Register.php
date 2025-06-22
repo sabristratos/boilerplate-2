@@ -21,6 +21,13 @@ class Register extends Component
 
     public string $password_confirmation = '';
 
+    public function mount()
+    {
+        if (! setting('security.enable_registration')) {
+            abort(404);
+        }
+    }
+
     /**
      * Handle an incoming registration request.
      */

@@ -17,7 +17,10 @@
                         <flux:menu.item onclick="document.getElementById('import-file-input').click()">Import</flux:menu.item>
                     </flux:menu>
                 </flux:dropdown>
-                <flux:button variant="primary" wire:click="save">Save</flux:button>
+                <div class="flex justify-end gap-2">
+                    <flux:button wire:click="resetLocales">{{ __('buttons.cancel') }}</flux:button>
+                    <flux:button variant="primary" wire:click="save">{{ __('buttons.save') }}</flux:button>
+                </div>
             </div>
         </div>
 

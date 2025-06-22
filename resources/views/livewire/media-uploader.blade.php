@@ -8,8 +8,8 @@
                         <img src="{{ $mediaUrl }}" alt="{{ $model->name ?? 'Media' }}" class="w-full h-full object-cover object-center">
                     </div>
                     <div class="absolute top-2 right-2">
-                        <flux:button wire:click="remove" variant="danger" size="sm">
-                            {{ __('buttons.remove') }}
+                        <flux:button wire:click="remove" variant="danger" size="xs" icon="trash">
+                            <span class="hidden sm:inline">{{ __('buttons.remove') }}</span>
                         </flux:button>
                     </div>
                 </div>
@@ -24,14 +24,14 @@
         @endif
 
         {{-- Action Buttons --}}
-        <div class="flex items-center space-x-2">
-            <flux:button x-on:click="$wire.showUploadModal = true" icon="arrow-up-tray">
+        <div class="flex flex-wrap gap-2">
+            <flux:button x-on:click="$wire.showUploadModal = true" icon="arrow-up-tray" size="sm" class="flex-grow sm:flex-grow-0">
                 {{ __('buttons.upload') }}
             </flux:button>
-            <flux:button x-on:click="$wire.showUrlModal = true" icon="link">
+            <flux:button x-on:click="$wire.showUrlModal = true" icon="link" size="sm" class="flex-grow sm:flex-grow-0">
                 {{ __('buttons.add_from_url') }}
             </flux:button>
-            <flux:button x-on:click="$wire.showExistingMediaModal = true" icon="photo">
+            <flux:button x-on:click="$wire.showExistingMediaModal = true" icon="photo" size="sm" class="flex-grow sm:flex-grow-0">
                 {{ __('buttons.select_existing') }}
             </flux:button>
         </div>
