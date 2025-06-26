@@ -38,6 +38,11 @@ Route::middleware(['auth'])->group(function () {
     // Page Editor
     Route::get('admin/pages', \App\Livewire\Admin\PageIndex::class)->name('admin.pages.index');
     Route::get('admin/pages/{page}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor');
+
+    // Form Builder
+    Route::get('admin/forms', \App\Livewire\Forms\FormIndex::class)->name('admin.forms.index')->middleware('can:view forms');
+    Route::get('admin/forms/{form}/edit', \App\Livewire\Forms\FormBuilder::class)->name('admin.forms.edit')->middleware('can:edit forms');
+    Route::get('admin/forms/{form}/submissions', \App\Livewire\Forms\SubmissionIndex::class)->name('admin.forms.submissions')->middleware('can:view form submissions');
 });
 
 require __DIR__.'/auth.php';

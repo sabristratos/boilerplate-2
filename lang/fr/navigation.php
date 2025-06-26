@@ -6,6 +6,7 @@ return array (
   'media_library' => 'Médiathèque',
   'translations' => 'Traductions',
   'pages' => 'Pages',
+  'forms' => 'Formulaires',
   'resources' => 'Ressources',
   'settings' => 'Paramètres',
 );

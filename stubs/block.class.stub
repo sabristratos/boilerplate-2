@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Blocks;
+
+class {{ className }}Block extends Block
+{
+    public function getName(): string
+    {
+        return '{{ titleName }}';
+    }
+
+    public function getAdminView(): string
+    {
+        return 'livewire.admin.block-forms._{{ kebabName }}';
+    }
+
+    public function getFrontendView(): string
+    {
+        return 'frontend.blocks._{{ kebabName }}';
+    }
+
+    public function getIcon(): string
+    {
+        return 'rectangle-group'; // Choose a heroicon
+    }
+
+    public function getDefaultData(): array
+    {
+        return [
+            'heading' => '{{ titleName }} Heading',
+        ];
+    }
+
+    public function getTranslatableFields(): array
+    {
+        return ['heading'];
+    }
+
+    public function validationRules(): array
+    {
+        return [
+            'heading' => 'required|string|max:255',
+        ];
+    }
+} 

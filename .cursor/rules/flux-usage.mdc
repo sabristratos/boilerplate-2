@@ -1,0 +1,761 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Here is a concise guide to using the Flux components, with examples, suitable for an AI assistant.
+
+### Accordion
+
+The Accordion component is used to collapse and expand sections of content.
+
+**Basic Usage:**
+
+```html
+<flux:accordion>
+    <flux:accordion.item>
+        <flux:accordion.heading>What's your refund policy?</flux:accordion.heading>
+        <flux:accordion.content>
+            If you are not satisfied with your purchase, we offer a 30-day money-back guarantee.
+        </flux:accordion.content>
+    </flux:accordion.item>
+</flux:accordion>
+```
+
+**Shorthand:**
+
+You can pass the heading text as a prop directly to the `flux:accordion.item`.
+
+```html
+<flux:accordion.item heading="What's your refund policy?">
+    If you are not satisfied with your purchase, we offer a 30-day money-back guarantee.
+</flux:accordion.item>
+```
+
+**Key Properties:**
+
+  * **`exclusive`** (on `flux:accordion`): If `true`, only one accordion item can be expanded at a time.
+  * **`disabled`** (on `flux:accordion.item`): Restricts an accordion item from being expanded.
+  * **`expanded`** (on `flux:accordion.item`): Expands a specific accordion item by default.
+  * **`variant="reverse"`** (on `flux:accordion`): Displays the icon before the heading.
+
+### Autocomplete
+
+The Autocomplete component enhances an input field with autocomplete suggestions.
+
+**Basic Usage:**
+
+```html
+<flux:autocomplete wire:model="state" label="State of residence">
+    <flux:autocomplete.item>Alabama</flux:autocomplete.item>
+    <flux:autocomplete.item>Arkansas</flux:autocomplete.item>
+    <flux:autocomplete.item>California</flux:autocomplete.item>
+</flux:autocomplete>
+```
+
+**Key Properties:**
+
+  * **`wire:model`**: Binds the input value to a Livewire property.
+  * **`label`**: The label for the input.
+  * **`multiple`**: Allows selecting multiple files for file inputs.
+  * **`clearable`**: Displays a clear button when the input has content.
+  * **`disabled`**: Disables the input.
+
+### Avatar
+
+The Avatar component displays an image or initials.
+
+**Basic Usage:**
+
+```html
+<flux:avatar src="https://unavatar.io/x/calebporzio" />
+```
+
+**Initials:**
+
+When no `src` is provided, initials are generated from the `name` prop.
+
+```html
+<flux:avatar name="Caleb Porzio" />
+```
+
+**Key Properties:**
+
+  * **`src`**: The URL of the image.
+  * **`name`**: The name to generate initials from.
+  * **`size`**: `xs`, `sm`, `lg`, `xl`.
+  * **`color`**: Sets the color of the avatar. `auto` generates a color based on the name.
+  * **`circle`**: Makes the avatar circular.
+  * **`badge`**: Adds a badge to the avatar.
+
+### Badge
+
+The Badge component highlights information like status or count.
+
+**Basic Usage:**
+
+```html
+<flux:badge color="lime">New</flux:badge>
+```
+
+**Key Properties:**
+
+  * **`color`**: `zinc`, `red`, `blue`, etc.
+  * **`size`**: `sm`, `lg`.
+  * **`variant`**: `pill` for a fully rounded badge, `solid` for a high-contrast badge.
+  * **`icon`**: Adds an icon to the badge.
+  * **`as="button"`**: Renders the badge as a button.
+
+### Brand
+
+The Brand component displays a company or application's logo and name.
+
+**Basic Usage:**
+
+```html
+<flux:brand href="#" logo="/img/demo/logo.png" name="Acme Inc." />
+```
+
+**Logo Slot:**
+
+Use the `logo` slot for a custom logo.
+
+```html
+<flux:brand href="#" name="Launchpad">
+    <x-slot name="logo" class="size-6 rounded-full bg-cyan-500 text-white text-xs font-bold">
+        <flux:icon name="rocket-launch" variant="micro" />
+    </x-slot>
+</flux:brand>
+```
+
+### Breadcrumbs
+
+The Breadcrumbs component helps users navigate and understand their location within an application.
+
+**Basic Usage:**
+
+```html
+<flux:breadcrumbs>
+    <flux:breadcrumbs.item href="#">Home</flux:breadcrumbs.item>
+    <flux:breadcrumbs.item href="#">Blog</flux:breadcrumbs.item>
+    <flux:breadcrumbs.item>Post</flux:breadcrumbs.item>
+</flux:breadcrumbs>
+```
+
+**Key Properties:**
+
+  * **`separator="slash"`** (on `flux:breadcrumbs.item`): Uses slashes instead of chevrons.
+  * **`icon`** (on `flux:breadcrumbs.item`): Displays an icon instead of text.
+
+### Button
+
+The Button component is a versatile button for various actions.
+
+**Basic Usage:**
+
+```html
+<flux:button>Button</flux:button>
+```
+
+**Variants:**
+
+  * **`primary`**, **`filled`**, **`danger`**, **`ghost`**, **`subtle`**
+
+**Key Properties:**
+
+  * **`size`**: `sm`, `xs`.
+  * **`icon`**: Adds an icon. `icon:trailing` adds an icon to the end.
+  * **`loading`**: Automatically shows a loading indicator for `wire:click` or `type="submit"`.
+  * **`href`**: Renders the button as a link.
+
+### Callout
+
+The Callout component highlights important information.
+
+**Basic Usage:**
+
+```html
+<flux:callout icon="clock">
+    <flux:callout.heading>Upcoming maintenance</flux:callout.heading>
+    <flux:callout.text>
+        Our servers will be undergoing scheduled maintenance.
+        <flux:callout.link href="#">Learn more</flux:callout.link>
+    </flux:callout.text>
+</flux:callout>
+```
+
+**With Actions:**
+
+```html
+<flux:callout icon="clock">
+    <flux:callout.heading>Subscription expiring soon</flux:callout.heading>
+    <x-slot name="actions">
+        <flux:button>Renew now</flux:button>
+    </x-slot>
+</flux:callout>
+```
+
+**Variants:**
+
+  * **`secondary`**, **`success`**, **`warning`**, **`danger`**
+
+### Card
+
+The Card component is a container for related content.
+
+**Basic Usage:**
+
+```html
+<flux:card>
+    <flux:heading size="lg">Are you sure?</flux:heading>
+    <flux:text class="mt-2 mb-4">
+        Your post will be deleted permanently.
+    </flux:text>
+    <flux:button variant="danger">Delete</flux:button>
+</flux:card>
+```
+
+**Key Properties:**
+
+  * **`size="sm"`**: Creates a smaller card.
+
+### Chart
+
+The Chart component is for building line and area charts.
+
+**Basic Usage:**
+
+```html
+<flux:chart wire:model="data" class="aspect-3/1">
+    <flux:chart.svg>
+        <flux:chart.line field="visitors" class="text-pink-500" />
+        <flux:chart.axis axis="x" field="date">
+            <flux:chart.axis.tick />
+        </flux:chart.axis>
+        <flux:chart.axis axis="y">
+            <flux:chart.axis.grid />
+            <flux:chart.axis.tick />
+        </flux:chart.axis>
+        <flux:chart.cursor />
+    </flux:chart.svg>
+    <flux:chart.tooltip>
+        <flux:chart.tooltip.heading field="date" />
+        <flux:chart.tooltip.value field="visitors" label="Visitors" />
+    </flux:chart.tooltip>
+</flux:chart>
+```
+
+**Data Structure:**
+
+Charts expect an array of associative arrays.
+
+```php
+public array $data = [
+    ['date' => '2025-05-16', 'visitors' => 267],
+    // ...
+];
+```
+
+### Checkbox
+
+The Checkbox component allows selecting one or multiple options.
+
+**Basic Usage:**
+
+```html
+<flux:field variant="inline">
+    <flux:checkbox wire:model="terms" />
+    <flux:label>I agree to the terms and conditions</flux:label>
+</flux:field>
+```
+
+**Checkbox Group:**
+
+```html
+<flux:checkbox.group wire:model="notifications" label="Notifications">
+    <flux:checkbox label="Push notifications" value="push" />
+    <flux:checkbox label="Email" value="email" />
+</flux:checkbox.group>
+```
+
+**Key Properties:**
+
+  * **`checked`**: Marks a checkbox as checked by default.
+  * **`disabled`**: Disables a checkbox.
+  * **`variant="cards"`**: A bordered alternative (Pro only).
+
+### Date Picker
+
+The Date Picker allows selecting dates or date ranges.
+
+**Basic Usage:**
+
+```html
+<flux:date-picker wire:model="date" />
+```
+
+**Range Picker:**
+
+```html
+<flux:date-picker mode="range" wire:model="range" />
+```
+
+**Input Trigger:**
+
+```html
+<flux:date-picker wire:model="date">
+    <x-slot name="trigger">
+        <flux:date-picker.input />
+    </x-slot>
+</flux:date-picker>
+```
+
+**Key Properties:**
+
+  * **`mode`**: `single` or `range`.
+  * **`with-presets`**: Adds presets like "Last 7 days".
+  * **`min`** and **`max`**: Set the earliest and latest selectable dates.
+
+### Dropdown
+
+The Dropdown component handles simple and complex menus.
+
+**Basic Usage:**
+
+```html
+<flux:dropdown>
+    <flux:button icon:trailing="chevron-down">Options</flux:button>
+    <flux:menu>
+        <flux:menu.item icon="plus">New post</flux:menu.item>
+        <flux:menu.separator />
+        <flux:menu.item variant="danger" icon="trash">Delete</flux:menu.item>
+    </flux:menu>
+</flux:dropdown>
+```
+
+**Key Features:**
+
+  * Supports `navmenu` for simple links.
+  * Supports `checkbox` and `radio` items.
+  * Supports `submenu` for nested menus.
+  * **`position`** and **`align`** props for positioning.
+
+### Field
+
+The Field component encapsulates input elements with labels, descriptions, and validation.
+
+**Basic Usage:**
+
+```html
+<flux:field>
+    <flux:label>Email</flux:label>
+    <flux:input wire:model="email" type="email" />
+    <flux:error name="email" />
+</flux:field>
+```
+
+**Shorthand:**
+
+Most form controls accept `label` and `description` props directly.
+
+```html
+<flux:input wire:model="email" label="Email" type="email" />
+```
+
+### Heading
+
+The Heading component provides consistent headings.
+
+**Basic Usage:**
+
+```html
+<flux:heading>User profile</flux:heading>
+```
+
+**Sizes and Levels:**
+
+```html
+<flux:heading size="xl" level="1">Extra Large Heading 1</flux:heading>
+```
+
+**Key Properties:**
+
+  * **`size`**: `lg`, `xl`.
+  * **`level`**: `1`, `2`, `3`, `4`.
+
+### Icons
+
+The Icon component uses Heroicons.
+
+**Basic Usage:**
+
+```html
+<flux:icon.bolt />
+```
+
+**Variants:**
+
+  * **`outline`** (default), **`solid`**, **`mini`**, **`micro`**
+
+**Key Features:**
+
+  * Size can be controlled with Tailwind's `size-*` utilities.
+  * Color can be controlled with Tailwind's `text-*` utilities.
+  * `flux:icon.loading` for a loading spinner.
+  * Custom icons can be added.
+
+### Input
+
+The Input component captures user data.
+
+**Basic Usage:**
+
+```html
+<flux:input label="Username" description="This will be publicly displayed." />
+```
+
+**Types:**
+
+  * Supports standard input types like `email`, `password`, `date`, and `file`.
+
+**Key Properties:**
+
+  * **`icon`** and **`icon:trailing`**: Add icons to the input.
+  * **`clearable`**, **`copyable`**, **`viewable`**: Add common input button behaviors.
+  * **`mask`**: For input masking with Alpine's mask plugin.
+
+### Modal
+
+The Modal component displays content in a layer above the main page.
+
+**Basic Usage:**
+
+```html
+<flux:modal.trigger name="edit-profile">
+    <flux:button>Edit profile</flux:button>
+</flux:modal.trigger>
+
+<flux:modal name="edit-profile" class="md:w-96">
+    <flux:heading size="lg">Update profile</flux:heading>
+    </flux:modal>
+```
+
+**Livewire Methods:**
+
+```php
+// In a Livewire component
+Flux::modal('confirm')->show();
+$this->modal('confirm')->close();
+```
+
+**JavaScript Methods:**
+
+```javascript
+// In Alpine.js
+$flux.modal('confirm').show();
+```
+
+**Key Properties:**
+
+  * **`name`**: A unique name for the modal.
+  * **`variant="flyout"`**: For an anchored dialog.
+  * **`:dismissible="false"`**: Prevents closing the modal by clicking outside.
+
+### Navbar
+
+The Navbar component arranges navigation links.
+
+**Basic Usage:**
+
+```html
+<flux:navbar>
+    <flux:navbar.item href="#">Home</flux:navbar.item>
+    <flux:navbar.item href="#" current>Features</flux:navbar.item>
+</flux:navbar>
+```
+
+**Navlist (Sidebar):**
+
+```html
+<flux:navlist class="w-64">
+    <flux:navlist.item href="#" icon="home">Home</flux:navlist.item>
+</flux:navlist>
+```
+
+**Key Features:**
+
+  * Automatic detection of the current page.
+  * Supports icons and badges.
+  * Supports collapsible groups in navlists.
+
+### Pagination
+
+The Pagination component displays buttons to navigate through items (Pro only).
+
+**Basic Usage:**
+
+```html
+<flux:pagination :paginator="$orders" />
+```
+
+**Simple Paginator:**
+
+For large datasets, use the simple paginator.
+
+```html
+<flux:pagination :paginator="$orders" />
+```
+
+### Profile
+
+The Profile component displays a user's profile information.
+
+**Basic Usage:**
+
+```html
+<flux:profile avatar="https://unavatar.io/x/calebporzio" />
+```
+
+**With Name:**
+
+```html
+<flux:profile name="Caleb Porzio" avatar="https://unavatar.io/x/calebporzio" />
+```
+
+**Key Properties:**
+
+  * **`avatar`**: The URL of the avatar image.
+  * **`name`**: The user's name.
+  * **`circle`**: Makes the avatar circular.
+  * **:chevron="false"**: Hides the chevron icon.
+
+### Radio
+
+The Radio component allows selecting one option from a set.
+
+**Basic Usage:**
+
+```html
+<flux:radio.group wire:model="payment" label="Select your payment method">
+    <flux:radio value="cc" label="Credit Card" />
+    <flux:radio value="paypal" label="Paypal" />
+</flux:radio.group>
+```
+
+**Variants:**
+
+  * **`segmented`**: A compact alternative.
+  * **`cards`**: A bordered alternative (Pro only).
+
+### Select
+
+The Select component allows choosing a single option from a dropdown list.
+
+**Basic Usage:**
+
+```html
+<flux:select wire:model="industry" placeholder="Choose industry...">
+    <flux:select.option>Photography</flux:select.option>
+    <flux:select.option>Design services</flux:select.option>
+</flux:select>
+```
+
+**Variants:**
+
+  * **`listbox`**: A custom select element that supports icons and images (Pro only).
+  * **`combobox`**: A versatile combobox for autocomplete and multi-selects (Pro only).
+
+**Key Features for Pro Variants:**
+
+  * `searchable` and `multiple` props.
+  * `clearable` for clearing the selection.
+
+### Separator
+
+The Separator component visually divides content.
+
+**Basic Usage:**
+
+```html
+<flux:separator />
+```
+
+**With Text and Vertical:**
+
+```html
+<flux:separator text="or" />
+<flux:separator vertical />
+```
+
+**Variant:**
+
+  * **`subtle`**: For a separator that blends into the background.
+
+### Switch
+
+The Switch component toggles a setting on or off.
+
+**Basic Usage:**
+
+```html
+<flux:field variant="inline">
+    <flux:label>Enable notifications</flux:label>
+    <flux:switch wire:model.live="notifications" />
+</flux:field>
+```
+
+**Key Property:**
+
+  * **`align="left"`**: Left-aligns switches for compact layouts.
+
+### Table
+
+The Table component displays structured data (Pro only).
+
+**Basic Usage:**
+
+```html
+<flux:table :paginate="$this->orders">
+    <flux:table.columns>
+        <flux:table.column>Customer</flux:table.column>
+        <flux:table.column sortable>Date</flux:table.column>
+    </flux:table.columns>
+    <flux:table.rows>
+        @foreach ($this->orders as $order)
+            <flux:table.row :key="$order->id">
+                <flux:table.cell>{{ $order->customer }}</flux:table.cell>
+                <flux:table.cell>{{ $order->date }}</flux:table.cell>
+            </flux:table.row>
+        @endforeach
+    </flux:table.rows>
+</flux:table>
+```
+
+**Key Features:**
+
+  * **`paginate`**: Enables pagination.
+  * **`sortable`**: Allows sorting columns.
+
+### Tabs
+
+The Tabs component organizes content into separate panels.
+
+**Basic Usage:**
+
+```html
+<flux:tab.group>
+    <flux:tabs wire:model="tab">
+        <flux:tab name="profile">Profile</flux:tab>
+        <flux:tab name="account">Account</flux:tab>
+    </flux:tabs>
+    <flux:tab.panel name="profile">
+        </flux:tab.panel>
+    <flux:tab.panel name="account">
+        </flux:tab.panel>
+</flux:tab.group>
+```
+
+**Variants:**
+
+  * **`segmented`** and **`pills`** for different visual styles.
+
+### Text Area
+
+The Text Area component captures multi-line text input.
+
+**Basic Usage:**
+
+```html
+<flux:textarea label="Order notes" placeholder="No lettuce..." />
+```
+
+**Key Properties:**
+
+  * **`rows`**: Sets the height of the textarea. `auto` for auto-sizing.
+  * **`resize`**: Controls resizing (`vertical`, `horizontal`, `both`, `none`).
+
+### Text
+
+The Text component provides consistent typographical components.
+
+**Basic Usage:**
+
+```html
+<flux:text>This is the standard text component.</flux:text>
+```
+
+**Link:**
+
+```html
+<flux:link href="#">Default link</flux:link>
+```
+
+**Key Properties:**
+
+  * **`variant`**: `strong`, `subtle` for text. `ghost`, `subtle` for links.
+  * **`size`** and **`color`** can be controlled with Tailwind utilities.
+
+### Toast
+
+The Toast component provides feedback to users (Pro only).
+
+**Setup:**
+
+Include `<flux:toast />` in your layout file.
+
+**Livewire Usage:**
+
+```php
+// In a Livewire component
+Flux::toast('Your changes have been saved.');
+```
+
+**JavaScript Usage:**
+
+```javascript
+// In Alpine.js
+$flux.toast('Your changes have been saved.');
+```
+
+**Key Features:**
+
+  * Supports `heading` and `text`.
+  * **`variant`**: `success`, `warning`, `danger`.
+  * **`position`**: `top right`, `bottom left`, etc.
+  * **`duration`**: Time in milliseconds.
+
+### Tooltip
+
+The Tooltip component provides additional information on hover or focus.
+
+**Basic Usage:**
+
+```html
+<flux:tooltip content="Settings">
+    <flux:button icon="cog-6-tooth" />
+</flux:tooltip>
+```
+
+**Shorthand:**
+
+```html
+<flux:button tooltip="Settings" icon="cog-6-tooth" />
+```
+
+**Info Tooltip:**
+
+For essential information, make the tooltip toggleable for touch devices.
+
+```html
+<flux:tooltip toggleable>
+    <flux:button icon="information-circle" />
+    <flux:tooltip.content>
+        </flux:tooltip.content>
+</flux:tooltip>
+```
+
+**Key Properties:**
+
+  * **`position`**: `top`, `right`, `bottom`, `left`.
+
+  * **`toggleable`**: Makes the tooltip clickable.

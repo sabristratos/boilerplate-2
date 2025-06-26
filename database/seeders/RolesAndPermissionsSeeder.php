@@ -27,7 +27,9 @@ class RolesAndPermissionsSeeder extends Seeder
             // Settings permissions
             'view settings', 'edit settings', 'settings.general.manage', 'settings.appearance.manage',
             'settings.email.manage', 'settings.security.manage', 'settings.social.manage',
-            'settings.advanced.manage', 'settings.contact.manage'
+            'settings.advanced.manage', 'settings.contact.manage',
+            // Form permissions
+            'view forms', 'create forms', 'edit forms', 'delete forms', 'view form submissions',
         ];
 
         foreach ($permissions as $permission) {
@@ -48,7 +50,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'delete content',
             'publish content',
             'view settings',
-            'edit pages'
+            'edit pages',
+            'view forms',
+            'view form submissions',
         ]);
 
         // Admin role
@@ -64,7 +68,12 @@ class RolesAndPermissionsSeeder extends Seeder
             'delete content',
             'publish content',
             'view settings',
-            'edit pages'
+            'edit pages',
+            'view forms',
+            'create forms',
+            'edit forms',
+            'delete forms',
+            'view form submissions',
         ]);
 
         // Super Admin role

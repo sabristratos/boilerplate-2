@@ -5,6 +5,12 @@ namespace App\Providers;
 use App\Enums\SettingGroupKey;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use App\Models\ContentBlock;
+use App\Policies\ContentBlockPolicy;
+use App\Models\Form;
+use App\Policies\FormPolicy;
+use App\Models\FormSubmission;
+use App\Policies\FormSubmissionPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -14,7 +20,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        \App\Models\ContentBlock::class => \App\Policies\ContentBlockPolicy::class,
+        ContentBlock::class => ContentBlockPolicy::class,
+        Form::class => FormPolicy::class,
+        FormSubmission::class => FormSubmissionPolicy::class,
     ];
 
     /**

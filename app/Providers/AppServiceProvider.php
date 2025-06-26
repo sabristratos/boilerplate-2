@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use App\Providers\ResourceManagerServiceProvider;
+use App\Services\SettingsManager;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -13,7 +15,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // ResourceManagerServiceProvider is already registered in bootstrap/providers.php
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->app->singleton('settings', function () {
+            return new SettingsManager();
+        });
     }
 
     /**

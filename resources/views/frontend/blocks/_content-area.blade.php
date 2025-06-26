@@ -6,4 +6,10 @@
     @else
         {!! $block->data['content'] ?? '' !!}
     @endif
+
+    @if($block->data['form_id'] ?? false)
+        <div class="mt-4">
+            @livewire('frontend.form-display', ['formId' => $block->data['form_id']])
+        </div>
+    @endif
 </div> 
