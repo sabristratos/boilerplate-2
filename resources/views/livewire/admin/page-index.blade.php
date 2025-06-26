@@ -49,7 +49,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
                                 @foreach($this->locales as $key => $localeName)
-                                    <a href="{{ route('admin.pages.editor', ['page' => $page, 'locale' => $key]) }}" wire:navigate
+                                    <a href="{{ route('admin.pages.editor', ['page' => $page->id, 'locale' => $key]) }}" wire:navigate
                                        class="p-1 rounded-md {{ $page->hasTranslation($key) ? 'bg-green-100 text-green-800' : 'bg-zinc-100 text-zinc-800' }} hover:opacity-80 transition-opacity"
                                        title="{{ $localeName }}">
                                         {{ strtoupper($key) }}
@@ -59,7 +59,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <flux:button href="{{ route('pages.show', $page) }}" target="_blank" variant="ghost" size="xs" icon="eye" square tooltip="View" />
-                            <flux:button href="{{ route('admin.pages.editor', $page) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
+                            <flux:button href="{{ route('admin.pages.editor', $page->id) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
                             <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="Delete" />
                         </td>
                     </tr>

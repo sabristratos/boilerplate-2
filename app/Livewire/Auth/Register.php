@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Models\User;
+use App\Traits\WithToastNotifications;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,7 @@ use Livewire\Component;
 #[Layout('components.layouts.auth')]
 class Register extends Component
 {
+    use WithToastNotifications;
     public string $name = '';
 
     public string $email = '';
@@ -45,6 +47,7 @@ class Register extends Component
 
         Auth::login($user);
 
+        $this->showSuccessToast(__('auth.registration_success'));
         $this->redirect(route('dashboard', absolute: false), navigate: true);
     }
 }

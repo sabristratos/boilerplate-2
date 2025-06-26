@@ -7,6 +7,7 @@ use App\Enums\ContentBlockStatus;
 use App\Facades\Settings;
 use App\Models\ContentBlock;
 use App\Models\Page;
+use App\Traits\WithToastNotifications;
 use Flux\Flux;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -18,7 +19,7 @@ use App\Services\BlockManager;
 
 class PageManager extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithToastNotifications;
 
     public Page $page;
     public array $title = [];
@@ -48,6 +49,15 @@ class PageManager extends Component
 
     public function mount(Page $page): void
     {
+        // Add debugging
+        \Illuminate\Support\Facades\Log::info('Mounting PageManager', [
+            'page_id' => $page->id,
+            'page_slug' => $page->slug,
+            'request_path' => request()->path(),
+            'request_parameters' => request()->route()->parameters(),
+            'request_query' => request()->query(),
+        ]);
+
         $this->page = $page;
         $this->title = $this->page->getTranslations('title');
         $this->slug = $this->page->getTranslations('slug');
@@ -71,10 +81,9 @@ class PageManager extends Component
         $this->editingBlock = ContentBlock::find($blockId);
 
         if (!$this->editingBlock) {
-            Flux::toast(
-                heading: 'Block Not Found',
-                text: 'The content block you are trying to edit no longer exists.',
-                variant: 'warning'
+            $this->showWarningToast(
+                __('The content block you are trying to edit no longer exists.'),
+                __('Block Not Found')
             );
             $this->cancelEdit();
             return;
@@ -139,10 +148,9 @@ class PageManager extends Component
             'block_id' => $this->editingBlock->id,
         ]);
 
-        Flux::toast(
-            heading: 'Block Updated',
-            text: 'The content block was updated successfully.',
-            variant: 'success'
+        $this->showSuccessToast(
+            __('The content block was updated successfully.'),
+            __('Block Updated')
         );
 
         $this->editingBlock = null;
@@ -184,10 +192,9 @@ class PageManager extends Component
         $blockClass = $this->blockManager->find($type);
 
         if (!$blockClass) {
-            Flux::toast(
-                heading: 'Invalid Block Type',
-                text: 'The block type you are trying to create is not available.',
-                variant: 'danger'
+            $this->showErrorToast(
+                __('The block type you are trying to create is not available.'),
+                __('Invalid Block Type')
             );
             return;
         }
@@ -204,10 +211,9 @@ class PageManager extends Component
             'block_id' => $block->id,
         ]);
 
-        Flux::toast(
-            heading: 'Block Created',
-            text: 'A new ' . $blockClass->getName() . ' block has been added to the page.',
-            variant: 'success'
+        $this->showSuccessToast(
+            __('A new :blockName block has been added to the page.', ['blockName' => $blockClass->getName()]),
+            __('Block Created')
         );
     }
 
@@ -220,10 +226,10 @@ class PageManager extends Component
         ]);
         try {
             ContentBlock::setNewOrder($sort);
-            Flux::toast(
-                text: 'Block order updated successfully.',
-                variant: 'subtle',
-                duration: 2000
+            $this->showSuccessToast(
+                __('Block order updated successfully.'),
+                null,
+                2000
             );
         } catch (\Exception $e) {
             Log::error('Error updating block order', [
@@ -231,10 +237,9 @@ class PageManager extends Component
                 'page_id' => $this->page->id,
                 'error' => $e->getMessage(),
             ]);
-            Flux::toast(
-                heading: 'Error Updating Order',
-                text: 'There was a problem updating the block order. Some blocks may no longer exist.',
-                variant: 'danger'
+            $this->showErrorToast(
+                __('There was a problem updating the block order. Some blocks may no longer exist.'),
+                __('Error Updating Order')
             );
         }
     }
@@ -255,12 +260,11 @@ class PageManager extends Component
             }
 
             $block->delete();
-            Flux::toast('Block deleted successfully.');
+            $this->showSuccessToast(__('Block deleted successfully.'));
         } else {
-            Flux::toast(
-                heading: 'Block Not Found',
-                text: 'The content block you are trying to delete no longer exists.',
-                variant: 'warning'
+            $this->showWarningToast(
+                __('The content block you are trying to delete no longer exists.'),
+                __('Block Not Found')
             );
         }
     }
@@ -305,10 +309,9 @@ class PageManager extends Component
         // Verify the block still exists in the database
         $existingBlock = ContentBlock::find($this->editingBlock->id);
         if (!$existingBlock) {
-            Flux::toast(
-                heading: 'Block Not Found',
-                text: 'The content block you are editing no longer exists. Your changes cannot be saved.',
-                variant: 'danger'
+            $this->showErrorToast(
+                __('The content block you are editing no longer exists. Your changes cannot be saved.'),
+                __('Block Not Found')
             );
             $this->cancelEdit();
             return;
@@ -337,10 +340,9 @@ class PageManager extends Component
         try {
             $this->blockStatus = ContentBlockStatus::from($status);
         } catch (\ValueError $e) {
-            Flux::toast(
-                heading: 'Invalid Status',
-                text: 'The provided block status is not valid.',
-                variant: 'danger'
+            $this->showErrorToast(
+                __('The provided block status is not valid.'),
+                __('Invalid Status')
             );
         }
     }
@@ -378,10 +380,9 @@ class PageManager extends Component
             'page_id' => $this->page->id,
         ]);
 
-        Flux::toast(
-            heading: 'Page Updated',
-            text: 'The page details were updated successfully.',
-            variant: 'success'
+        $this->showSuccessToast(
+            __('The page details were updated successfully.'),
+            __('Page Updated')
         );
     }
 

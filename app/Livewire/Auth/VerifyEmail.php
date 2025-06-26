@@ -3,6 +3,7 @@
 namespace App\Livewire\Auth;
 
 use App\Livewire\Actions\Logout;
+use App\Traits\WithToastNotifications;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Layout;
@@ -11,6 +12,7 @@ use Livewire\Component;
 #[Layout('components.layouts.auth')]
 class VerifyEmail extends Component
 {
+    use WithToastNotifications;
     /**
      * Send an email verification notification to the user.
      */
@@ -24,6 +26,7 @@ class VerifyEmail extends Component
 
         Auth::user()->sendEmailVerificationNotification();
 
+        $this->showSuccessToast(__('auth.verification_link_sent'));
         Session::flash('status', 'verification-link-sent');
     }
 

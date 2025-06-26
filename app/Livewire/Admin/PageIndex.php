@@ -62,7 +62,14 @@ class PageIndex extends Component
             'slug' => 'new-page-' . uniqid(),
         ]);
 
-        $this->redirectRoute('admin.pages.editor', ['page' => $page]);
+        // Add debugging
+        \Illuminate\Support\Facades\Log::info('Creating new page', [
+            'page_id' => $page->id,
+            'page_slug' => $page->slug,
+            'redirect_params' => ['page' => $page->id]
+        ]);
+
+        $this->redirectRoute('admin.pages.editor', ['page' => $page->id]);
     }
 
     public function resetFilters()
@@ -80,7 +87,7 @@ class PageIndex extends Component
     {
         Page::findOrFail($this->deleteId)->delete();
         $this->showDeleteModal = false;
-        session()->flash('message', 'Page deleted successfully.');
+        $this->showSuccessToast(__('Page deleted successfully.'));
     }
 
     public function cancelDelete()

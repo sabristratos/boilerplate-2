@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Traits\WithToastNotifications;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -15,6 +16,7 @@ use Livewire\Component;
 #[Layout('components.layouts.auth')]
 class Login extends Component
 {
+    use WithToastNotifications;
     #[Validate('required|string|email')]
     public string $email = '';
 
@@ -35,6 +37,8 @@ class Login extends Component
         if (! Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
             RateLimiter::hit($this->throttleKey());
 
+            $this->showErrorToast(__('auth.failed'));
+
             throw ValidationException::withMessages([
                 'email' => __('auth.failed'),
             ]);
@@ -43,6 +47,7 @@ class Login extends Component
         RateLimiter::clear($this->throttleKey());
         Session::regenerate();
 
+        $this->showSuccessToast(__('auth.login_success', ['name' => Auth::user()->name]));
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
     }
 
@@ -58,6 +63,11 @@ class Login extends Component
         event(new Lockout(request()));
 
         $seconds = RateLimiter::availableIn($this->throttleKey());
+
+        $this->showErrorToast(__('auth.throttle', [
+            'seconds' => $seconds,
+            'minutes' => ceil($seconds / 60),
+        ]));
 
         throw ValidationException::withMessages([
             'email' => __('auth.throttle', [

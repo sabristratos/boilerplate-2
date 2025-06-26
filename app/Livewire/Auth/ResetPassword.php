@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Traits\WithToastNotifications;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
@@ -15,6 +16,7 @@ use Livewire\Component;
 #[Layout('components.layouts.auth')]
 class ResetPassword extends Component
 {
+    use WithToastNotifications;
     #[Locked]
     public string $token = '';
 
@@ -65,11 +67,13 @@ class ResetPassword extends Component
         // redirect them back to where they came from with their error message.
         if ($status != Password::PasswordReset) {
             $this->addError('email', __($status));
+            $this->showErrorToast(__($status));
 
             return;
         }
 
         Session::flash('status', __($status));
+        $this->showSuccessToast(__('auth.password_reset_success'));
 
         $this->redirectRoute('login', navigate: true);
     }

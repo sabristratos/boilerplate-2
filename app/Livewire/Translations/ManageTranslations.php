@@ -4,8 +4,8 @@ namespace App\Livewire\Translations;
 
 use App\Facades\Settings;
 use App\Models\Translation;
+use App\Traits\WithToastNotifications;
 use Exception;
-use Flux\Flux;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -15,7 +15,7 @@ use Livewire\WithPagination;
 
 class ManageTranslations extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithFileUploads, WithToastNotifications;
 
     public $locales = [];
     public $selectedLocales = [];
@@ -83,16 +83,14 @@ class ManageTranslations extends Component
     {
         try {
             Artisan::call('translations:sync-from-files');
-            Flux::toast(
-                heading: 'Scan Complete',
-                text: 'Files scanned and translations updated.',
-                variant: 'success'
+            $this->showSuccessToast(
+                __('messages.translations.scan_complete'),
+                __('Scan Complete')
             );
         } catch (Exception $e) {
-            Flux::toast(
-                heading: 'Scan Failed',
-                text: $e->getMessage(),
-                variant: 'danger'
+            $this->showErrorToast(
+                $e->getMessage(),
+                __('Scan Failed')
             );
         }
 
@@ -113,16 +111,14 @@ class ManageTranslations extends Component
             $this->syncToFiles();
             Artisan::call('cache:clear');
 
-            Flux::toast(
-                heading: 'Save successful',
-                text: 'Translations saved, cache cleared, and files synced.',
-                variant: 'success'
+            $this->showSuccessToast(
+                __('messages.translations.save_success'),
+                __('Save successful')
             );
         } catch (Exception $e) {
-            Flux::toast(
-                heading: 'Save failed',
-                text: $e->getMessage(),
-                variant: 'danger'
+            $this->showErrorToast(
+                $e->getMessage(),
+                __('Save failed')
             );
         }
     }
@@ -160,10 +156,9 @@ class ManageTranslations extends Component
 
             return response()->stream($callback, 200, $headers);
         } catch (Exception $e) {
-            Flux::toast(
-                heading: 'Export failed',
-                text: $e->getMessage(),
-                variant: 'danger'
+            $this->showErrorToast(
+                $e->getMessage(),
+                __('Export failed')
             );
 
             return null;
@@ -205,16 +200,14 @@ class ManageTranslations extends Component
 
             $this->syncToFiles();
 
-            Flux::toast(
-                heading: 'Import successful',
-                text: 'Translations imported and synced to files.',
-                variant: 'success'
+            $this->showSuccessToast(
+                __('messages.translations.import_success'),
+                __('Import successful')
             );
         } catch (Exception $e) {
-            Flux::toast(
-                heading: 'Import failed',
-                text: $e->getMessage(),
-                variant: 'danger'
+            $this->showErrorToast(
+                $e->getMessage(),
+                __('Import failed')
             );
         }
     }

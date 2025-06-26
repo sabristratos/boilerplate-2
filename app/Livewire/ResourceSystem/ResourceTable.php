@@ -3,6 +3,8 @@
 namespace App\Livewire\ResourceSystem;
 
 use App\Services\ResourceSystem\Resource;
+use App\Traits\WithToastNotifications;
+use Flux\Flux;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Str;
@@ -11,7 +13,7 @@ use Illuminate\Support\Facades\Schema;
 
 class ResourceTable extends Component
 {
-    use WithPagination;
+    use WithPagination, WithToastNotifications;
 
     /**
      * The resource class.
@@ -99,7 +101,7 @@ class ResourceTable extends Component
     /**
      * Mount the component.
      *
-     * @param  \App\Services\ResourceSystem\Resource  $resource
+     * @param  Resource  $resource
      * @return void
      */
     public function mount(Resource $resource)
@@ -116,7 +118,7 @@ class ResourceTable extends Component
     /**
      * Get the resource instance.
      *
-     * @return \App\Services\ResourceSystem\Resource
+     * @return Resource
      */
     public function getResourceInstance()
     {
@@ -195,7 +197,10 @@ class ResourceTable extends Component
         $this->showDeleteModal = false;
         $this->deleteId = null;
 
-        session()->flash('message', 'Resource deleted successfully.');
+        $this->showSuccessToast(
+            __('messages.resource.deleted', ['Resource' => $this->getResourceInstance()::singularLabel()]),
+            __('messages.success.generic')
+        );
     }
 
     /**
@@ -221,13 +226,14 @@ class ResourceTable extends Component
 
         if (in_array(\Spatie\EloquentSortable\SortableTrait::class, class_uses_recursive($modelClass))) {
             $modelClass::setNewOrder($order);
+            $this->showSuccessToast(__("messages.success.generic"));
         }
     }
 
     /**
      * Build the query for the resource.
      *
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function buildQuery(array $columns, array $filters): Builder
     {

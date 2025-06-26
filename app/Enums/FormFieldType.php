@@ -15,4 +15,21 @@ enum FormFieldType: string
     case RADIO = 'radio';
     case FILE = 'file';
     case SECTION = 'section';
+
+    public function getLabel(): string
+    {
+        return match ($this) {
+            self::TEXT => 'Text Input',
+            self::TEXTAREA => 'Text Area',
+            self::SELECT => 'Select Menu',
+            self::EMAIL => 'Email',
+            self::NUMBER => 'Number',
+            self::DATE => 'Date',
+            self::TIME => 'Time',
+            self::CHECKBOX => 'Checkbox',
+            self::RADIO => 'Radio Buttons',
+            self::FILE => 'File Upload',
+            self::SECTION => 'Section Break',
+        };
+    }
 } 

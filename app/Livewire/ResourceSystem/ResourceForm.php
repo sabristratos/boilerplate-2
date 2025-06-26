@@ -3,7 +3,7 @@
 namespace App\Livewire\ResourceSystem;
 
 use App\Services\ResourceSystem\Resource;
-use Flux\Flux;
+use App\Traits\WithToastNotifications;
 use Livewire\Component;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 
 class ResourceForm extends Component
 {
+    use WithToastNotifications;
     /**
      * The resource class.
      *
@@ -180,20 +181,18 @@ class ResourceForm extends Component
                 $this->data['password'] = '';
             }
 
-            Flux::toast(
-                heading: __('messages.success.generic'),
-                text: $isNew
-                    ? __('messages.resource.created', ['resource' => $this->getResourceInstance()::singularLabel()])
-                    : __('messages.resource.updated', ['resource' => $this->getResourceInstance()::singularLabel()]),
-                variant: 'success'
+            $this->showSuccessToast(
+                $isNew
+                    ? __('messages.resource.created', ['Resource' => $this->getResourceInstance()::singularLabel()])
+                    : __('messages.resource.updated', ['Resource' => $this->getResourceInstance()::singularLabel()]),
+                __('messages.success.generic')
             );
 
         } catch (\Exception $e) {
             DB::rollBack();
-            Flux::toast(
-                heading: __('messages.errors.generic'),
-                text: $e->getMessage(),
-                variant: 'danger'
+            $this->showErrorToast(
+                $e->getMessage(),
+                __('messages.errors.generic')
             );
         }
     }

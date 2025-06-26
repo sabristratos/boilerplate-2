@@ -31,6 +31,8 @@ class FormField extends Model implements Sortable
 
     protected $casts = [
         'type' => FormFieldType::class,
+        'is_required' => 'boolean',
+        'options' => 'array',
     ];
 
     public array $translatable = ['label', 'placeholder', 'options'];
@@ -48,5 +50,10 @@ class FormField extends Model implements Sortable
     protected static function newFactory(): FormFieldFactory
     {
         return FormFieldFactory::new();
+    }
+
+    public function buildSortQuery()
+    {
+        return static::query()->where('form_id', $this->form_id);
     }
 }

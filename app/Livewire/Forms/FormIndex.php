@@ -4,12 +4,13 @@ namespace App\Livewire\Forms;
 
 use App\Facades\Settings;
 use App\Models\Form;
+use App\Traits\WithToastNotifications;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class FormIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithToastNotifications;
 
     public string $search = '';
     public int $perPage = 10;
@@ -49,7 +50,7 @@ class FormIndex extends Component
             'success_message' => config('forms.defaults.success_message', []),
         ]);
 
-        session()->flash('toast', ['text' => __('forms.toast_form_created'), 'variant' => 'success']);
+        $this->showSuccessToast(__('forms.toast_form_created'));
 
         return $this->redirect(route('admin.forms.edit', [
             'form' => $form,
@@ -61,7 +62,7 @@ class FormIndex extends Component
     {
         $this->authorize('delete', $form);
         $form->delete();
-        session()->flash('toast', ['text' => __('forms.toast_form_deleted'), 'variant' => 'success']);
+        $this->showSuccessToast(__('forms.toast_form_deleted'));
     }
 
     public function render()

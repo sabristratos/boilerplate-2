@@ -28,6 +28,9 @@
                 </div>
             </div>
         </div>
+        @persist('toast')
+        <flux:toast position="bottom right" />
+        @endpersist
         @fluxScripts
     </body>
 </html>

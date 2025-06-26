@@ -37,7 +37,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Page Editor
     Route::get('admin/pages', \App\Livewire\Admin\PageIndex::class)->name('admin.pages.index');
-    Route::get('admin/pages/{page}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor');
+    Route::get('admin/pages/{page}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor')->whereNumber('page');
 
     // Form Builder
     Route::get('admin/forms', \App\Livewire\Forms\FormIndex::class)->name('admin.forms.index')->middleware('can:view forms');

@@ -1,148 +1,168 @@
-<div x-data>
-    <div class="mb-4">
-        <a href="{{ route('admin.forms.index') }}" wire:navigate class="text-sm text-zinc-500 hover:text-zinc-700">
-            &larr; {{ __('forms.back_to_forms') }}
-        </a>
-    </div>
+<div>
+    <div class="grid grid-cols-12 h-screen">
+        {{-- Form Canvas --}}
+        <div class="col-span-8 p-8 overflow-y-auto">
+            <div class="max-w-3xl mx-auto">
+                <flux:heading size="xl">{{ $form->title }}</flux:heading>
+                <flux:text class="mt-2">{{ $form->description }}</flux:text>
+                <hr class="my-8">
 
-    <div class="flex items-center justify-between pb-4 border-b border-zinc-200">
-        <div class="flex items-center gap-x-2">
-            <h1 class="text-2xl font-semibold">{{ $form->name }}</h1>
-        </div>
-        <div class="flex items-center gap-x-2">
-            <flux:button variant="primary" wire:click="save">
-                {{ __('forms.save_form') }}
-            </flux:button>
-        </div>
-    </div>
-
-    <div class="grid flex-1 grid-cols-12 mt-6">
-        <div class="col-span-3 min-h-full pr-8 border-r border-zinc-200">
-            <flux:tab.group wire:model.live="activeTab">
-                <flux:tabs>
-                    <flux:tab name="fields">{{ __('forms.fields') }}</flux:tab>
-                    <flux:tab name="settings">{{ __('forms.settings') }}</flux:tab>
-                </flux:tabs>
-                <flux:tab.panel name="fields" class="mt-6">
-                    <div class="grid grid-cols-2 gap-2">
-                        <flux:button wire:click="addField('text')" class="h-auto !p-0">
-                            <div class="flex flex-col items-center justify-center p-3 space-y-1">
-                                <flux:icon.document-text class="w-6 h-6" />
-                                <span class="text-sm">{{ __('forms.add_text_input') }}</span>
+                <div x-data="{}"
+                     x-sort
+                     x-sort:config="{
+                        onEnd: (event) => {
+                            const orderedIds = Array.from(event.target.children)
+                                .map(child => child.getAttribute('x-sort:item'));
+                            $wire.updateFieldOrder(orderedIds);
+                        }
+                     }"
+                     class="space-y-4">
+                    <div x-sort:container class="divide-y divide-gray-200 dark:divide-white/10">
+                        @forelse($form->fields->sortBy('sort_order') as $field)
+                            <div x-sort:item="{{ $field->id }}" wire:key="field-{{ $field->id }}"
+                                 class="relative group p-4 rounded-lg {{ $selectedField && $selectedField->id === $field->id ? 'bg-primary-100/50 dark:bg-primary-900/10' : '' }}">
+                                <livewire:is
+                                    component="{{ $this->getPreviewComponent($field) }}"
+                                    :fieldId="$field->id"
+                                    wire:key="preview-{{ $field->id }}"
+                                />
+                                <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                    <flux:button.group>
+                                        <flux:button x-on:click.stop="$wire.selectField({{ $field->id }})" icon="pencil" variant="ghost" size="xs" />
+                                        <flux:button wire:click.stop="confirmDelete({{ $field->id }})" icon="trash" variant="ghost" size="xs" />
+                                        <flux:button x-sort:handle icon="grip-vertical" variant="ghost" size="xs" class="cursor-move" />
+                                    </flux:button.group>
+                                </div>
                             </div>
-                        </flux:button>
-                        <flux:button wire:click="addField('textarea')" class="h-auto !p-0">
-                            <div class="flex flex-col items-center justify-center p-3 space-y-1">
-                                <flux:icon.document-text class="w-6 h-6" />
-                                <span class="text-sm">{{ __('forms.add_textarea') }}</span>
+                        @empty
+                            <div class="text-center py-12 border-2 border-dashed dark:border-gray-700 rounded-lg">
+                                <flux:heading>Your form is empty</flux:heading>
+                                <flux:text class="mt-2">Add fields from the sidebar to get started.</flux:text>
                             </div>
-                        </flux:button>
-                        <flux:button wire:click="addField('select')" class="h-auto !p-0">
-                            <div class="flex flex-col items-center justify-center p-3 space-y-1">
-                                <flux:icon.list-bullet class="w-6 h-6" />
-                                <span class="text-sm">{{ __('forms.add_select') }}</span>
-                            </div>
-                        </flux:button>
-                        <flux:button wire:click="addField('section')" class="h-auto !p-0">
-                            <div class="flex flex-col items-center justify-center p-3 space-y-1">
-                                <flux:icon.minus class="w-6 h-6" />
-                                <span class="text-sm">{{ __('forms.add_section') }}</span>
-                            </div>
-                        </flux:button>
-                    </div>
-                </flux:tab.panel>
-                <flux:tab.panel name="settings" class="mt-6 space-y-4">
-                    <flux:input
-                        :id="$form->id.'_name'"
-                        wire:model="name"
-                        label="{{ __('forms.form_name') }}"
-                        description="{{ __('forms.form_name_help') }}"
-                    />
-                    <div class="flex flex-col gap-y-4">
-                        <flux:input
-                            type="email"
-                            :id="$form->id.'_recipient_email'"
-                            wire:model="form.recipient_email"
-                            label="{{ __('forms.form_recipient_email') }}"
-                            description="{{ __('forms.form_recipient_email_help') }}"
-                        />
-                        <flux:checkbox
-                            :id="$form->id.'_send_notification'"
-                            wire:model="form.send_notification"
-                            label="{{ __('forms.form_send_notification') }}"
-                            description="{{ __('forms.form_send_notification_help') }}"
-                        />
-                    </div>
-                    <flux:input
-                        :id="$form->id.'_title'"
-                        wire:model="form.title.{{ $activeLocale }}"
-                        label="{{ __('forms.form_title') }}"
-                    />
-                    <flux:textarea
-                        :id="$form->id.'_description'"
-                        wire:model="form.description.{{ $activeLocale }}"
-                        label="{{ __('forms.form_description') }}"
-                    />
-                    <flux:textarea
-                        :id="$form->id.'_success_message'"
-                        wire:model="form.success_message.{{ $activeLocale }}"
-                        label="{{ __('forms.form_success_message') }}"
-                    />
-                </flux:tab.panel>
-            </flux:tab.group>
-        </div>
-        <div class="col-span-9 pl-8">
-            <div class="p-8 bg-gray-100 rounded-lg">
-                <div class="max-w-md mx-auto">
-                    <div class="p-6 bg-white border rounded-lg">
-                        <livewire:frontend.form-display :form="$form" :preview="true" wire:key="form-display-{{ $form->id }}-{{ $form->formFields->count() }}" />
+                        @endforelse
                     </div>
                 </div>
             </div>
         </div>
+
+        {{-- Sidebar --}}
+        <div class="col-span-4 bg-white dark:bg-gray-900 border-l dark:border-gray-800 overflow-y-auto">
+            <flux:tab.group>
+                <flux:tabs wire:model.live="activeTab">
+                    <flux:tab name="fields">Fields</flux:tab>
+                    <flux:tab name="settings">Settings</flux:tab>
+                </flux:tabs>
+
+                {{-- Add Fields Tab --}}
+                <flux:tab.panel name="fields" class="p-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        @foreach($this->fieldTypes as $type)
+                            <flux:button wire:click="addField('{{ $type->value }}')" type="button" class="w-full justify-center">
+                                {{ ucfirst($type->value) }}
+                            </flux:button>
+                        @endforeach
+                    </div>
+                </flux:tab.panel>
+
+                {{-- Form Settings Tab --}}
+                <flux:tab.panel name="settings" class="p-6">
+                    <div class="space-y-6">
+                        <flux:input wire:model.debounce.500ms="form.name" label="Form Name" />
+                        <flux:input wire:model.debounce.500ms="form.title" label="Title" />
+                        <flux:textarea wire:model.debounce.500ms="form.description" label="Description" />
+                        <hr class="dark:border-gray-700">
+                        <flux:input wire:model.debounce.500ms="form.recipient_email" label="Recipient Email" />
+                        <flux:textarea wire:model.debounce.500ms="form.success_message" label="Success Message" />
+                        <flux:checkbox wire:model.debounce.500ms="form.send_notification" label="Send notification on submission" />
+                        <div class="flex justify-end">
+                            <flux:button wire:click="saveForm" variant="primary">Save Settings</flux:button>
+                        </div>
+                    </div>
+                </flux:tab.panel>
+            </flux:tab.group>
+        </div>
     </div>
 
-    @if($editingFieldId)
-    <flux:modal name="edit-field-modal" variant="flyout">
+    {{-- Field Settings Flyout --}}
+    @if($selectedField)
+        <flux:modal name="edit-field-modal" variant="flyout" class="w-full md:w-1/3" @close="$wire.deselectField()">
+            <div class="space-y-6">
+                <div>
+                    <flux:heading size="lg">Edit Field</flux:heading>
+                    <flux:text class="mt-1">Editing {{ $selectedField->type->value }} field.</flux:text>
+                </div>
+
+                <div class="space-y-6">
+                    <flux:field label="Field Type">
+                        <p class="font-semibold">{{ $selectedField->type->getLabel() }}</p>
+                    </flux:field>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <flux:input wire:model.live="fieldData.label" label="Label" />
+                        <flux:input wire:model="fieldData.name" label="Name"
+                                    description="A unique name for this field (snake_case)." />
+                    </div>
+
+                    <flux:input wire:model="fieldData.placeholder" label="Placeholder" />
+                    <flux:checkbox wire:model="fieldData.is_required" label="Required" />
+
+                    @if(in_array($selectedField->type, [\App\Enums\FormFieldType::SELECT, \App\Enums\FormFieldType::RADIO, \App\Enums\FormFieldType::CHECKBOX]))
+                        @include('livewire.forms.partials._repeater', [
+                            'label' => 'Options',
+                            'description' => 'Add options for the user to select from.',
+                            'items' => $fieldData['options'] ?? [],
+                            'wireModel' => 'fieldData.options',
+                            'wireModelKey' => 'options',
+                        ])
+                    @endif
+
+                    <div>
+                        <label class="flux-label">Validation Rules</label>
+                        <flux:checkbox.group wire:model.live="selectedRules" variant="pills" class="mt-2">
+                            @foreach($this->predefinedRulesWithTooltips as $rule => $tooltip)
+                                <flux:tooltip :content="$tooltip">
+                                    <flux:checkbox value="{{ $rule }}" label="{{ ucfirst($rule) }}" />
+                                </flux:tooltip>
+                            @endforeach
+                        </flux:checkbox.group>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <flux:input wire:model.live="min" label="Min" placeholder="e.g., 5" />
+                        <flux:input wire:model.live="max" label="Max" placeholder="e.g., 255" />
+                    </div>
+
+                    <flux:textarea wire:model.live="fieldData.validation_rules"
+                                   placeholder="Enter Laravel validation rules, separated by pipes (|)." />
+                </div>
+
+                <div class="pt-6 border-t dark:border-gray-800 flex justify-between items-center">
+                    <flux:button wire:click="deleteField" variant="danger">Delete</flux:button>
+                    <div>
+                        <flux:modal.close>
+                            <flux:button variant="ghost" class="mr-2">Cancel</flux:button>
+                        </flux:modal.close>
+                        <flux:button wire:click="saveField" variant="primary">Save Field</flux:button>
+                    </div>
+                </div>
+            </div>
+        </flux:modal>
+    @endif
+
+    <flux:modal name="confirm-delete-modal" class="md:w-96">
         <div class="space-y-6">
             <div>
-                <flux:heading size="lg">Edit Field</flux:heading>
-                <flux:text class="mt-2">Make changes to this field.</flux:text>
+                <flux:heading size="lg">Delete field?</flux:heading>
+                <flux:text class="mt-2">
+                    Are you sure you want to delete this field? This action cannot be undone.
+                </flux:text>
             </div>
-            <div class="space-y-4">
-                <flux:input
-                    :id="$editingFieldId.'_label'"
-                    wire:model.live.debounce.500ms="editingFieldState.label.{{ $activeLocale }}"
-                    label="{{ __('forms.label') }}"
-                />
-                @if($editingFieldState['type'] !== 'section')
-                    <flux:input
-                        :id="$editingFieldId.'_placeholder'"
-                        wire:model.live.debounce.500ms="editingFieldState.placeholder.{{ $activeLocale }}"
-                        label="{{ __('forms.placeholder') }}"
-                    />
-                @endif
-                @if($editingFieldState['type'] === 'select')
-                    <flux:textarea
-                        :id="$editingFieldId.'_options'"
-                        wire:model.live.debounce.500ms="editingFieldState.options.{{ $activeLocale }}"
-                        label="{{ __('forms.options') }}"
-                        description="One option per line."
-                    />
-                @endif
-                @if($editingFieldState['type'] !== 'section')
-                    <flux:checkbox
-                        :id="$editingFieldId.'_is_required'"
-                        wire:model.live.debounce.500ms="editingFieldState.is_required"
-                        label="{{ __('forms.is_required') }}"
-                    />
-                @endif
-            </div>
-            <div class="flex">
-                <flux:spacer />
-                <flux:button wire:click="saveField" variant="primary">Save changes</flux:button>
+            <div class="flex justify-end gap-2">
+                <flux:modal.close>
+                    <flux:button variant="ghost">Cancel</flux:button>
+                </flux:modal.close>
+                <flux:button wire:click="deleteField" variant="danger">Delete field</flux:button>
             </div>
         </div>
     </flux:modal>
-    @endif
-</div>
+</div> 

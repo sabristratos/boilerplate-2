@@ -14,10 +14,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
 use Livewire\Attributes\On;
 use Livewire\WithFileUploads;
+use App\Traits\WithToastNotifications;
 
 class SettingsPage extends Component
 {
-    use WithFileUploads;
+    use WithFileUploads, WithToastNotifications;
 
     /**
      * The state of the settings.
@@ -163,64 +164,68 @@ class SettingsPage extends Component
 
     public function confirmedSave(): void
     {
-        $settings = Config::get('settings.settings', []);
-        $validationRules = [];
-        $validationMessages = [];
+        try {
+            $settings = Config::get('settings.settings', []);
+            $validationRules = [];
+            $validationMessages = [];
 
-        $currentState = data_get($this->state, $this->group, []);
-        $initialState = data_get($this->initialState, $this->group, []);
-        $changedData = [];
+            $currentState = data_get($this->state, $this->group, []);
+            $initialState = data_get($this->initialState, $this->group, []);
+            $changedData = [];
 
-        // 1. Identify changed fields and build validation rules ONLY for them.
-        foreach ($currentState as $key => $value) {
-            if (data_get($initialState, $key) != $value) {
-                $fullKey = $this->group . '.' . $key;
-                $changedData[$fullKey] = $value;
+            // 1. Identify changed fields and build validation rules ONLY for them.
+            foreach ($currentState as $key => $value) {
+                if (data_get($initialState, $key) != $value) {
+                    $fullKey = $this->group . '.' . $key;
+                    $changedData[$fullKey] = $value;
 
-                if (isset($settings[$fullKey]['rules'])) {
-                    $validationRules['state.' . $fullKey] = $settings[$fullKey]['rules'];
-                }
-                if (isset($settings[$fullKey]['messages'])) {
-                    foreach ($settings[$fullKey]['messages'] as $rule => $message) {
-                        $validationMessages['state.' . $fullKey . '.' . $rule] = $message;
+                    if (isset($settings[$fullKey]['rules'])) {
+                        $validationRules['state.' . $fullKey] = $settings[$fullKey]['rules'];
+                    }
+                    if (isset($settings[$fullKey]['messages'])) {
+                        foreach ($settings[$fullKey]['messages'] as $rule => $message) {
+                            $validationMessages['state.' . $fullKey . '.' . $rule] = $message;
+                        }
                     }
                 }
             }
-        }
 
-        // 2. Validate ONLY the changed fields.
-        if (!empty($validationRules)) {
-            $this->validate($validationRules, $validationMessages);
-        }
-
-        // 3. Save the validated, changed data.
-        $changedSettings = [];
-        foreach ($changedData as $fullKey => $value) {
-            // Handle file uploads
-            if (isset($this->files[$fullKey]) && $this->files[$fullKey]) {
-                $value = $this->handleFileUpload($fullKey);
+            // 2. Validate ONLY the changed fields.
+            if (!empty($validationRules)) {
+                $this->validate($validationRules, $validationMessages);
             }
 
-            Settings::set($fullKey, $value);
-            $changedSettings[$fullKey] = $value;
+            // 3. Save the validated, changed data.
+            $changedSettings = [];
+            foreach ($changedData as $fullKey => $value) {
+                // Handle file uploads
+                if (isset($this->files[$fullKey]) && $this->files[$fullKey]) {
+                    $value = $this->handleFileUpload($fullKey);
+                }
+
+                Settings::set($fullKey, $value);
+                $changedSettings[$fullKey] = $value;
+            }
+
+            // Show success message using toast notification
+            $groupLabel = $this->getAuthorizedGroups()->firstWhere('key', $this->group)->label ?? $this->group;
+            $message = __(':group settings saved successfully.', ['group' => $groupLabel]);
+
+            $this->showSuccessToast($message);
+
+            // Dispatch a global event to notify other components
+            if (!empty($changedSettings)) {
+                $this->dispatch('settings-updated', settings: $changedSettings);
+            }
+
+            // Close the modal
+            Flux::modal('confirm-save')->close();
+
+            // Update initial state
+            $this->initialState = $this->state;
+        } catch (\Exception $e) {
+            $this->showErrorToast(__('messages.errors.generic'), $e->getMessage());
         }
-
-        // Show success message using Flux toast
-        $groupLabel = $this->getAuthorizedGroups()->firstWhere('key', $this->group)->label ?? $this->group;
-        $message = __(':group settings saved successfully.', ['group' => $groupLabel]);
-
-        Flux::toast($message, variant: 'success');
-
-        // Dispatch a global event to notify other components
-        if (!empty($changedSettings)) {
-            $this->dispatch('settings-updated', settings: $changedSettings);
-        }
-
-        // Close the modal
-        Flux::modal('confirm-save')->close();
-
-        // Update initial state
-        $this->initialState = $this->state;
     }
 
     /**
@@ -241,9 +246,14 @@ class SettingsPage extends Component
      */
     protected function handleFileUpload(string $key): string
     {
-        $file = $this->files[$key];
-        $path = $file->store('public/settings');
-        return str_replace('public/', 'storage/', $path);
+        try {
+            $file = $this->files[$key];
+            $path = $file->store('public/settings');
+            return str_replace('public/', 'storage/', $path);
+        } catch (\Exception $e) {
+            $this->showErrorToast(__('messages.errors.file_upload'), $e->getMessage());
+            throw $e; // Re-throw to be caught by the parent try-catch
+        }
     }
 
     /**
@@ -253,9 +263,12 @@ class SettingsPage extends Component
      */
     public function clearCache(): void
     {
-        Artisan::call('cache:clear');
-
-        Flux::toast(__('messages.cache_cleared_successfully'), variant: 'success');
+        try {
+            Artisan::call('cache:clear');
+            $this->showSuccessToast(__('messages.cache_cleared_successfully'));
+        } catch (\Exception $e) {
+            $this->showErrorToast(__('messages.errors.generic'), $e->getMessage());
+        }
     }
 
     /**
@@ -266,17 +279,21 @@ class SettingsPage extends Component
      */
     public function fixLanguageSettings(): void
     {
-        // Delete the incorrect setting row
-        Setting::where('key', 'general.available_locales')->delete();
+        try {
+            // Delete the incorrect setting row
+            Setting::where('key', 'general.available_locales')->delete();
 
-        // Run the settings:sync command to recreate the setting with the correct structure
-        Artisan::call('settings:sync');
+            // Run the settings:sync command to recreate the setting with the correct structure
+            Artisan::call('settings:sync');
 
-        // Reload the settings to update the UI
-        $this->loadSettings();
-        $this->initialState = $this->state;
+            // Reload the settings to update the UI
+            $this->loadSettings();
+            $this->initialState = $this->state;
 
-        Flux::toast(__('Language settings have been reset to defaults.'), variant: 'success');
+            $this->showSuccessToast(__('messages.language_settings_reset'));
+        } catch (\Exception $e) {
+            $this->showErrorToast(__('messages.errors.generic'), $e->getMessage());
+        }
     }
 
     /**
