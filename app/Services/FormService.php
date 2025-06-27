@@ -42,7 +42,18 @@ class FormService
 
     public function updateField(FormField $field, array $data, string $locale): FormField
     {
+        $options = Arr::pull($data, 'options');
         $this->updateModel($field, $data, $locale);
+
+        if (is_array($options)) {
+            foreach ($options as $optionData) {
+                $option = $field->options()->findOrNew($optionData['id'] ?? null);
+                $option->value = $optionData['value'];
+                $option->setTranslation('label', $locale, $optionData['label']);
+                $option->save();
+            }
+        }
+
         return $field;
     }
 

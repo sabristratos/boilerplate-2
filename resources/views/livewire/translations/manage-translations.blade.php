@@ -4,22 +4,22 @@
         <!-- Page header -->
         <div class="sm:flex sm:justify-between sm:items-center mb-8">
             <div>
-                <flux:heading size="xl" class="mb-2">Translations</flux:heading>
-                <flux:text>Manage your application's translation strings across all languages.</flux:text>
+                <flux:heading size="xl" class="mb-2">{{ __('translations.title') }}</flux:heading>
+                <flux:text>{{ __('translations.description') }}</flux:text>
             </div>
             <div class="flex items-center gap-2">
                 <input type="file" wire:model="upload" class="hidden" id="import-file-input" />
-                <flux:button wire:click="scan">Scan</flux:button>
+                <flux:button wire:click="scan">{{ __('translations.scan_button') }}</flux:button>
                 <flux:dropdown>
-                    <flux:button icon:trailing="chevron-down">Actions</flux:button>
+                    <flux:button icon:trailing="chevron-down">{{ __('translations.actions_button') }}</flux:button>
                     <flux:menu>
-                        <flux:menu.item wire:click="export">Export</flux:menu.item>
-                        <flux:menu.item onclick="document.getElementById('import-file-input').click()">Import</flux:menu.item>
+                        <flux:menu.item wire:click="export">{{ __('translations.export_button') }}</flux:menu.item>
+                        <flux:menu.item onclick="document.getElementById('import-file-input').click()">{{ __('translations.import_button') }}</flux:menu.item>
                     </flux:menu>
                 </flux:dropdown>
                 <div class="flex justify-end gap-2">
                     <flux:button wire:click="resetLocales">{{ __('buttons.cancel') }}</flux:button>
-                    <flux:button variant="primary" wire:click="save">{{ __('buttons.save') }}</flux:button>
+                    <flux:button variant="primary" wire:click.prevent="save">{{ __('buttons.save') }}</flux:button>
                 </div>
             </div>
         </div>
@@ -30,7 +30,7 @@
                 <div class="w-full md:w-1/3">
                     <flux:input
                         wire:model.live.debounce.300ms="searchQuery"
-                        placeholder="Search by key or text..."
+                        :placeholder="__('translations.search_by_key_or_text')"
                         icon="magnifying-glass"
                         clearable
                     />
@@ -41,14 +41,14 @@
                         wire:model.live="filterGroup"
                         clearable
                     >
-                        <flux:select.option value="">All groups</flux:select.option>
+                        <flux:select.option value="">{{ __('translations.all_groups') }}</flux:select.option>
                         @foreach($groups as $group)
                             <flux:select.option value="{{ $group }}">{{ $group }}</flux:select.option>
                         @endforeach
                     </flux:select>
                     <flux:select
                         wire:model.live="selectedLocales"
-                        placeholder="Filter by locales"
+                        placeholder="{{ __('translations.filter_by_locales') }}"
                         variant="listbox"
                         multiple
                     >
@@ -59,12 +59,12 @@
                     <flux:select
                         wire:model.live="perPage"
                     >
-                        <flux:select.option value="10">10 per page</flux:select.option>
-                        <flux:select.option value="25">25 per page</flux:select.option>
-                        <flux:select.option value="50">50 per page</flux:select.option>
-                        <flux:select.option value="100">100 per page</flux:select.option>
+                        <flux:select.option value="10">{{ __('translations.per_page', ['count' => 10]) }}</flux:select.option>
+                        <flux:select.option value="25">{{ __('translations.per_page', ['count' => 25]) }}</flux:select.option>
+                        <flux:select.option value="50">{{ __('translations.per_page', ['count' => 50]) }}</flux:select.option>
+                        <flux:select.option value="100">{{ __('translations.per_page', ['count' => 100]) }}</flux:select.option>
                     </flux:select>
-                    <flux:button wire:click="resetFilters" variant="ghost">Reset Filters</flux:button>
+                    <flux:button wire:click="resetFilters" variant="ghost">{{ __('translations.reset_filters_button') }}</flux:button>
                 </div>
             </div>
         </div>
@@ -78,7 +78,7 @@
                     :direction="$sortDirection"
                     wire:click="sort('group')"
                 >
-                    Group
+                    {{ __('translations.group_column') }}
                 </flux:table.column>
                 <flux:table.column
                     sortable
@@ -86,7 +86,7 @@
                     :direction="$sortDirection"
                     wire:click="sort('key')"
                 >
-                    Key
+                    {{ __('translations.key_column') }}
                 </flux:table.column>
                 @foreach($selectedLocales as $locale)
                     <flux:table.column>
@@ -109,7 +109,7 @@
                                     wire:model.defer="translationsData.{{ $translation->id }}.{{ $locale }}"
                                     rows="auto"
                                     class:input="min-h-[40px] max-w-2xl w-full"
-                                    placeholder="No translation"
+                                    placeholder="{{ __('translations.no_translation_placeholder') }}"
                                 />
                             </flux:table.cell>
                         @endforeach
@@ -117,7 +117,7 @@
                 @empty
                     <flux:table.row>
                         <flux:table.cell colspan="{{ count($selectedLocales) + 2 }}" class="text-center text-slate-500 py-8">
-                            No translations found. Try adjusting your filters.
+                            {{ __('translations.no_translations_found') }}
                         </flux:table.cell>
                     </flux:table.row>
                 @endforelse

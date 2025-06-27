@@ -6,8 +6,9 @@ use App\Enums\ContentBlockStatus;
 use App\Models\ContentBlock;
 use App\Services\BlockManager;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UpdateContentBlockAction
 {
@@ -26,32 +27,34 @@ class UpdateContentBlockAction
         $blockClass = $blockManager->find($contentBlock->type);
         $translatableFields = $blockClass ? $blockClass->getTranslatableFields() : [];
 
-        // Get existing data
-        $allTranslations = $contentBlock->getTranslations('data');
-        $rawOriginalData = json_decode($contentBlock->getRawOriginal('data'), true) ?? [];
-        $nonTranslatableData = Arr::except($rawOriginalData, config('translatable.locales'));
-
         // Separate incoming data into translatable and non-translatable
-        $newTranslatableDataForLocale = [];
-        $newNonTranslatableData = [];
+        $translatableDataForLocale = [];
+        $nonTranslatableData = [];
         foreach ($data as $key => $value) {
             if (in_array($key, $translatableFields)) {
-                $newTranslatableDataForLocale[$key] = $value;
+                $translatableDataForLocale[$key] = $value;
             } else {
-                $newNonTranslatableData[$key] = $value;
+                $nonTranslatableData[$key] = $value;
             }
         }
 
-        // Merge the data
-        $allTranslations[$locale] = array_merge(
-            $allTranslations[$locale] ?? [],
-            $newTranslatableDataForLocale
-        );
-        $finalNonTranslatableData = array_merge($nonTranslatableData, $newNonTranslatableData);
-        $finalData = array_merge($finalNonTranslatableData, $allTranslations);
+        // Save non-translatable data to the settings column
+        $contentBlock->settings = array_merge($contentBlock->settings ?? [], $nonTranslatableData);
 
-        // Set the data attribute directly
-        $contentBlock->data = $finalData;
+        // Get all existing translations for the 'data' attribute
+        $allDataTranslations = $contentBlock->getTranslations('data');
+
+        // Get existing data for the current locale, or an empty array if none exists
+        $existingDataForLocale = $allDataTranslations[$locale] ?? [];
+
+        // Merge the updated translatable data with the existing data for the current locale
+        $mergedData = array_merge($existingDataForLocale, $translatableDataForLocale);
+
+        // Set the merged data back for the current locale
+        $allDataTranslations[$locale] = $mergedData;
+
+        // Save all translations for the 'data' attribute
+        $contentBlock->setTranslations('data', $allDataTranslations);
 
         if ($status) {
             $contentBlock->status = $status;

@@ -20,7 +20,6 @@ return array (
     'generic' => 'An unexpected error occurred. Please try again.',
     'not_found' => 'The requested resource was not found.',
     'unauthorized' => 'You are not authorized to perform this action.',
-    'file_upload' => 'Failed to upload file.',
   ),
   'success' => 
   array (
@@ -28,5 +27,10 @@ return array (
     'cache_cleared' => 'Application cache cleared.',
   ),
   'cache_cleared_successfully' => 'Cache cleared successfully.',
-  'language_settings_reset' => 'Language settings have been reset to defaults.',
+  'translations' => 
+  array (
+    'scan_complete' => 'Scan complete. New translations have been added.',
+    'save_success' => 'Translations have been saved successfully.',
+    'import_success' => 'Translations have been imported successfully.',
+  ),
 );

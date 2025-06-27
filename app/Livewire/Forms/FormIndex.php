@@ -17,8 +17,10 @@ class FormIndex extends Component
 
     public function getFormsProperty()
     {
+        $locale = app()->getLocale();
+
         return Form::query()
-            ->when($this->search, fn ($query) => $query->where('name', 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($query) => $query->where('name->' . $locale, 'like', '%' . $this->search . '%'))
             ->latest()
             ->paginate($this->perPage);
     }
@@ -43,7 +45,9 @@ class FormIndex extends Component
         $this->authorize('create forms');
 
         $form = Form::create([
-            'name' => 'New Form',
+            'name' => [
+                'en' => 'New Form',
+            ],
             'title' => [
                 'en' => 'New Form',
             ],

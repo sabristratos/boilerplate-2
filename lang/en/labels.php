@@ -19,4 +19,7 @@ return array (
   'url_placeholder' => 'https://example.com/image.jpg',
   'search_media' => 'Search media...',
   'select_media' => 'Select media',
+  '1_star' => '1 star',
+  'required' => 'Required',
+  'search_placeholder' => 'Search...',
 );

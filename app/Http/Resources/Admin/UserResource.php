@@ -24,13 +24,6 @@ class UserResource extends Resource
     public static $model = User::class;
 
     /**
-     * The single singular label for the resource.
-     *
-     * @var string
-     */
-    public static $singularLabel = 'User';
-
-    /**
      * The icon to be used in the navigation.
      * (e.g., from Heroicons)
      *
@@ -63,6 +56,26 @@ class UserResource extends Resource
     }
 
     /**
+     * Get the singular label for the resource.
+     *
+     * @return string
+     */
+    public static function singularLabel(): string
+    {
+        return __('resources.user');
+    }
+
+    /**
+     * Get the plural label for the resource.
+     *
+     * @return string
+     */
+    public static function pluralLabel(): string
+    {
+        return __('resources.users');
+    }
+
+    /**
      * Get the fields displayed by the resource.
      *
      * @return array
@@ -71,21 +84,25 @@ class UserResource extends Resource
     {
         return [
             Media::make('avatar')
-                ->label('Avatar')
+                ->label(__('labels.avatar'))
                 ->helpText('Upload a user avatar. Recommended size is 200x200px.'),
 
             Text::make('name')
+                ->label(__('labels.name'))
                 ->rules(['required', 'max:255']),
 
             Text::make('email')
+                ->label(__('labels.email'))
                 ->rules(['required', 'email', 'max:255']),
 
             Text::make('password')
+                ->label(__('labels.password'))
                 ->rules(['sometimes', 'required', 'min:8'])
                 ->type('password')
                 ->helpText('Leave blank to keep current password.'),
 
             Select::make('roles')
+                ->label(__('labels.roles'))
                 ->options(
                     Role::all()->mapWithKeys(function ($role) {
                         return [$role->name => Str::title(str_replace(['-', '_'], ' ', $role->name))];
@@ -107,7 +124,7 @@ class UserResource extends Resource
     {
         return [
             ImageColumn::make('avatar')
-                ->label('Avatar')
+                ->label(__('labels.avatar'))
                 ->size(40)
                 ->circular()
                 ->alignment('center'),
@@ -116,20 +133,23 @@ class UserResource extends Resource
                 ->sortable(),
 
             Column::make('name')
+                ->label(__('labels.name'))
                 ->sortable()
                 ->searchable(),
 
             Column::make('email')
+                ->label(__('labels.email'))
                 ->sortable()
                 ->searchable(),
 
             Column::make('roles')
+                ->label(__('labels.roles'))
                 ->setFormatValueCallback(function ($value, $resource) {
                     return $resource->roles->pluck('name')->map(fn ($name) => Str::title(str_replace('-', ' ', $name)))->implode(', ');
                 }),
 
             BadgeColumn::make('email_verified_at')
-                ->label('Verified')
+                ->label(__('labels.verified'))
                 ->colors([
                     'verified' => 'success',
                     'unverified' => 'danger',
@@ -140,7 +160,7 @@ class UserResource extends Resource
 
             Column::make('created_at')
                 ->sortable()
-                ->label('Created'),
+                ->label(__('labels.created_at')),
         ];
     }
 
@@ -153,9 +173,10 @@ class UserResource extends Resource
     {
         return [
             SelectFilter::make('verified')
+                ->label(__('labels.verified'))
                 ->options([
-                    'verified' => 'Verified',
-                    'unverified' => 'Unverified',
+                    'verified' => __('labels.verified'),
+                    'unverified' => __('labels.unverified'),
                 ])
                 ->setApplyCallback(function ($query, $value) {
                     if ($value === 'verified') {

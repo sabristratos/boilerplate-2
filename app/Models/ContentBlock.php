@@ -50,12 +50,15 @@ class ContentBlock extends Model implements Sortable, HasMedia
         'type',
         'page_id',
         'data',
+        'settings',
         'status',
         'order',
     ];
 
     protected $casts = [
         'status' => \App\Enums\ContentBlockStatus::class,
+        'data' => 'array',
+        'settings' => 'array',
     ];
 
     public array $translatable = ['data'];
@@ -72,17 +75,10 @@ class ContentBlock extends Model implements Sortable, HasMedia
         $dataForLocale = is_string($value) ? json_decode($value, true) : $value;
         $dataForLocale = $dataForLocale ?? [];
 
-        // We still need to fetch the full raw data to get non-translatable values.
-        $allData = is_string($this->getRawOriginal('data'))
-            ? json_decode($this->getRawOriginal('data'), true)
-            : $this->getRawOriginal('data');
-        $allData = $allData ?? [];
-
-        $nonTranslatableData = Arr::except($allData, config('translatable.locales'));
         $blockClass = app(BlockManager::class)->find($this->type);
         $defaultData = $blockClass ? $blockClass->getDefaultData() : [];
 
-        return array_merge($defaultData, $nonTranslatableData, $dataForLocale);
+        return array_merge($defaultData, $dataForLocale);
     }
 
     public function blockClass(): Attribute

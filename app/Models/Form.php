@@ -25,7 +25,7 @@ class Form extends Model
         'submit_button_options',
     ];
 
-    public array $translatable = ['title', 'description', 'success_message'];
+    public array $translatable = ['name', 'title', 'description', 'success_message'];
 
     protected $casts = [
         'send_notification' => 'boolean',

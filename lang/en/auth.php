@@ -20,10 +20,4 @@ return array (
   'verification_link_sent' => 'A new verification link has been sent to the email address you provided during registration.',
   'confirm_password_title' => 'Confirm password',
   'confirm_password_description' => 'This is a secure area of the application. Please confirm your password before continuing.',
-  'login_success' => 'Welcome back, :name!',
-  'logout_success' => 'You have been successfully logged out.',
-  'password_reset_success' => 'Your password has been reset successfully.',
-  'registration_success' => 'Your account has been created successfully.',
-  'email_verification_success' => 'Your email has been verified successfully.',
-  'password_confirmed' => 'Password confirmed successfully.',
 );

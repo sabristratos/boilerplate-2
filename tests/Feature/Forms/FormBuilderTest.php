@@ -25,21 +25,10 @@ class FormBuilderTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-        Permission::create(['name' => 'edit forms']);
-        $role = Role::create(['name' => 'admin']);
-        $role->givePermissionTo('edit forms');
+        $this->seed(RolesAndPermissionsSeeder::class);
+
         $this->user = User::factory()->create();
         $this->user->assignRole('admin');
-
-        // Register the settings manager
-        $this->app->singleton(SettingsManager::class, function () {
-            return new SettingsManager();
-        });
-
-        // Since we have migrations outside the standard timeframe, we run them manually.
-        Artisan::call('migrate');
-
-        $this->seed(RolesAndPermissionsSeeder::class);
 
         Mail::fake();
     }
@@ -50,9 +39,9 @@ class FormBuilderTest extends TestCase
         $form = Form::factory()->create();
 
         $this->actingAs($this->user)
-            ->get(route('admin.forms.edit', $form))
+            ->get(route('admin.forms.edit', ['form' => $form]))
             ->assertSuccessful()
-            ->assertSeeLivewire(FormBuilder::class);
+            ->assertSee(__('forms.edit_form_title', ['name' => $form->name]));
     }
 
     /** @test */
@@ -75,8 +64,8 @@ class FormBuilderTest extends TestCase
 
         Livewire::actingAs($this->user)
             ->test(FormBuilder::class, ['form' => $form])
-            ->set('name', 'Updated Name')
-            ->call('save')
+            ->set('formState.name', 'Updated Name')
+            ->call('saveForm')
             ->assertHasNoErrors();
 
         $this->assertEquals('Updated Name', $form->refresh()->name);
@@ -126,11 +115,12 @@ class FormBuilderTest extends TestCase
     public function can_remove_a_field_from_a_form()
     {
         $form = Form::factory()->hasFields(1)->create();
+        $fieldId = $form->formFields->first()->id;
 
         Livewire::actingAs($this->user)
             ->test(FormBuilder::class, ['form' => $form])
-            ->call('removeField', $form->formFields->first()->id)
-            ->assertHasNoErrors();
+            ->call('confirmDelete', $fieldId)
+            ->call('deleteField', $fieldId);
 
         $this->assertCount(0, $form->refresh()->formFields);
     }
@@ -138,14 +128,18 @@ class FormBuilderTest extends TestCase
     /** @test */
     public function can_edit_a_field_in_a_form()
     {
-        $form = Form::factory()->hasFields(1)->create();
+        $form = Form::factory()->hasFields(1, [
+            'label' => ['en' => 'Original Label']
+        ])->create();
+        $field = $form->formFields->first();
 
         Livewire::actingAs($this->user)
             ->test(FormBuilder::class, ['form' => $form])
-            ->call('editField', $form->formFields->first()->id)
-            ->set('editingFieldState.label.en', 'Updated Label')
+            ->call('selectField', $field->id)
+            ->set('fieldState.label.en', 'Updated Label')
             ->call('saveField')
-            ->assertHasNoErrors();
+            ->assertHasNoErrors()
+            ->assertSet('selectedField.label.en', 'Updated Label');
 
         $this->assertEquals('Updated Label', $form->refresh()->formFields->first()->getTranslation('label', 'en'));
     }
@@ -168,22 +162,26 @@ class FormBuilderTest extends TestCase
     /** @test */
     public function can_submit_a_form_with_a_select_field()
     {
-        $options = ['Option 1', 'Option 2'];
+        $options = [
+            ['value' => 'option_1', 'label' => ['en' => 'Option 1', 'fr' => 'Option 1']],
+            ['value' => 'option_2', 'label' => ['en' => 'Option 2', 'fr' => 'Option 2']],
+        ];
+
         $form = Form::factory()->hasFields(1, [
             'type' => 'select',
             'name' => 'selection',
-            'options' => ['en' => $options]
+            'options' => $options,
         ])->create();
         $field = $form->formFields->first();
 
         Livewire::test(FormDisplay::class, ['form' => $form])
-            ->set('formData.'.$field->name, 'Option 2')
+            ->set('formData.'.$field->name, 'option_2')
             ->call('submit')
             ->assertHasNoErrors();
 
         $this->assertDatabaseHas('form_submissions', [
             'form_id' => $form->id,
-            'data->selection' => 'Option 2',
+            'data->selection' => 'option_2',
         ]);
     }
 
@@ -210,5 +208,46 @@ class FormBuilderTest extends TestCase
             ->test(FormBuilder::class, ['form' => $form])
             ->call('removeField', $fieldId)
             ->assertCount('form.formFields', 0);
+    }
+
+    /** @test */
+    public function can_update_submit_button_text()
+    {
+        $form = Form::factory()->create();
+
+        Livewire::actingAs($this->user)
+            ->test(FormBuilder::class, ['form' => $form])
+            ->set('formState.submit_button_options.label.en', 'Send')
+            ->call('saveForm');
+
+        $this->assertEquals('Send', $form->refresh()->submit_button_options['label']['en']);
+    }
+
+    /** @test */
+    public function can_update_field_layout_options()
+    {
+        $form = Form::factory()->hasFields(1)->create();
+        $field = $form->formFields->first();
+
+        Livewire::actingAs($this->user)
+            ->test(FormBuilder::class, ['form' => $form])
+            ->call('selectField', $field->id)
+            ->set('fieldState.layout_options.desktop', '1/2')
+            ->call('saveField');
+
+        $this->assertEquals('1/2', $form->refresh()->formFields->first()->layout_options['desktop']);
+    }
+
+    /** @test */
+    public function unauthorized_user_cannot_edit_a_form()
+    {
+        $user = User::factory()->create();
+        $form = Form::factory()->create();
+
+        Livewire::actingAs($user)
+            ->test(FormBuilder::class, ['form' => $form])
+            ->set('formState.name', 'Updated Name')
+            ->call('saveForm')
+            ->assertForbidden();
     }
 } 

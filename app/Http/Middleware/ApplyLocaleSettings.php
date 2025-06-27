@@ -16,15 +16,24 @@ class ApplyLocaleSettings
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $defaultLocale = Settings::get('general.default_locale', config('app.locale'));
+        $locale = null;
+
+        if (auth()->check() && auth()->user()->locale) {
+            $locale = auth()->user()->locale;
+        } elseif (session()->has('locale')) {
+            $locale = session('locale');
+        } else {
+            $locale = Settings::get('general.default_locale', config('app.locale'));
+        }
+
         $fallbackLocale = Settings::get('general.fallback_locale', config('app.fallback_locale'));
 
         config([
-            'app.locale' => $defaultLocale,
+            'app.locale' => $locale,
             'app.fallback_locale' => $fallbackLocale,
         ]);
 
-        app()->setLocale($defaultLocale);
+        app()->setLocale($locale);
 
         return $next($request);
     }

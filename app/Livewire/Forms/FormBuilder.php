@@ -55,7 +55,7 @@ class FormBuilder extends Component
         $locale = $this->activeLocale;
 
         return [
-            'formState.name' => 'required|string|max:255',
+            "formState.name.{$locale}" => 'required|string|max:255',
             "formState.title.{$locale}" => 'required|string|max:255',
             "formState.description.{$locale}" => 'nullable|string',
             "formState.success_message.{$locale}" => 'nullable|string',
@@ -69,8 +69,8 @@ class FormBuilder extends Component
             'fieldData.placeholder' => 'nullable|string|max:255',
             'fieldData.validation_rules' => 'nullable|string',
             'fieldData.options' => 'nullable|array',
-            'fieldData.options.*.label' => 'nullable|string',
-            'fieldData.options.*.value' => 'nullable|string',
+            'fieldData.options.*.label' => 'required|string|max:255',
+            'fieldData.options.*.value' => 'required|string|max:255',
         ];
     }
 
@@ -79,12 +79,16 @@ class FormBuilder extends Component
         $this->form = $form;
         $this->formState = $form->toArray();
 
-        if (!isset($this->formState['submit_button_options']['align'])) {
-            $this->formState['submit_button_options']['align'] = [
+        foreach ($form->getTranslatableAttributes() as $attribute) {
+            $this->formState[$attribute] = $form->getTranslations($attribute);
+        }
+
+        if (empty($this->formState['submit_button_options']['align'])) {
+            data_set($this->formState, 'submit_button_options.align', [
                 'desktop' => 'left',
                 'tablet' => 'left',
                 'mobile' => 'left',
-            ];
+            ]);
         }
 
         $this->form->load('fields');
@@ -156,7 +160,7 @@ class FormBuilder extends Component
 
     public function updated($name, $value)
     {
-        if ($name === 'formState.name') {
+        if (str_starts_with($name, 'formState.name.')) {
             $this->formState['slug'] = Str::slug($value);
         }
     }
@@ -211,7 +215,7 @@ class FormBuilder extends Component
 
         $this->nameManuallyEdited = false;
         $this->activeFieldTab = 'general';
-        $this->selectedField = $this->form->fields()->find($fieldId);
+        $this->selectedField = $this->form->fields()->with('options')->find($fieldId);
         $this->fieldData = $this->selectedField->only(['name', 'validation_rules']);
         $this->fieldComponentOptions = $this->selectedField->component_options ?? [];
         $this->fieldData['layout_options'] = $this->selectedField->layout_options ?? [
@@ -222,6 +226,13 @@ class FormBuilder extends Component
         foreach ($this->selectedField->getTranslatableAttributes() as $key) {
             $this->fieldData[$key] = $this->selectedField->getTranslation($key, $this->activeLocale, false);
         }
+        $this->fieldData['options'] = $this->selectedField->options->map(function ($option) {
+            return [
+                'id' => $option->id,
+                'label' => $option->getTranslation('label', $this->activeLocale, false),
+                'value' => $option->value,
+            ];
+        })->toArray();
 
         $this->selectedRules = $this->fieldData['validation_rules'] ? array_filter(explode('|', $this->fieldData['validation_rules'])) : [];
 
@@ -246,15 +257,10 @@ class FormBuilder extends Component
         if ($this->selectedField) {
             $this->syncValidationRules();
             $validatedData = $this->validate()['fieldData'];
-            $validatedData['component_options'] = $this->fieldComponentOptions;
-            $validatedData['layout_options'] = $this->fieldData['layout_options'];
 
             $this->formService->updateField($this->selectedField, $validatedData, $this->activeLocale);
-
-            $this->dispatch('field-updated', fieldId: $this->selectedField->id);
             $this->showSuccessToast('Field saved successfully.');
             $this->selectField(null);
-            Flux::modal('edit-field-modal')->close();
         }
     }
 
@@ -276,6 +282,34 @@ class FormBuilder extends Component
         Flux::modal('confirm-delete-modal')->close();
     }
 
+    public function getHasOptionsProperty(): bool
+    {
+        if (!$this->selectedField) {
+            return false;
+        }
+
+        return in_array($this->selectedField->type->value, ['select', 'radio', 'checkbox-group']);
+    }
+
+    public function addOption()
+    {
+        $this->fieldData['options'][] = [
+            'id' => null,
+            'label' => '',
+            'value' => '',
+        ];
+    }
+
+    public function removeOption(int $index)
+    {
+        if (isset($this->fieldData['options'][$index]['id'])) {
+            $optionId = $this->fieldData['options'][$index]['id'];
+            $this->selectedField->options()->find($optionId)?->delete();
+        }
+        unset($this->fieldData['options'][$index]);
+        $this->fieldData['options'] = array_values($this->fieldData['options']);
+    }
+
     public function updateFieldOrder(array $orderedIds): void
     {
         try {
@@ -293,8 +327,8 @@ class FormBuilder extends Component
 
     public function saveForm()
     {
-        $validatedData = $this->validate([
-            'formState.name' => 'required|string|max:255',
+        $this->validate([
+            "formState.name.{$this->activeLocale}" => 'required|string|max:255',
             "formState.title.{$this->activeLocale}" => 'required|string|max:255',
             "formState.description.{$this->activeLocale}" => 'nullable|string',
             "formState.success_message.{$this->activeLocale}" => 'nullable|string',
@@ -304,7 +338,7 @@ class FormBuilder extends Component
             'formState.send_notification' => 'boolean',
         ]);
 
-        $this->form->update($validatedData['formState']);
+        $this->form->update($this->formState);
         $this->showSuccessToast('Form saved successfully.');
     }
 

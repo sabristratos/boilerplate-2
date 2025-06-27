@@ -236,20 +236,49 @@
 
                                 {{-- Repeater --}}
                                 @case('repeater')
-                                    <flux:field>
-                                        <flux:label>{{ __($setting->label) }}</flux:label>
-                                        @if($setting->description)
-                                            <flux:description>{{ __($setting->description) }}</flux:description>
-                                        @endif
-                                        <div class="mt-2">
-                                            <livewire:setting-repeater
-                                                :settingKey="$setting->key"
-                                                :subfields="$setting->subfields"
-                                                :value="(array) data_get($state, $setting->key, [])"
-                                                :key="'repeater-' . $setting->key"
-                                            />
-                                        </div>
-                                    </flux:field>
+                                    <div x-data="{
+                                        items: $wire.entangle('state.{{ $setting->key }}'),
+                                        subfields: {{ json_encode($setting->subfields) }},
+                                        addNewItem() {
+                                            let newItem = {};
+                                            this.subfields.forEach(field => {
+                                                newItem[field.name] = '';
+                                            });
+                                            this.items.push(newItem);
+                                        }
+                                    }">
+                                        <flux:field>
+                                            <flux:label>{{ __($setting->label) }}</flux:label>
+                                            @if($setting->description)
+                                                <flux:description>{{ __($setting->description) }}</flux:description>
+                                            @endif
+                                            <div class="mt-2 space-y-4">
+                                                <template x-for="(item, index) in items" :key="index">
+                                                    <div class="p-4 border border-zinc-200 dark:border-zinc-700 rounded-lg space-y-2 relative">
+                                                        <div class="absolute top-2 right-2">
+                                                            <flux:button @click="items.splice(index, 1)" size="xs" variant="danger" icon="trash" />
+                                                        </div>
+                                                        <template x-for="field in subfields" :key="field.name">
+                                                            <div>
+                                                                <template x-if="field.type === 'text'">
+                                                                    <flux:input x-model="item[field.name]" :label="field.label" />
+                                                                </template>
+                                                                <template x-if="field.type === 'textarea'">
+                                                                    <flux:textarea x-model="item[field.name]" :label="field.label" />
+                                                                </template>
+                                                                {{-- Add other field types here as needed --}}
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <div class="mt-4">
+                                                <flux:button @click="addNewItem()" variant="outline" icon="plus">
+                                                    Add Item
+                                                </flux:button>
+                                            </div>
+                                        </flux:field>
+                                    </div>
                                     @break
 
                                 {{-- Default to Text Input --}}

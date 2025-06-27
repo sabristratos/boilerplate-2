@@ -23,13 +23,6 @@ class TestimonialResource extends Resource
     public static $model = Testimonial::class;
 
     /**
-     * The single singular label for the resource.
-     *
-     * @var string
-     */
-    public static $singularLabel = 'Testimonial';
-
-    /**
      * The icon to be used in the navigation.
      *
      * @var string
@@ -47,6 +40,26 @@ class TestimonialResource extends Resource
     }
 
     /**
+     * Get the singular label for the resource.
+     *
+     * @return string
+     */
+    public static function singularLabel(): string
+    {
+        return __('resources.testimonial');
+    }
+
+    /**
+     * Get the plural label for the resource.
+     *
+     * @return string
+     */
+    public static function pluralLabel(): string
+    {
+        return __('resources.testimonials');
+    }
+
+    /**
      * Get the fields displayed by the resource.
      *
      * @return array
@@ -55,19 +68,25 @@ class TestimonialResource extends Resource
     {
         return [
             Media::make('avatar')
-                ->label('Avatar'),
+                ->label(__('labels.avatar')),
             Text::make('name')
+                ->label(__('labels.name'))
                 ->rules(['required', 'string', 'max:255']),
             Text::make('title')
+                ->label(__('labels.title'))
                 ->rules(['nullable', 'string', 'max:255']),
             Textarea::make('content')
+                ->label(__('labels.content'))
                 ->rules(['required', 'string']),
             Rating::make('rating')
+                ->label(__('labels.rating'))
                 ->rules(['required', 'integer', 'min:1', 'max:5'])
                 ->default(5),
             Text::make('source')
+                ->label(__('labels.source'))
                 ->rules(['nullable', 'string', 'max:255']),
             Text::make('order')
+                ->label(__('labels.order'))
                 ->rules(['required', 'integer'])
                 ->type('number')
                 ->default(0),
@@ -85,19 +104,23 @@ class TestimonialResource extends Resource
             Column::make('handle')
                 ->label(''),
             ImageColumn::make('avatar')
-                ->label('Avatar')
+                ->label(__('labels.avatar'))
                 ->size(40)
                 ->circular()
                 ->alignment('center'),
             Column::make('name')
+                ->label(__('labels.name'))
                 ->sortable()
                 ->searchable(),
             RatingColumn::make('rating')
+                ->label(__('labels.rating'))
                 ->sortable(),
             Column::make('source')
+                ->label(__('labels.source'))
                 ->sortable()
                 ->searchable(),
             Column::make('order')
+                ->label(__('labels.order'))
                 ->sortable(),
         ];
     }
@@ -111,12 +134,13 @@ class TestimonialResource extends Resource
     {
         return [
             SelectFilter::make('rating')
+                ->label(__('labels.rating'))
                 ->options([
-                    '5' => '5 stars',
-                    '4' => '4 stars',
-                    '3' => '3 stars',
-                    '2' => '2 stars',
-                    '1' => '1 star',
+                    '5' => __('labels.5_stars'),
+                    '4' => __('labels.4_stars'),
+                    '3' => __('labels.3_stars'),
+                    '2' => __('labels.2_stars'),
+                    '1' => __('labels.1_star'),
                 ]),
         ];
     }

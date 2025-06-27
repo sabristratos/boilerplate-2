@@ -46,17 +46,8 @@ class Page extends Model implements HasMedia
      */
     public function resolveRouteBinding($value, $field = null)
     {
-        // Add debugging
-        \Illuminate\Support\Facades\Log::info('Resolving route binding for Page', [
-            'value' => $value,
-            'field' => $field,
-            'locale' => app()->getLocale(),
-            'is_numeric' => is_numeric($value),
-            'route_name' => request()->route()->getName(),
-        ]);
-
-        // If the value is numeric and we're on the admin.pages.editor route, find by ID
-        if (is_numeric($value) && request()->route()->getName() === 'admin.pages.editor') {
+        // If the value is numeric, always find by ID.
+        if (is_numeric($value)) {
             return $this->where('id', $value)->firstOrFail();
         }
 

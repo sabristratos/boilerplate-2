@@ -4,46 +4,38 @@
             <div class="space-y-6">
                 @foreach ($fields as $field)
                     <div class="py-2">
+                        @php
+                            $attributes = new \Illuminate\View\ComponentAttributeBag();
+                            
+                            $wireModel = 'wire:model.defer';
+                            if (method_exists($field, 'isReactive') && $field->isReactive()) {
+                                $wireModel = 'wire:model.live';
+                            }
+
+                            $attributes = $attributes->merge([
+                                $wireModel => 'data.' . $field->getName(),
+                                'id' => $field->getName(),
+                                'label' => $field->getLabel(),
+                                'placeholder' => $field->getPlaceholder(),
+                                'description' => $field->getHelpText(),
+                                'badge' => $field->isRequired() ? __('labels.required') : null,
+                            ]);
+                        @endphp
+                        
                         @if ($field instanceof \App\Services\ResourceSystem\Fields\Text)
                             <flux:input
                                 type="{{ $field->getType() }}"
-                                id="{{ $field->getName() }}"
-                                @if($field->isReactive())
-                                wire:model.live="data.{{ $field->getName() }}"
-                                @else
-                                wire:model.defer="data.{{ $field->getName() }}"
-                                @endif
-                                label="{{ $field->getLabel() }}"
-                                placeholder="{{ $field->getPlaceholder() }}"
-                                description="{{ $field->getHelpText() }}"
-                                :badge="$field->isRequired() ? 'Required' : null"
+                                {{ $attributes }}
                             />
                         @elseif ($field instanceof \App\Services\ResourceSystem\Fields\Textarea)
                             <flux:textarea
-                                id="{{ $field->getName() }}"
-                                @if($field->isReactive())
-                                wire:model.live="data.{{ $field->getName() }}"
-                                @else
-                                wire:model.defer="data.{{ $field->getName() }}"
-                                @endif
-                                label="{{ $field->getLabel() }}"
-                                placeholder="{{ $field->getPlaceholder() }}"
-                                description="{{ $field->getHelpText() }}"
                                 rows="{{ $field->getRows() }}"
-                                :badge="$field->isRequired() ? 'Required' : null"
+                                {{ $attributes }}
                             />
                         @elseif ($field instanceof \App\Services\ResourceSystem\Fields\Select)
                             <flux:select
-                                id="{{ $field->getName() }}"
-                                @if($field->isReactive())
-                                wire:model.live="data.{{ $field->getName() }}"
-                                @else
-                                wire:model.defer="data.{{ $field->getName() }}"
-                                @endif
-                                label="{{ $field->getLabel() }}"
+                                {{ $attributes->except(['placeholder']) }}
                                 placeholder="{{ $field->getPlaceholder() }}"
-                                description="{{ $field->getHelpText() }}"
-                                :badge="$field->isRequired() ? 'Required' : null"
                                 variant="listbox"
                                 :multiple="$field->isMultiple()"
                             >
@@ -66,11 +58,7 @@
                                     <flux:description>{{ $field->getHelpText() }}</flux:description>
                                 @endif
                                 <x-rating
-                                    @if($field->isReactive())
-                                    wire:model.live="data.{{ $field->getName() }}"
-                                    @else
-                                    wire:model.defer="data.{{ $field->getName() }}"
-                                    @endif
+                                    {{ $attributes->except(['label', 'placeholder', 'description', 'badge']) }}
                                     :value="$data[$field->getName()] ?? 0"
                                 />
                             </flux:field>

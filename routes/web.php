@@ -47,4 +47,6 @@ Route::middleware(['auth'])->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/{page:slug}', [PageController::class, 'show'])->name('pages.show');
+Route::get('/{page:slug}', [PageController::class, 'show'])
+    ->where('page', '[a-zA-Z0-9_-]+')
+    ->name('pages.show');

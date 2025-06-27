@@ -31,7 +31,7 @@
             @forelse($this->forms as $form)
                 <flux:table.row :key="$form->id">
                     <flux:table.cell>
-                        <a href="{{ route('admin.forms.edit', ['form' => $form, 'locale' => app()->getLocale()]) }}" wire:navigate>
+                        <a href="{{ route('admin.forms.edit', ['form' => $form]) }}" wire:navigate>
                             <flux:text variant="strong">{{ $form->name }}</flux:text>
                         </a>
                     </flux:table.cell>
@@ -48,7 +48,7 @@
                         {{ $form->formSubmissions()->count() }}
                     </flux:table.cell>
                     <flux:table.cell align="end">
-                        <flux:button href="{{ route('admin.forms.submissions', $form) }}" variant="ghost" size="sm" icon="inbox-stack" square tooltip="Submissions" wire:navigate/>
+                        <flux:button href="{{ route('admin.forms.submissions', $form) }}" variant="ghost" size="sm" icon="inbox-stack" square tooltip="{{ __('forms.submissions_tooltip') }}" wire:navigate/>
                         <flux:button
                             variant="danger"
                             size="sm"

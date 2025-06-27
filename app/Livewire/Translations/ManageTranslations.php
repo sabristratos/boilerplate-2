@@ -83,27 +83,29 @@ class ManageTranslations extends Component
     {
         try {
             Artisan::call('translations:sync-from-files');
-            $this->showSuccessToast(
-                __('messages.translations.scan_complete'),
-                __('Scan Complete')
-            );
+            $this->showSuccessToast(__('messages.translations.scan_complete'));
         } catch (Exception $e) {
-            $this->showErrorToast(
-                $e->getMessage(),
-                __('Scan Failed')
-            );
+            $this->showErrorToast($e->getMessage(), __('Scan Failed'));
         }
-
-        return $this->redirect(request()->header('Referer'));
     }
 
     public function save()
     {
         try {
+            $this->validate([
+                'translationsData.*.*' => 'nullable|string',
+            ]);
+
             foreach ($this->translationsData as $translationId => $locales) {
                 $translation = Translation::find($translationId);
                 if ($translation) {
-                    $translation->setTranslations('text', $locales);
+                    // Get existing translations
+                    $existingTranslations = $translation->getTranslations('text');
+
+                    // Merge updated values
+                    $newTranslations = array_merge($existingTranslations, $locales);
+
+                    $translation->setTranslations('text', $newTranslations);
                     $translation->save();
                 }
             }
@@ -111,15 +113,9 @@ class ManageTranslations extends Component
             $this->syncToFiles();
             Artisan::call('cache:clear');
 
-            $this->showSuccessToast(
-                __('messages.translations.save_success'),
-                __('Save successful')
-            );
+            $this->showSuccessToast(__('messages.translations.save_success'));
         } catch (Exception $e) {
-            $this->showErrorToast(
-                $e->getMessage(),
-                __('Save failed')
-            );
+            $this->showErrorToast($e->getMessage(), __('Save failed'));
         }
     }
 
@@ -200,10 +196,7 @@ class ManageTranslations extends Component
 
             $this->syncToFiles();
 
-            $this->showSuccessToast(
-                __('messages.translations.import_success'),
-                __('Import successful')
-            );
+            $this->showSuccessToast(__('messages.translations.import_success'));
         } catch (Exception $e) {
             $this->showErrorToast(
                 $e->getMessage(),

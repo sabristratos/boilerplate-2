@@ -29,6 +29,7 @@ return array (
   'label' => 'Label',
   'placeholder' => 'Placeholder',
   'options' => 'Options',
+  'value' => 'Value',
   'add_field' => 'Add Field',
   'add_text_input' => 'Text Input',
   'add_textarea' => 'Add Textarea',

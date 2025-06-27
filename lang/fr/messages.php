@@ -2,7 +2,7 @@
 
 return array (
   'delete_confirm_title' => 'Es-tu sûr?',
-  'delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer ceci ? Cette action est irréversible.',
+  'delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer ceci ? Cette action est irréversible.',
   'no_resources_found' => 'Aucune ressource trouvée.',
   'saved' => 'Sauvé.',
   'confirm_save' => 
@@ -27,4 +27,10 @@ return array (
     'cache_cleared' => 'Cache d\'application vidé.',
   ),
   'cache_cleared_successfully' => 'Le cache a été vidé avec succès.',
+  'translations' => 
+  array (
+    'scan_complete' => 'Analyse terminée. De nouvelles traductions ont été ajoutées.',
+    'save_success' => 'Les traductions ont été enregistrées avec succès.',
+    'import_success' => 'Les traductions ont été importées avec succès.',
+  ),
 );

@@ -29,6 +29,7 @@ return array (
   'label' => 'Étiquette',
   'placeholder' => 'Placeholder',
   'options' => 'Options',
+  'value' => 'Valeur',
   'add_field' => 'Ajouter un champ',
   'add_text_input' => 'Champ de texte',
   'add_textarea' => 'Ajouter une zone de texte',

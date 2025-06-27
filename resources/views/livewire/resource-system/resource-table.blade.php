@@ -3,7 +3,7 @@
         <div class="w-full md:w-1/3">
             <flux:input
                 wire:model.live.debounce.300ms="search"
-                placeholder="Search..."
+                :placeholder="__('labels.search_placeholder')"
                 icon="magnifying-glass"
                 clearable
             />

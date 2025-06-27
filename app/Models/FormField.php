@@ -10,6 +10,7 @@ use Spatie\Translatable\HasTranslations;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class FormField extends Model implements Sortable
 {
@@ -37,7 +38,6 @@ class FormField extends Model implements Sortable
 
     protected $casts = [
         'type' => FormFieldType::class,
-        'options' => 'array',
         'component_options' => 'array',
         'layout_options' => 'array',
     ];
@@ -50,6 +50,11 @@ class FormField extends Model implements Sortable
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+
+    public function options(): HasMany
+    {
+        return $this->hasMany(FormFieldOption::class)->orderBy('sort_order');
     }
 
     protected static function newFactory(): FormFieldFactory
@@ -68,6 +73,7 @@ class FormField extends Model implements Sortable
             return false;
         }
 
-        return in_array('required', explode('|', $this->validation_rules));
+        $rules = explode('|', $this->validation_rules);
+        return in_array('required', $rules) || in_array('required_if', $rules);
     }
 }

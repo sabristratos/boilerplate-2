@@ -8,8 +8,8 @@
         @foreach($items as $index => $item)
             <div wire:key="{{ $wireModel }}.{{ $index }}" class="flex items-center gap-2 bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg">
                 <div class="grid grid-cols-2 gap-2 flex-1">
-                    <flux:input wire:model.live="{{ $wireModel }}.{{ $index }}.label" placeholder="Label" />
-                    <flux:input wire:model.live="{{ $wireModel }}.{{ $index }}.value" placeholder="Value" />
+                    <flux:input wire:model.live="{{ $wireModel }}.{{ $index }}.label" placeholder="{{ __('forms.label') }}" />
+                    <flux:input wire:model.live="{{ $wireModel }}.{{ $index }}.value" placeholder="{{ __('forms.value') }}" />
                 </div>
                 <flux:button wire:click="removeRepeaterItem('{{ $wireModelKey }}', {{ $index }})" icon="trash" variant="ghost" size="sm" />
             </div>
@@ -17,6 +17,6 @@
     </div>
 
     <flux:button wire:click="addRepeaterItem('{{ $wireModelKey }}')" icon="plus" variant="subtle" class="w-full justify-center">
-        Add Option
+        {{ __('buttons.add_item') }}
     </flux:button>
 </div> 
