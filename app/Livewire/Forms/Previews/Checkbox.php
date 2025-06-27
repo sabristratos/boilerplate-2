@@ -25,19 +25,6 @@ class Checkbox extends Component
 
     public function render()
     {
-        return <<<'BLADE'
-            <div>
-                @if(is_array($this->field->options) && !empty($this->field->options))
-                    <label class="flux-label">{{ $this->field->label }}</label>
-                    <div class="space-y-2 mt-2">
-                        @foreach($this->field->options as $option)
-                            <flux:checkbox label="{{ $option['label'] }}" value="{{ $option['value'] }}" />
-                        @endforeach
-                    </div>
-                @else
-                    <flux:checkbox :label="$this->field->label" :required="$this->field->is_required" />
-                @endif
-            </div>
-        BLADE;
+        return view('livewire.forms.previews.checkbox');
     }
 } 

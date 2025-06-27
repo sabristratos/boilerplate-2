@@ -20,6 +20,7 @@ return new class extends Migration
             $table->json('placeholder')->nullable();
             $table->json('options')->nullable();
             $table->text('validation_rules')->nullable();
+            $table->json('component_options')->nullable();
             $table->integer('sort_order');
             $table->timestamps();
         });

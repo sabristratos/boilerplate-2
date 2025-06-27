@@ -50,4 +50,27 @@ return [
             'rule' => 'numeric',
         ],
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Field Types
+    |--------------------------------------------------------------------------
+    |
+    | Here you can register your custom field types. The key is the field type
+    | name, and the value is the class name of the field type.
+    |
+    */
+    'field_types' => [
+        'text' => \App\Forms\FieldTypes\TextField::class,
+        'textarea' => \App\Forms\FieldTypes\TextareaField::class,
+        'select' => \App\Forms\FieldTypes\SelectField::class,
+        'checkbox' => \App\Forms\FieldTypes\CheckboxField::class,
+        'radio' => \App\Forms\FieldTypes\RadioField::class,
+        'file' => \App\Forms\FieldTypes\FileField::class,
+        'email' => \App\Forms\FieldTypes\EmailField::class,
+        'number' => \App\Forms\FieldTypes\NumberField::class,
+        'date' => \App\Forms\FieldTypes\DateField::class,
+        'time' => \App\Forms\FieldTypes\TimeField::class,
+        'section' => \App\Forms\FieldTypes\SectionField::class,
+    ],
 ]; 

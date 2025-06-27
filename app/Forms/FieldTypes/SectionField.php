@@ -1,0 +1,21 @@
+<?php
+
+namespace App\Forms\FieldTypes;
+
+class SectionField extends FieldType
+{
+    public function getName(): string
+    {
+        return 'section';
+    }
+
+    public function getLabel(): string
+    {
+        return 'Section';
+    }
+
+    public function getPreviewComponent(): string
+    {
+        return 'forms.previews.section';
+    }
+} 

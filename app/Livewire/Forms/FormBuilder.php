@@ -3,18 +3,23 @@
 namespace App\Livewire\Forms;
 
 use App\Enums\FormFieldType;
+use App\Forms\FieldTypeManager;
+use App\Services\FormService;
 use App\Models\Form;
 use App\Models\FormField;
 use App\Traits\WithToastNotifications;
 use Livewire\Component;
 use Flux\Flux;
 use Illuminate\Support\Str;
+use Exception;
 
 class FormBuilder extends Component
 {
     use WithToastNotifications;
 
     public Form $form;
+
+    public array $formState = [];
 
     public ?FormField $selectedField = null;
 
@@ -24,29 +29,44 @@ class FormBuilder extends Component
 
     public array $selectedRules = [];
 
-    public ?string $min = null;
-
-    public ?string $max = null;
-
     public string $activeLocale;
 
     public string $activeTab = 'fields';
 
     public bool $nameManuallyEdited = false;
 
+    public array $fieldComponentOptions = [];
+
+    public string $activeFieldTab = 'general';
+
+    public string $breakpoint = 'desktop';
+
+    protected FieldTypeManager $fieldTypeManager;
+    protected FormService $formService;
+
+    public function boot(FieldTypeManager $fieldTypeManager, FormService $formService)
+    {
+        $this->fieldTypeManager = $fieldTypeManager;
+        $this->formService = $formService;
+    }
+
     protected function rules(): array
     {
+        $locale = $this->activeLocale;
+
         return [
-            'form.name' => 'required|string|max:255',
-            'form.description' => 'nullable|string',
-            'form.is_active' => 'boolean',
-            'form.has_captcha' => 'boolean',
-            'form.sends_notifications' => 'boolean',
-            'form.notification_email' => 'nullable|email',
+            'formState.name' => 'required|string|max:255',
+            "formState.title.{$locale}" => 'required|string|max:255',
+            "formState.description.{$locale}" => 'nullable|string',
+            "formState.success_message.{$locale}" => 'nullable|string',
+            'formState.is_active' => 'boolean',
+            'formState.has_captcha' => 'boolean',
+            'formState.send_notification' => 'boolean',
+            'formState.recipient_email' => 'nullable|email',
+            'formState.submit_button_options' => 'nullable|array',
             'fieldData.name' => 'required|string|max:255|regex:/^[a-z0-9_]+$/',
             'fieldData.label' => 'required|string|max:255',
             'fieldData.placeholder' => 'nullable|string|max:255',
-            'fieldData.is_required' => 'boolean',
             'fieldData.validation_rules' => 'nullable|string',
             'fieldData.options' => 'nullable|array',
             'fieldData.options.*.label' => 'nullable|string',
@@ -57,8 +77,31 @@ class FormBuilder extends Component
     public function mount(Form $form)
     {
         $this->form = $form;
+        $this->formState = $form->toArray();
+
+        if (!isset($this->formState['submit_button_options']['align'])) {
+            $this->formState['submit_button_options']['align'] = [
+                'desktop' => 'left',
+                'tablet' => 'left',
+                'mobile' => 'left',
+            ];
+        }
+
         $this->form->load('fields');
         $this->activeLocale = app()->getLocale();
+    }
+
+    public function getAvailableLocalesProperty(): array
+    {
+        return config('app.available_locales', []);
+    }
+
+    public function switchLocale(string $locale)
+    {
+        $this->activeLocale = $locale;
+        if ($this->selectedField) {
+            $this->selectField($this->selectedField->id);
+        }
     }
 
     public function getPredefinedRulesProperty(): array
@@ -70,29 +113,21 @@ class FormBuilder extends Component
 
     public function getFieldTypesProperty()
     {
-        return FormFieldType::cases();
+        return $this->fieldTypeManager->all();
     }
 
     public function getPreviewComponent(FormField $field): string
     {
-        return match ($field->type) {
-            FormFieldType::TEXT, FormFieldType::EMAIL, FormFieldType::NUMBER, FormFieldType::DATE, FormFieldType::TIME => 'forms.previews.text',
-            FormFieldType::TEXTAREA => 'forms.previews.textarea',
-            FormFieldType::SELECT => 'forms.previews.select',
-            FormFieldType::CHECKBOX => 'forms.previews.checkbox',
-            FormFieldType::RADIO => 'forms.previews.radio',
-            FormFieldType::FILE => 'forms.previews.file',
-            FormFieldType::SECTION => 'forms.previews.section',
-        };
+        return $this->fieldTypeManager->find($field->type->value)->getPreviewComponent();
     }
 
     public function addField(string $type)
     {
-        $field = $this->form->fields()->create([
+        $fieldType = $this->fieldTypeManager->find($type);
+
+        $field = $this->formService->createField($this->form, [
             'type' => $type,
-            'name' => 'new_' . $type . '_' . uniqid(),
-            'label' => 'New ' . Str::studly($type),
-            'sort_order' => ($this->form->fields()->max('sort_order') ?? 0) + 1,
+            'label' => 'New ' . $fieldType->getLabel(),
         ]);
 
         $this->form->load('fields');
@@ -103,6 +138,9 @@ class FormBuilder extends Component
     public function getPredefinedRulesWithTooltipsProperty(): array
     {
         return [
+            'required' => 'This field must be filled out.',
+            'min:3' => 'The field must have a minimum length of 3 characters.',
+            'max:255' => 'The field must have a maximum length of 255 characters.',
             'email' => 'The field under validation must be formatted as an e-mail address.',
             'numeric' => 'The field under validation must be numeric.',
             'url' => 'The field under validation must be a valid URL.',
@@ -118,26 +156,19 @@ class FormBuilder extends Component
 
     public function updated($name, $value)
     {
-        if ($name === 'form.name') {
-            $this->form->slug = Str::slug($value);
+        if ($name === 'formState.name') {
+            $this->formState['slug'] = Str::slug($value);
         }
-        if (in_array($name, ['selectedRules', 'min', 'max'])) {
-            $this->syncValidationRules();
-        }
+    }
+
+    public function updatedSelectedRules()
+    {
+        $this->syncValidationRules();
     }
 
     public function syncValidationRules()
     {
-        $rules = $this->selectedRules;
-        if ($this->min) {
-            $rules[] = 'min:' . $this->min;
-        }
-        if ($this->max) {
-            $rules[] = 'max:' . $this->max;
-        }
-
-        $this->fieldData['validation_rules'] = implode('|', array_unique($rules));
-        $this->updatedFieldData($this->fieldData['validation_rules'], 'validation_rules');
+        $this->fieldData['validation_rules'] = implode('|', array_unique($this->selectedRules));
     }
 
     public function updatedFieldData($value, string $key)
@@ -151,10 +182,11 @@ class FormBuilder extends Component
         }
 
         if ($key === 'validation_rules' && is_string($value)) {
-            $rules = array_filter(explode('|', $value));
-            $this->selectedRules = collect($rules)->filter(fn ($rule) => ! str_starts_with($rule, 'min:') && ! str_starts_with($rule, 'max:'))->values()->all();
-            $this->min = str_replace('min:', '', collect($rules)->first(fn ($rule) => str_starts_with($rule, 'min:')));
-            $this->max = str_replace('max:', '', collect($rules)->first(fn ($rule) => str_starts_with($rule, 'max:')));
+            $this->selectedRules = array_filter(explode('|', $value));
+            return;
+        }
+
+        if (str_contains($key, '.')) {
             return;
         }
 
@@ -170,24 +202,28 @@ class FormBuilder extends Component
         if ($fieldId === null) {
             $this->selectedField = null;
             $this->fieldData = [];
+            $this->fieldComponentOptions = [];
+            $this->activeFieldTab = 'general';
             $this->selectedRules = [];
-            $this->min = null;
-            $this->max = null;
             Flux::modal('edit-field-modal')->close();
             return;
         }
 
         $this->nameManuallyEdited = false;
+        $this->activeFieldTab = 'general';
         $this->selectedField = $this->form->fields()->find($fieldId);
-        $this->fieldData = $this->selectedField->only(['name', 'is_required', 'validation_rules']);
+        $this->fieldData = $this->selectedField->only(['name', 'validation_rules']);
+        $this->fieldComponentOptions = $this->selectedField->component_options ?? [];
+        $this->fieldData['layout_options'] = $this->selectedField->layout_options ?? [
+            'desktop' => 'full',
+            'tablet' => 'full',
+            'mobile' => 'full',
+        ];
         foreach ($this->selectedField->getTranslatableAttributes() as $key) {
             $this->fieldData[$key] = $this->selectedField->getTranslation($key, $this->activeLocale, false);
         }
-        
-        $rules = $this->fieldData['validation_rules'] ? array_filter(explode('|', $this->fieldData['validation_rules'])) : [];
-        $this->selectedRules = collect($rules)->filter(fn ($rule) => ! str_starts_with($rule, 'min:') && ! str_starts_with($rule, 'max:'))->values()->all();
-        $this->min = str_replace('min:', '', collect($rules)->first(fn ($rule) => str_starts_with($rule, 'min:')));
-        $this->max = str_replace('max:', '', collect($rules)->first(fn ($rule) => str_starts_with($rule, 'max:')));
+
+        $this->selectedRules = $this->fieldData['validation_rules'] ? array_filter(explode('|', $this->fieldData['validation_rules'])) : [];
 
         Flux::modal('edit-field-modal')->show();
     }
@@ -197,8 +233,6 @@ class FormBuilder extends Component
         $this->selectedField = null;
         $this->fieldData = [];
         $this->selectedRules = [];
-        $this->min = null;
-        $this->max = null;
     }
 
     public function confirmDelete(int $fieldId)
@@ -212,20 +246,15 @@ class FormBuilder extends Component
         if ($this->selectedField) {
             $this->syncValidationRules();
             $validatedData = $this->validate()['fieldData'];
+            $validatedData['component_options'] = $this->fieldComponentOptions;
+            $validatedData['layout_options'] = $this->fieldData['layout_options'];
 
-            foreach ($validatedData as $key => $value) {
-                if (in_array($key, $this->selectedField->getTranslatableAttributes(), true)) {
-                    $this->selectedField->setTranslation($key, $this->activeLocale, $value);
-                } else {
-                    $this->selectedField->{$key} = $value;
-                }
-            }
-
-            $this->selectedField->save();
+            $this->formService->updateField($this->selectedField, $validatedData, $this->activeLocale);
 
             $this->dispatch('field-updated', fieldId: $this->selectedField->id);
             $this->showSuccessToast('Field saved successfully.');
             $this->selectField(null);
+            Flux::modal('edit-field-modal')->close();
         }
     }
 
@@ -234,10 +263,11 @@ class FormBuilder extends Component
         if ($this->fieldToDeleteId) {
             $field = $this->form->fields()->find($this->fieldToDeleteId);
             if ($field) {
-                $field->delete();
+                $this->formService->deleteField($field);
                 $this->form->load('fields');
                 if ($this->selectedField && $this->selectedField->id === $this->fieldToDeleteId) {
                     $this->selectedField = null;
+                    Flux::modal('edit-field-modal')->close();
                 }
                 $this->showSuccessToast('Field deleted successfully.');
             }
@@ -248,18 +278,34 @@ class FormBuilder extends Component
 
     public function updateFieldOrder(array $orderedIds): void
     {
-        foreach ($orderedIds as $index => $id) {
-            FormField::where('id', $id)->update(['sort_order' => $index + 1]);
-        }
+        try {
+            foreach ($orderedIds as $index => $id) {
+                FormField::where('id', (int)$id)->update(['sort_order' => $index + 1]);
+            }
+            $this->form->load('fields');
 
-        $this->form->load('fields');
-        $this->showSuccessToast('Field order updated.');
+            $this->showSuccessToast('Field order updated successfully.');
+        } catch (Exception $e) {
+            logger()->error('Error updating field order: ' . $e->getMessage());
+            $this->showErrorToast('Error updating field order.');
+        }
     }
 
     public function saveForm()
     {
-        $this->form->save();
-        $this->showSuccessToast('Form settings saved successfully.');
+        $validatedData = $this->validate([
+            'formState.name' => 'required|string|max:255',
+            "formState.title.{$this->activeLocale}" => 'required|string|max:255',
+            "formState.description.{$this->activeLocale}" => 'nullable|string',
+            "formState.success_message.{$this->activeLocale}" => 'nullable|string',
+            'formState.recipient_email' => 'nullable|email',
+            'formState.submit_button_options' => 'nullable|array',
+            'formState.has_captcha' => 'boolean',
+            'formState.send_notification' => 'boolean',
+        ]);
+
+        $this->form->update($validatedData['formState']);
+        $this->showSuccessToast('Form saved successfully.');
     }
 
     public function addRepeaterItem(string $key)
@@ -278,4 +324,4 @@ class FormBuilder extends Component
         return view('livewire.forms.form-builder')
             ->layout('components.layouts.app');
     }
-} 
+}

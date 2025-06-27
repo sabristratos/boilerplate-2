@@ -20,61 +20,77 @@ class RolesAndPermissionsSeeder extends Seeder
 
         // Create permissions
         $permissions = [
+            'dashboard.view',
+
+            'pages.view',
+
             // User permissions
-            'view users', 'create users', 'edit users', 'delete users',
-            // Content permissions
-            'view content', 'create content', 'edit content', 'delete content', 'publish content', 'edit pages',
+            'users.view',
+            'users.create',
+            'users.edit',
+            'users.delete',
+
+            // Role permissions
+            'roles.view',
+            'roles.create',
+            'roles.edit',
+            'roles.delete',
+
             // Settings permissions
-            'view settings', 'edit settings', 'settings.general.manage', 'settings.appearance.manage',
-            'settings.email.manage', 'settings.security.manage', 'settings.social.manage',
-            'settings.advanced.manage', 'settings.contact.manage',
+            'settings.general.manage',
+            'settings.appearance.manage',
+            'settings.contact.manage',
+            'settings.content.manage',
+            'settings.navigation.manage',
+
+            // Media permissions
+            'media.view',
+            'media.create',
+            'media.edit',
+            'media.delete',
+
+            // Testimonial permissions
+            'testimonials.view',
+            'testimonials.create',
+            'testimonials.edit',
+            'testimonials.reorder',
+            'testimonials.delete',
+
             // Form permissions
-            'view forms', 'create forms', 'edit forms', 'delete forms', 'view form submissions',
+            'forms.view',
+            'forms.create',
+            'forms.edit',
+            'forms.delete',
+            'forms.submissions.view',
         ];
 
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Create roles and assign permissions
-        // User role
-        $userRole = Role::firstOrCreate(['name' => 'user']);
-        $userRole->givePermissionTo('view content');
+        // Assign all permissions to the admin role
+        $adminRole = Role::firstOrCreate(['name' => 'admin']);
+        $adminRole->givePermissionTo($permissions);
 
-        // Editor role
+        // Editor Role
         $editorRole = Role::firstOrCreate(['name' => 'editor']);
         $editorRole->givePermissionTo([
-            'view content',
-            'create content',
-            'edit content',
-            'delete content',
-            'publish content',
-            'view settings',
-            'edit pages',
-            'view forms',
-            'view form submissions',
+            'dashboard.view',
+            'pages.view',
+            'media.view',
+            'media.create',
+            'media.edit',
+            'media.delete',
+            'testimonials.view',
+            'testimonials.create',
+            'testimonials.edit',
+            'testimonials.reorder',
+            'testimonials.delete',
         ]);
 
-        // Admin role
-        $adminRole = Role::firstOrCreate(['name' => 'admin']);
-        $adminRole->givePermissionTo([
-            'view users',
-            'create users',
-            'edit users',
-            'delete users',
-            'view content',
-            'create content',
-            'edit content',
-            'delete content',
-            'publish content',
-            'view settings',
-            'edit pages',
-            'view forms',
-            'create forms',
-            'edit forms',
-            'delete forms',
-            'view form submissions',
-        ]);
+        // User role
+        $userRole = Role::firstOrCreate(['name' => 'user']);
+        $userRole->givePermissionTo('pages.view');
 
         // Super Admin role
         // Super Admin has all permissions via Gate::before rule in AppServiceProvider

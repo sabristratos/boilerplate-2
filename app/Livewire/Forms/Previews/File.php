@@ -25,8 +25,6 @@ class File extends Component
 
     public function render()
     {
-        return <<<'BLADE'
-            <flux:input type="file" :label="$this->field->label" :required="$this->field->is_required" />
-        BLADE;
+        return view('livewire.forms.previews.file');
     }
 } 

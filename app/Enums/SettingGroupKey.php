@@ -12,4 +12,5 @@ enum SettingGroupKey: string
     case ADVANCED = 'advanced';
     case CONTACT = 'contact';
     case CONTENT = 'content';
+    case NAVIGATION = 'navigation';
 }

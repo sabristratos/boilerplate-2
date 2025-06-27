@@ -63,6 +63,13 @@ abstract class Field
     protected $disabled = false;
 
     /**
+     * Whether the field should trigger a refresh on change.
+     *
+     * @var bool
+     */
+    protected $reactive = false;
+
+    /**
      * The field's default value.
      *
      * @var mixed
@@ -194,6 +201,19 @@ abstract class Field
     }
 
     /**
+     * Mark the field as reactive.
+     *
+     * @param  bool  $value
+     * @return $this
+     */
+    public function reactive(bool $value = true): static
+    {
+        $this->reactive = $value;
+
+        return $this;
+    }
+
+    /**
      * Set the field's default value.
      *
      * @param  mixed  $value
@@ -284,6 +304,16 @@ abstract class Field
     public function isDisabled(): bool
     {
         return $this->disabled;
+    }
+
+    /**
+     * Check if the field is reactive.
+     *
+     * @return bool
+     */
+    public function isReactive(): bool
+    {
+        return $this->reactive;
     }
 
     /**

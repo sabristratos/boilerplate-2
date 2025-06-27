@@ -15,14 +15,23 @@ class Form extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'title',
         'description',
         'recipient_email',
         'success_message',
         'send_notification',
+        'has_captcha',
+        'submit_button_options',
     ];
 
     public array $translatable = ['title', 'description', 'success_message'];
+
+    protected $casts = [
+        'send_notification' => 'boolean',
+        'has_captcha' => 'boolean',
+        'submit_button_options' => 'array',
+    ];
 
     public function formFields(): HasMany
     {

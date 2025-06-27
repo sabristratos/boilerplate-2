@@ -22,20 +22,25 @@ class FormField extends Model implements Sortable
         'type',
         'name',
         'label',
+        'sort_order',
+        'validation_rules',
         'placeholder',
         'options',
-        'validation_rules',
-        'is_required',
-        'sort_order',
+        'component_options',
+        'layout_options',
+    ];
+
+    public array $translatable = [
+        'label',
+        'placeholder',
     ];
 
     protected $casts = [
         'type' => FormFieldType::class,
-        'is_required' => 'boolean',
         'options' => 'array',
+        'component_options' => 'array',
+        'layout_options' => 'array',
     ];
-
-    public array $translatable = ['label', 'placeholder', 'options'];
 
     public array $sortable = [
         'order_column_name' => 'sort_order',
@@ -55,5 +60,14 @@ class FormField extends Model implements Sortable
     public function buildSortQuery()
     {
         return static::query()->where('form_id', $this->form_id);
+    }
+
+    public function isRequired(): bool
+    {
+        if (!$this->validation_rules) {
+            return false;
+        }
+
+        return in_array('required', explode('|', $this->validation_rules));
     }
 }

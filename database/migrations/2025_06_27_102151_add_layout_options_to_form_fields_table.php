@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('form_fields', function (Blueprint $table) {
-            $table->boolean('is_required')->default(false)->after('validation_rules');
+            $table->json('layout_options')->nullable()->after('component_options');
         });
     }
 
@@ -22,7 +22,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('form_fields', function (Blueprint $table) {
-            $table->dropColumn('is_required');
+            $table->dropColumn('layout_options');
         });
     }
 };

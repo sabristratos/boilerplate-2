@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             PageSeeder::class,
+            FormSeeder::class,
         ]);
 
         // Create a test user with Super Admin role

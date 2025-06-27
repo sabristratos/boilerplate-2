@@ -25,14 +25,6 @@ class Radio extends Component
 
     public function render()
     {
-        return <<<'BLADE'
-            <flux:radio.group :label="$this->field->label" :required="$this->field->is_required">
-                 @if(is_array($this->field->options))
-                    @foreach($this->field->options as $option)
-                        <flux:radio label="{{ $option['label'] }}" value="{{ $option['value'] }}" />
-                    @endforeach
-                @endif
-            </flux:radio.group>
-        BLADE;
+        return view('livewire.forms.previews.radio');
     }
 } 

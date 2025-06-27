@@ -10,8 +10,11 @@ class Text extends Component
 {
     public FormField $field;
 
-    public function mount(int $fieldId)
+    public $fieldId;
+
+    public function mount($fieldId)
     {
+        $this->fieldId = $fieldId;
         $this->field = FormField::find($fieldId);
     }
 
@@ -25,8 +28,6 @@ class Text extends Component
 
     public function render()
     {
-        return <<<'BLADE'
-            <flux:input :label="$this->field->label" :placeholder="$this->field->placeholder" :type="$this->field->type->value" :required="$this->field->is_required" />
-        BLADE;
+        return view('livewire.forms.previews.text');
     }
 } 

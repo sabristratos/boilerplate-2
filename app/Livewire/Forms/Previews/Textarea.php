@@ -25,8 +25,6 @@ class Textarea extends Component
 
     public function render()
     {
-        return <<<'BLADE'
-            <flux:textarea :label="$this->field->label" :placeholder="$this->field->placeholder" :required="$this->field->is_required" />
-        BLADE;
+        return view('livewire.forms.previews.textarea');
     }
 } 

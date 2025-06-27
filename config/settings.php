@@ -62,6 +62,12 @@ return [
             'icon' => 'phone',
             'order_column' => 2,
         ],
+        SettingGroupKey::NAVIGATION->value => [
+            'label' => ['en' => 'Navigation', 'fr' => 'Navigation'],
+            'description' => ['en' => 'Manage header and footer links', 'fr' => 'Gérer les liens d\'en-tête et de pied de page'],
+            'icon' => 'bars-3',
+            'order_column' => 8,
+        ],
     ],
 
     /*
@@ -490,6 +496,48 @@ return [
             'rules' => 'required|integer|min:5|max:300',
             'permission' => 'settings.content.manage',
             'default' => 30,
+        ],
+        'navigation.header_links' => [
+            'group' => SettingGroupKey::NAVIGATION->value,
+            'label' => ['en' => 'Header Links', 'fr' => 'Liens d\'en-tête'],
+            'description' => ['en' => 'Manage links in the website header.', 'fr' => 'Gérer les liens dans l\'en-tête du site Web.'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.navigation.manage',
+            'subfields' => [
+                'label' => [
+                    'label' => 'Label',
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+                'url' => [
+                    'label' => 'URL',
+                    'type' => 'url',
+                    'rules' => 'required|url',
+                ],
+            ],
+        ],
+        'navigation.footer_links' => [
+            'group' => SettingGroupKey::NAVIGATION->value,
+            'label' => ['en' => 'Footer Links', 'fr' => 'Liens de pied de page'],
+            'description' => ['en' => 'Manage links in the website footer.', 'fr' => 'Gérer les liens dans le pied de page du site Web.'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.navigation.manage',
+            'subfields' => [
+                'label' => [
+                    'label' => 'Label',
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+                'url' => [
+                    'label' => 'URL',
+                    'type' => 'url',
+                    'rules' => 'required|url',
+                ],
+            ],
         ],
     ],
 

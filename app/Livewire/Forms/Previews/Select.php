@@ -25,14 +25,6 @@ class Select extends Component
 
     public function render()
     {
-        return <<<'BLADE'
-            <flux:select :label="$this->field->label" :placeholder="$this->field->placeholder" :required="$this->field->is_required">
-                @if(is_array($this->field->options))
-                    @foreach($this->field->options as $option)
-                        <flux:select.option value="{{ $option['value'] }}">{{ $option['label'] }}</flux:select.option>
-                    @endforeach
-                @endif
-            </flux:select>
-        BLADE;
+        return view('livewire.forms.previews.select');
     }
 } 

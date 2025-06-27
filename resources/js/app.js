@@ -1,9 +1,27 @@
 import './bootstrap';
 import sort from '@alpinejs/sort'
 
+Alpine.plugin(sort)
+
 document.addEventListener('alpine:init', () => {
-    Alpine.plugin(sort)
-})
+    Alpine.data('formBuilderCanvas', (config) => ({
+        aligns: config.aligns || {},
+        get align() {
+            return this.aligns[this.breakpoint] || 'left';
+        },
+        get alignmentClass() {
+            switch(this.align) {
+                case 'center': return 'justify-center';
+                case 'right': return 'justify-end';
+                default: return 'justify-start';
+            }
+        },
+        get isFullWidth() {
+            return this.align === 'full';
+        }
+    }));
+});
+
 
 document.addEventListener('livewire:init', () => {
     Livewire.on('settings-updated', (event) => {

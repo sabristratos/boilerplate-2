@@ -14,11 +14,14 @@ return new class extends Migration
         Schema::create('forms', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->json('title');
             $table->json('description')->nullable();
             $table->string('recipient_email')->nullable();
             $table->json('success_message')->nullable();
             $table->boolean('send_notification')->default(true);
+            $table->boolean('has_captcha')->default(false);
+            $table->json('submit_button_options')->nullable();
             $table->timestamps();
         });
     }

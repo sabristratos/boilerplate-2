@@ -7,6 +7,8 @@ use Illuminate\Support\ServiceProvider;
 use App\Providers\ResourceManagerServiceProvider;
 use App\Services\SettingsManager;
 use Illuminate\Support\Facades\Schema;
+use App\Facades\Settings;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -29,6 +31,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            return;
+        }
+
+        View::share('headerLinks', Settings::get('navigation.header_links', []));
+        View::share('footerLinks', Settings::get('navigation.footer_links', []));
+
+        $primaryColor = Settings::get('appearance.primary_color', 'oklch(64.5% .246 16.439)');
+        $theme = Settings::get('appearance.theme', 'light');
+
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
         Gate::before(function ($user, $ability) {

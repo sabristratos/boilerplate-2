@@ -8,7 +8,11 @@
                             <flux:input
                                 type="{{ $field->getType() }}"
                                 id="{{ $field->getName() }}"
+                                @if($field->isReactive())
+                                wire:model.live="data.{{ $field->getName() }}"
+                                @else
                                 wire:model.defer="data.{{ $field->getName() }}"
+                                @endif
                                 label="{{ $field->getLabel() }}"
                                 placeholder="{{ $field->getPlaceholder() }}"
                                 description="{{ $field->getHelpText() }}"
@@ -17,7 +21,11 @@
                         @elseif ($field instanceof \App\Services\ResourceSystem\Fields\Textarea)
                             <flux:textarea
                                 id="{{ $field->getName() }}"
+                                @if($field->isReactive())
+                                wire:model.live="data.{{ $field->getName() }}"
+                                @else
                                 wire:model.defer="data.{{ $field->getName() }}"
+                                @endif
                                 label="{{ $field->getLabel() }}"
                                 placeholder="{{ $field->getPlaceholder() }}"
                                 description="{{ $field->getHelpText() }}"
@@ -27,7 +35,11 @@
                         @elseif ($field instanceof \App\Services\ResourceSystem\Fields\Select)
                             <flux:select
                                 id="{{ $field->getName() }}"
+                                @if($field->isReactive())
+                                wire:model.live="data.{{ $field->getName() }}"
+                                @else
                                 wire:model.defer="data.{{ $field->getName() }}"
+                                @endif
                                 label="{{ $field->getLabel() }}"
                                 placeholder="{{ $field->getPlaceholder() }}"
                                 description="{{ $field->getHelpText() }}"
@@ -54,7 +66,11 @@
                                     <flux:description>{{ $field->getHelpText() }}</flux:description>
                                 @endif
                                 <x-rating
-                                    wire:model="data.{{ $field->getName() }}"
+                                    @if($field->isReactive())
+                                    wire:model.live="data.{{ $field->getName() }}"
+                                    @else
+                                    wire:model.defer="data.{{ $field->getName() }}"
+                                    @endif
                                     :value="$data[$field->getName()] ?? 0"
                                 />
                             </flux:field>
