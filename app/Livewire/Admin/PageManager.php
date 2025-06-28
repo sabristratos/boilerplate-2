@@ -24,14 +24,10 @@ class PageManager extends Component
     protected BlockManager $blockManager;
 
     protected $listeners = [
-        'blockUpdated' => 'onBlockUpdated',
         'blockEditCancelled' => '$refresh',
     ];
 
-    public function onBlockUpdated()
-    {
-        $this->dispatch('block-was-updated');
-    }
+    
 
     public function boot(BlockManager $blockManager)
     {
@@ -63,8 +59,8 @@ class PageManager extends Component
 
         if (! $blockClass) {
             $this->showErrorToast(
-                __('The block type you are trying to create is not available.'),
-                __('Invalid Block Type')
+                __('messages.page_manager.invalid_block_type_text'),
+                __('messages.page_manager.invalid_block_type_title')
             );
 
             return;
@@ -77,8 +73,8 @@ class PageManager extends Component
         ]);
 
         $this->showSuccessToast(
-            __('A new :blockName block has been added to the page.', ['blockName' => $blockClass->getName()]),
-            __('Block Created')
+            __('messages.page_manager.block_created_text', ['blockName' => $blockClass->getName()]),
+            __('messages.page_manager.block_created_title')
         );
 
         $this->editBlock($block->id);
@@ -89,14 +85,14 @@ class PageManager extends Component
         try {
             ContentBlock::setNewOrder($sort);
             $this->showSuccessToast(
-                __('Block order updated successfully.'),
+                __('messages.page_manager.block_order_updated_text'),
                 null,
                 2000
             );
         } catch (\Exception $e) {
             $this->showErrorToast(
-                __('There was a problem updating the block order. Some blocks may no longer exist.'),
-                __('Error Updating Order')
+                __('messages.page_manager.block_order_update_error_text'),
+                __('messages.page_manager.block_order_update_error_title')
             );
         }
     }
@@ -104,14 +100,12 @@ class PageManager extends Component
     public function deleteBlock(int $blockId): void
     {
         $this->page->contentBlocks()->find($blockId)?->delete();
-        $this->showSuccessToast(__('Content block deleted successfully.'));
+        $this->showSuccessToast(__('messages.page_manager.block_deleted_text'));
     }
 
     public function generateSlug(string $locale): void
     {
-        if (empty($this->slug[$locale])) {
-            $this->slug[$locale] = Str::slug($this->title[$locale]);
-        }
+        $this->slug[$locale] = Str::slug($this->title[$locale]);
     }
 
     public function savePageDetails()
@@ -131,7 +125,7 @@ class PageManager extends Component
 
         $this->page->save();
 
-        $this->showSuccessToast(__('Page details saved successfully.'));
+        $this->showSuccessToast(__('messages.page_manager.page_details_saved_text'));
     }
 
     public function render()

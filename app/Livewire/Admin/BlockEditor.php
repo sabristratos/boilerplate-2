@@ -46,8 +46,8 @@ class BlockEditor extends Component
 
         if (! $this->editingBlock) {
             $this->showWarningToast(
-                __('The content block you are trying to edit no longer exists.'),
-                __('Block Not Found')
+                __('messages.block_editor.block_not_found_text'),
+                __('messages.block_editor.block_not_found_title')
             );
             $this->cancelEdit();
 
@@ -98,12 +98,12 @@ class BlockEditor extends Component
         );
 
         $this->showSuccessToast(
-            __('The content block was updated successfully.'),
-            __('Block Updated')
+            __('messages.block_editor.block_updated_text'),
+            __('messages.block_editor.block_updated_title')
         );
 
         $this->finishEditing();
-        $this->dispatch('blockUpdated');
+        $this->dispatch('block-was-updated');
     }
 
     public function cancelEdit()
@@ -125,7 +125,7 @@ class BlockEditor extends Component
         $this->saveBlock(app(UpdateContentBlockAction::class));
 
         $this->lastAutosaveTime = now();
-        $this->showSuccessToast(__('Autosaved'), duration: 2000);
+        $this->showSuccessToast(__('messages.block_editor.autosaved'), duration: 2000);
     }
 
     public function setBlockStatus(string $status)

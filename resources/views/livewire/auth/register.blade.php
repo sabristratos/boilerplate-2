@@ -7,38 +7,36 @@
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form wire:submit="register" class="space-y-6">
-        <flux:field :label="__('labels.name')">
-            <flux:input
-                wire:model="name"
-                type="text"
-                required
-                autofocus
-            />
-        </flux:field>
+        <flux:input
+            wire:model="name"
+            type="text"
+            :label="__('labels.name')"
+            required
+            autofocus
+        />
 
-        <flux:field :label="__('labels.email')">
-            <flux:input
-                wire:model="email"
-                type="email"
-                required
-            />
-        </flux:field>
+        <flux:input
+            wire:model="email"
+            type="email"
+            :label="__('labels.email')"
+            required
+        />
 
-        <flux:field :label="__('labels.password')">
-            <flux:input
-                wire:model="password"
-                type="password"
-                required
-            />
-        </flux:field>
+        <flux:input
+            wire:model="password"
+            type="password"
+            :label="__('labels.password')"
+            required
+            viewable
+        />
 
-        <flux:field :label="__('labels.password_confirmation')">
-            <flux:input
-                wire:model="password_confirmation"
-                type="password"
-                required
-            />
-        </flux:field>
+        <flux:input
+            wire:model="password_confirmation"
+            type="password"
+            :label="__('labels.password_confirmation')"
+            required
+            viewable
+        />
 
         <flux:button
             type="submit"
@@ -52,12 +50,9 @@
     <div class="text-center">
         <flux:text size="sm">
             {{ __('auth.login_prompt') }}
-            <flux:button
-                href="{{ route('login') }}"
-                variant="link"
-            >
+            <flux:link href="{{ route('login') }}">
                 {{ __('buttons.login') }}
-            </flux:button>
+            </flux:link>
         </flux:text>
     </div>
 </div>

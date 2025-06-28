@@ -147,7 +147,7 @@ class SettingsPage extends Component
         }
 
         if (!empty($warnings)) {
-            $warningHtml = '<p>'.__('Please confirm you want to save these changes:').'</p><ul class="mt-2 list-disc list-inside space-y-1">';
+            $warningHtml = '<p>'.__('messages.confirm_save.title').':</p><ul class="mt-2 list-disc list-inside space-y-1">';
             foreach ($warnings as $label => $text) {
                 $warningHtml .= "<li><strong>{$label}:</strong> {$text}</li>";
             }

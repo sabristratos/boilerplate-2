@@ -56,7 +56,7 @@ class SyncSettings extends Command
                 $group = SettingGroup::where('key', $setting['group'])->first();
 
                 if (! $group) {
-                    $this->warn("Setting group '{$setting['group']}' not found for setting '{$key}'. Skipping.");
+                    $this->warn(__('commands.sync_settings.group_not_found_skip', ['group' => $setting['group'], 'key' => $key]));
                     continue;
                 }
 

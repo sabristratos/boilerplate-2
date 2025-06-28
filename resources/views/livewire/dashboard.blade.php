@@ -42,7 +42,7 @@
                         <flux:table.cell colspan="3">
                             <div class="flex flex-col items-center justify-center gap-2 p-6 text-center">
                                 <flux:icon name="inbox-stack" class="size-12 text-neutral-400" />
-                                <p class="font-semibold">No submissions yet.</p>
+                                <p class="font-semibold">{{ __('dashboard.no_submissions_yet') }}</p>
                             </div>
                         </flux:table.cell>
                     </flux:table.row>

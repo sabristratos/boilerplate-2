@@ -23,8 +23,8 @@ class PageIndex extends Component
     public function getPagesProperty()
     {
         return Page::query()
-            ->when($this->search, fn ($query) => $query->where('title', 'like', '%' . $this->search . '%'))
-            ->when($this->filters['locale'] ?? null, fn ($query, $locale) => $query->where('title->' . $locale, 'like', '%' . $this->search . '%'))
+            ->when($this->search, fn ($query) => $query->whereTranslation('title', 'like', '%' . $this->search . '%'))
+            ->when($this->filters['locale'] ?? null, fn ($query, $locale) => $query->whereTranslation('title', 'like', '%' . $this->search . '%', $locale))
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
     }
@@ -99,6 +99,6 @@ class PageIndex extends Component
     public function render()
     {
         return view('livewire.admin.page-index')
-            ->title(__('Pages'));
+            ->title(__('messages.page_index.title'));
     }
 }

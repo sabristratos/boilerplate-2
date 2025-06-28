@@ -1,36 +1,328 @@
 <?php
 
-return array (
-  'delete_confirm_title' => 'Are you sure?',
-  'delete_confirm_text' => 'Are you sure you want to delete this? This action cannot be undone.',
-  'no_resources_found' => 'No resources found.',
-  'saved' => 'Saved.',
-  'confirm_save' => 
-  array (
-    'title' => 'Please confirm',
-  ),
-  'resource' => 
-  array (
-    'created' => ':Resource created successfully.',
-    'updated' => ':Resource updated successfully.',
-    'deleted' => ':Resource deleted successfully.',
-  ),
-  'errors' => 
-  array (
-    'generic' => 'An unexpected error occurred. Please try again.',
-    'not_found' => 'The requested resource was not found.',
-    'unauthorized' => 'You are not authorized to perform this action.',
-  ),
-  'success' => 
-  array (
-    'generic' => 'Operation completed successfully.',
-    'cache_cleared' => 'Application cache cleared.',
-  ),
-  'cache_cleared_successfully' => 'Cache cleared successfully.',
-  'translations' => 
-  array (
-    'scan_complete' => 'Scan complete. New translations have been added.',
-    'save_success' => 'Translations have been saved successfully.',
-    'import_success' => 'Translations have been imported successfully.',
-  ),
-);
+return [
+    'Back to pages' => 'Back to pages',
+    'Edit Page:' => 'Edit Page:',
+    'New Translation' => 'New Translation',
+    'Save Page' => 'Save Page',
+    'Title' => 'Title',
+    'Slug' => 'Slug',
+    'This page has no content yet.' => 'This page has no content yet.',
+    'Add a block from the library to get started.' => 'Add a block from the library to get started.',
+    'Block Library' => 'Block Library',
+    'Status:' => 'Status:',
+    'Cancel' => 'Cancel',
+    'Save changes' => 'Save changes',
+    'delete_confirm_title' => 'Are you sure?',
+    'delete_confirm_text' => 'Are you sure you want to delete this? This action cannot be undone.',
+    'no_resources_found' => 'No resources found.',
+    'Saved.' => 'Saved.',
+    'confirm_save' => [
+        'title' => 'Please confirm',
+    ],
+    'resource' => [
+        'created' => ':Resource created successfully.',
+        'updated' => ':Resource updated successfully.',
+        'deleted' => ':Resource deleted successfully.',
+    ],
+    'errors' => [
+        'generic' => 'An unexpected error occurred. Please try again.',
+        'not_found' => 'The requested resource was not found.',
+        'unauthorized' => 'You are not authorized to perform this action.',
+        'file_upload' => 'There was an error uploading the file.',
+        'scan_failed' => 'Scan Failed',
+        'save_failed' => 'Save failed',
+        'export_failed' => 'Export failed',
+        'import_failed' => 'Import failed',
+    ],
+    'success' => [
+        'generic' => 'Operation completed successfully.',
+        'cache_cleared' => 'Application cache cleared.',
+    ],
+    'cache_cleared_successfully' => 'Cache cleared successfully.',
+    'translations' => [
+        'scan_complete' => 'Scan complete. New translations have been added.',
+        'save_success' => 'Translations have been saved successfully.',
+        'import_success' => 'Translations have been imported successfully.',
+    ],
+    'block_editor' => [
+        'block_not_found_text' => 'The content block you are trying to edit no longer exists.',
+        'block_not_found_title' => 'Block Not Found',
+        'block_updated_text' => 'The content block was updated successfully.',
+        'block_updated_title' => 'Block Updated',
+        'autosaved' => 'Autosaved',
+        'status' => 'Status:',
+    ],
+    'page_manager' => [
+        'page_details_saved_text' => 'Page details saved successfully.',
+        'invalid_block_type_text' => 'The block type you are trying to create is not available.',
+        'invalid_block_type_title' => 'Invalid Block Type',
+        'block_created_text' => 'A new :blockName block has been added to the page.',
+        'block_created_title' => 'Block Created',
+        'block_order_updated_text' => 'Block order updated successfully.',
+        'block_order_update_error_text' => 'There was a problem updating the block order. Some blocks may no longer exist.',
+        'block_order_update_error_title' => 'Error Updating Order',
+        'block_deleted_text' => 'Content block deleted successfully.',
+        'edit_page' => 'Edit Page:',
+        'new_translation' => 'New Translation',
+        'save_page' => 'Save Page',
+        'block_library' => 'Block Library',
+        'back_to_pages' => 'Back to pages',
+    ],
+    'media' => [
+        'uploader' => [
+            'no_media_selected' => 'Please upload a file, provide a URL, or select existing media.',
+            'save_success' => 'Media saved successfully.',
+            'save_failed' => 'Failed to save media: :message',
+            'select_failed' => 'Failed to select media: :message',
+            'no_item_selected' => 'Please select at least one media item.',
+            'confirm_failed' => 'Failed to confirm media selection: :message',
+            'remove_success' => 'Media removed successfully.',
+            'remove_failed' => 'Failed to remove media: :message',
+        ],
+        'library' => [
+            'delete_success' => 'Media deleted successfully.',
+            'delete_failed' => 'Failed to delete media: :message',
+        ],
+        'units' => [
+            'B' => 'B',
+            'KB' => 'KB',
+            'MB' => 'MB',
+            'GB' => 'GB',
+            'TB' => 'TB',
+        ],
+    ],
+    'dashboard' => [
+        'total_pages' => 'Total Pages',
+        'form_submissions' => 'Form Submissions',
+        'total_users' => 'Total Users',
+        'testimonials' => 'Testimonials',
+    ],
+    'forms' => [
+        'form_builder' => [
+            'field_added_success' => 'Field added successfully.',
+            'field_saved_success' => 'Field saved successfully.',
+            'field_deleted_success' => 'Field deleted successfully.',
+            'field_order_updated_success' => 'Field order updated successfully.',
+            'field_order_updated_error' => 'Error updating field order.',
+            'form_saved_success' => 'Form saved successfully.',
+        ],
+        'validation' => [
+            'required' => 'This field must be filled out.',
+            'min_3' => 'The field must have a minimum length of 3 characters.',
+            'max_255' => 'The field must have a maximum length of 255 characters.',
+            'email' => 'The field under validation must be formatted as an e-mail address.',
+            'numeric' => 'The field under validation must be numeric.',
+            'url' => 'The field under validation must be a valid URL.',
+            'string' => 'The field under validation must be a string.',
+            'boolean' => 'The field under validation must be able to be cast as a boolean. Accepted input are true, false, 1, 0, \\\"1\\\", and \\\"0\\\".',
+            'date' => 'The field under validation must be a valid, non-relative date according to the strtotime PHP function.',
+            'image' => 'The file under validation must be an image (jpg, jpeg, png, bmp, gif, svg, or webp).',
+            'alpha' => 'The field under validation must be entirely alphabetic characters.',
+            'alpha_dash' => 'The field under validation may have alpha-numeric characters, as well as dashes and underscores.',
+            'alpha_num' => 'The field under validation must be entirely alpha-numeric characters.',
+        ],
+        'form_index' => [
+            'new_form' => 'New Form',
+        ],
+        'field_type_manager' => [
+            'invalid_field_type_class' => 'Class :class must extend :fieldTypeClass',
+        ],
+        'field_types' => [
+            'time' => [
+                'name' => 'Time',
+            ],
+            'text' => [
+                'name' => 'Text',
+                'viewable_label' => 'Viewable',
+                'copyable_label' => 'Copyable',
+            ],
+            'textarea' => [
+                'name' => 'Textarea',
+                'rows_label' => 'Rows',
+                'resize_label' => 'Resize',
+                'resize_vertical' => 'Vertical',
+                'resize_horizontal' => 'Horizontal',
+                'resize_both' => 'Both',
+                'resize_none' => 'None',
+            ],
+            'select' => [
+                'name' => 'Select',
+                'variant_label' => 'Variant',
+                'variant_default' => 'Default',
+                'variant_listbox' => 'Listbox',
+                'multiple_label' => 'Multiple',
+                'searchable_label' => 'Searchable',
+            ],
+            'section' => [
+                'name' => 'Section',
+            ],
+            'radio' => [
+                'name' => 'Radio',
+                'variant_label' => 'Variant',
+                'variant_default' => 'Default',
+                'variant_segmented' => 'Segmented',
+                'variant_cards' => 'Cards',
+            ],
+            'number' => [
+                'name' => 'Number',
+            ],
+            'file' => [
+                'name' => 'File',
+            ],
+            'field_type' => [
+                'tooltip_label' => 'Tooltip',
+            ],
+            'email' => [
+                'name' => 'Email',
+            ],
+            'date' => [
+                'name' => 'Date',
+            ],
+            'checkbox' => [
+                'name' => 'Checkbox',
+                'variant_label' => 'Variant',
+                'variant_default' => 'Default',
+                'variant_cards' => 'Cards',
+            ],
+        ],
+    ],
+    'settings' => [
+        'errors' => [
+            'group_not_found' => 'Setting group \':groupKey\' not found.',
+        ],
+    ],
+    'resources' => [
+        'filters' => [
+            'all' => 'All',
+        ],
+        'columns' => [
+            'status' => 'Status',
+            'id' => 'ID',
+            'boolean' => ':column',
+        ],
+        'user' => [
+            'navigation_icon' => 'user',
+            'permission' => 'edit users',
+            'with_roles' => 'roles',
+            'avatar_help_text' => 'Upload a user avatar. Recommended size is 200x200px.',
+            'password_help_text' => 'Leave blank to keep current password.',
+            'select_roles_placeholder' => 'Select roles',
+        ],
+        'testimonial' => [
+            'navigation_icon' => 'star',
+        ],
+        'labels' => [
+            'handle' => '',
+            '5_stars' => '5 Stars',
+            '4_stars' => '4 Stars',
+            '3_stars' => '3 Stars',
+            '2_stars' => '2 Stars',
+            '1_star' => '1 Star',
+        ],
+    ],
+    'commands' => [
+        'sync_settings' => [
+            'description' => 'Synchronize settings from config file to the database.',
+            'group_not_found_skip' => 'Setting group \':group\' not found for setting \':key\'. Skipping.',
+        ],
+        'make_resource' => [
+            'description' => 'Create a new resource class',
+            'name_argument_description' => 'The name of the resource',
+            'model_argument_description' => 'The model class for the resource',
+            'force_option_description' => 'Create the class even if the resource already exists',
+        ],
+        'make_block' => [
+            'description' => 'Create a new content block with class and view files',
+        ],
+        'sync_from_files' => [
+            'description' => 'Synchronize translations from language files to the database.',
+            'default_locale_not_found' => 'Default locale \':locale\' not found in language directories.',
+            'processing_group' => 'Processing group: :group',
+        ],
+        'sync_from_db' => [
+            'description' => 'Synchronize translations from the database to language files.',
+            'processing_locale' => 'Processing locale: :locale',
+        ],
+    ],
+    'general' => [
+        'yes' => 'Yes',
+        'no' => 'No',
+        'all_rights_reserved' => 'All rights reserved.',
+        'view' => 'View',
+        'edit' => 'Edit',
+        'delete' => 'Delete',
+    ],
+    'blocks' => [
+        'hero_section' => [
+            'name' => 'Hero Section',
+            'default_heading' => 'New Hero Heading',
+            'default_subheading' => 'Subheading text goes here.',
+            'heading_label' => 'Heading',
+            'subheading_label' => 'Subheading',
+            'image_label' => 'Image',
+        ],
+        'faq_section' => [
+            'name' => 'FAQ Section',
+            'default_question' => 'First Question?',
+            'default_answer' => 'First answer.',
+            'items_heading' => 'FAQ Items',
+            'question_label' => 'Question',
+            'answer_label' => 'Answer',
+            'add_item_button' => 'Add FAQ Item',
+        ],
+        'content_area' => [
+            'name' => 'Content Area',
+            'default_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            'content_label' => 'Content',
+        ],
+    ],
+    'auth' => [
+        'verified_query_param' => '?verified=1',
+        'logout' => 'Log Out',
+    ],
+    'mail' => [
+        'form_submission' => [
+            'subject' => 'New Form Submission: :formName',
+            'email_title' => 'New Form Submission',
+            'email_heading' => 'New Submission for :formName',
+            'email_body' => 'A new submission has been received.',
+        ],
+    ],
+    'navigation' => [
+        'dashboard' => 'Dashboard',
+        'media_library' => 'Media Library',
+        'translations' => 'Translations',
+        'pages' => 'Pages',
+        'forms' => 'Forms',
+        'settings' => 'Settings',
+        'settings_group_heading' => 'Settings',
+        'content_group_heading' => 'Content',
+        'resources_group_heading' => 'Resources',
+        'documentation' => 'Documentation',
+        'view_page' => 'View Page',
+    ],
+    'pages' => [
+        'index' => [
+            'new_page_button' => 'New page',
+            'table_title_column' => 'Title',
+            'table_translations_column' => 'Translations',
+            'table_actions_column' => 'Actions',
+            'no_pages_found' => 'No pages found.',
+            'filter_locale_label' => 'Locale',
+            'filter_all_locales_option' => 'All Locales',
+        ],
+    ],
+    'language_settings_reset' => 'messages.language_settings_reset',
+    'block_order_update_error_title' => 'Error Updating Order',
+    'block_deleted_text' => 'Content block deleted successfully.',
+    'page_index' => [
+        'title' => 'Pages',
+        'search_placeholder' => 'Search pages...',
+    ],
+    'welcome' => [
+        'dashboard' => 'Dashboard',
+    ],
+    'saved' => 'messages.saved',
+    'no_pages_found' => 'No pages found',
+];

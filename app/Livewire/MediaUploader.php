@@ -179,7 +179,7 @@ class MediaUploader extends Component
             $this->dispatch('media-updated', modelId: $this->model->id, collection: $this->collection);
             Flux::toast('Media removed successfully.', variant: 'success');
         } catch (\Exception $e) {
-            Flux::toast('Failed to remove media: ' . $e->getMessage(), variant: 'danger');
+            Flux::toast(__('media.uploader.remove_failed', ['message' => $e->getMessage()]), variant: 'danger');
         }
     }
 

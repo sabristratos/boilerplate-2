@@ -13,7 +13,7 @@ class DateField extends FieldType
 
     public function getLabel(): string
     {
-        return 'Date';
+        return __('forms.field_types.date.name');
     }
 
     public function getPreviewComponent(): string

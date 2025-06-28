@@ -39,7 +39,7 @@ class SyncFromDb extends Command
         }
 
         foreach ($locales as $locale) {
-            $this->line('Processing locale: ' . $locale);
+            $this->line(__('commands.sync_from_db.processing_locale', ['locale' => $locale]));
             $localePath = lang_path($locale);
 
             if (!File::exists($localePath)) {

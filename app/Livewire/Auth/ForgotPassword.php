@@ -25,6 +25,5 @@ class ForgotPassword extends Component
         Password::sendResetLink($this->only('email'));
 
         $this->showSuccessToast(__('auth.forgot_password_link_sent'));
-        session()->flash('status', __('auth.forgot_password_link_sent'));
     }
 }

@@ -23,11 +23,11 @@ class TextareaField extends FieldType
     {
         return array_merge(parent::getComponentOptions(), [
             'rows' => ['type' => 'number', 'label' => 'Rows'],
-            'resize' => ['type' => 'select', 'label' => 'Resize', 'options' => [
-                'vertical' => 'Vertical',
-                'horizontal' => 'Horizontal',
-                'both' => 'Both',
-                'none' => 'None',
+            'resize' => ['type' => 'select', 'label' => __('forms.field_types.textarea.resize_label'), 'options' => [
+            'vertical' => __('forms.field_types.textarea.resize_vertical'),
+            'horizontal' => __('forms.field_types.textarea.resize_horizontal'),
+            'both' => __('forms.field_types.textarea.resize_both'),
+            'none' => __('forms.field_types.textarea.resize_none'),
             ]],
         ]);
     }

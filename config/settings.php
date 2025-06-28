@@ -115,12 +115,12 @@ return [
             ],
             'subfields' => [
                 'code' => [
-                    'label' => 'Code',
+                    'label' => ['en' => 'Code', 'fr' => 'Code'],
                     'type' => 'text',
                     'rules' => 'required|string|size:2',
                 ],
                 'name' => [
-                    'label' => 'Name',
+                    'label' => ['en' => 'Name', 'fr' => 'Nom'],
                     'type' => 'text',
                     'rules' => 'required|string',
                 ],
@@ -147,6 +147,16 @@ return [
             'permission' => 'settings.general.manage',
             'config' => 'app.fallback_locale',
             'default' => 'en',
+        ],
+        'general.homepage' => [
+            'group' => SettingGroupKey::GENERAL->value,
+            'label' => ['en' => 'Homepage', 'fr' => 'Page d\'accueil'],
+            'description' => ['en' => 'The page to display as the homepage.', 'fr' => 'La page à afficher comme page d\'accueil.'],
+            'type' => SettingType::SELECT->value,
+            'cast' => 'integer',
+            'rules' => 'nullable|integer|exists:pages,id',
+            'options' => fn() => \App\Models\Page::all()->pluck('title', 'id')->toArray(),
+            'permission' => 'settings.general.manage',
         ],
         'appearance.theme' => [
             'group' => SettingGroupKey::APPEARANCE->value,
@@ -219,7 +229,7 @@ return [
             'permission' => 'settings.contact.manage',
             'subfields' => [
                 'email' => [
-                    'label' => 'Email',
+                    'label' => ['en' => 'Email', 'fr' => 'Courriel'],
                     'type' => 'email',
                     'rules' => 'required|email',
                 ],
@@ -235,7 +245,7 @@ return [
             'permission' => 'settings.contact.manage',
             'subfields' => [
                 'phone' => [
-                    'label' => 'Phone',
+                    'label' => ['en' => 'Phone', 'fr' => 'Téléphone'],
                     'type' => 'tel',
                     'rules' => 'required|string',
                 ],
@@ -244,7 +254,7 @@ return [
         'contact.social_links' => [
             'group' => SettingGroupKey::CONTACT->value,
             'label' => ['en' => 'Social Media Links', 'fr' => 'Liens de réseaux sociaux'],
-            'description' => ['en' => 'Manage social media links', 'fr' => 'Gérer les liens de réseaux sociaux'],
+            'description' => ['en' => 'Manage social media links', 'fr' => 'Gérer les liens des réseaux sociaux'],
             'type' => SettingType::REPEATER->value,
             'cast' => 'array',
             'rules' => 'nullable|array',
@@ -420,6 +430,65 @@ return [
             'rules' => 'nullable|string',
             'permission' => 'settings.social.manage',
         ],
+        'social.links' => [
+            'group' => SettingGroupKey::SOCIAL->value,
+            'label' => ['en' => 'Social Links', 'fr' => 'Liens sociaux'],
+            'description' => ['en' => 'Manage social media links', 'fr' => 'Gérer les liens des réseaux sociaux'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.social.manage',
+            'subfields' => [
+                'network' => [
+                    'label' => ['en' => 'Network', 'fr' => 'Réseau'],
+                    'type' => 'select',
+                    'rules' => 'required|string',
+                    'options' => [
+                        'facebook' => 'Facebook',
+                        'twitter' => 'Twitter',
+                        'instagram' => 'Instagram',
+                        'linkedin' => 'LinkedIn',
+                        'youtube' => 'YouTube',
+                        'github' => 'GitHub',
+                    ],
+                ],
+                'url' => [
+                    'label' => ['en' => 'URL', 'fr' => 'URL'],
+                    'type' => 'url',
+                    'rules' => 'required|url',
+                ],
+            ],
+        ],
+        'security.enabled_oauth_providers' => [
+            'group' => SettingGroupKey::SECURITY->value,
+            'label' => ['en' => 'Enabled OAuth Providers', 'fr' => 'Fournisseurs OAuth activés'],
+            'description' => ['en' => 'Manage enabled OAuth providers', 'fr' => 'Gérer les fournisseurs OAuth activés'],
+            'type' => SettingType::REPEATER->value,
+            'cast' => 'array',
+            'rules' => 'nullable|array',
+            'permission' => 'settings.security.manage',
+            'subfields' => [
+                'provider' => [
+                    'label' => ['en' => 'Provider', 'fr' => 'Fournisseur'],
+                    'type' => 'select',
+                    'rules' => 'required|string',
+                    'options' => [
+                        'google' => 'Google',
+                        'facebook' => 'Facebook',
+                    ],
+                ],
+                'client_id' => [
+                    'label' => ['en' => 'Client ID', 'fr' => 'ID client'],
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+                'client_secret' => [
+                    'label' => ['en' => 'Client Secret', 'fr' => 'Secret client'],
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+            ],
+        ],
         'advanced.timezone' => [
             'group' => SettingGroupKey::ADVANCED->value,
             'label' => ['en' => 'Timezone', 'fr' => 'Fuseau horaire'],
@@ -507,35 +576,53 @@ return [
             'permission' => 'settings.navigation.manage',
             'subfields' => [
                 'label' => [
-                    'label' => 'Label',
+                    'label' => ['en' => 'Label', 'fr' => 'Étiquette'],
                     'type' => 'text',
                     'rules' => 'required|string',
                 ],
                 'url' => [
-                    'label' => 'URL',
-                    'type' => 'url',
-                    'rules' => 'required|url',
+                    'label' => ['en' => 'URL', 'fr' => 'URL'],
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+                'target' => [
+                    'label' => ['en' => 'Target', 'fr' => 'Cible'],
+                    'type' => 'select',
+                    'rules' => 'required|string|in:_self,_blank',
+                    'options' => [
+                        '_self' => 'Same tab',
+                        '_blank' => 'New tab',
+                    ],
                 ],
             ],
         ],
         'navigation.footer_links' => [
             'group' => SettingGroupKey::NAVIGATION->value,
-            'label' => ['en' => 'Footer Links', 'fr' => 'Liens de pied de page'],
-            'description' => ['en' => 'Manage links in the website footer.', 'fr' => 'Gérer les liens dans le pied de page du site Web.'],
+            'label' => ['en' => 'Footer Links', 'fr' => 'Liens du pied de page'],
+            'description' => ['en' => 'Manage footer links', 'fr' => 'Gérer les liens du pied de page'],
             'type' => SettingType::REPEATER->value,
             'cast' => 'array',
             'rules' => 'nullable|array',
             'permission' => 'settings.navigation.manage',
             'subfields' => [
                 'label' => [
-                    'label' => 'Label',
+                    'label' => ['en' => 'Label', 'fr' => 'Étiquette'],
                     'type' => 'text',
                     'rules' => 'required|string',
                 ],
                 'url' => [
-                    'label' => 'URL',
-                    'type' => 'url',
-                    'rules' => 'required|url',
+                    'label' => ['en' => 'URL', 'fr' => 'URL'],
+                    'type' => 'text',
+                    'rules' => 'required|string',
+                ],
+                'target' => [
+                    'label' => ['en' => 'Target', 'fr' => 'Cible'],
+                    'type' => 'select',
+                    'rules' => 'required|string|in:_self,_blank',
+                    'options' => [
+                        '_self' => 'Same tab',
+                        '_blank' => 'New tab',
+                    ],
                 ],
             ],
         ],

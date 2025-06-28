@@ -13,7 +13,7 @@ class FileField extends FieldType
 
     public function getLabel(): string
     {
-        return 'File';
+        return __('forms.field_types.file.name');
     }
 
     public function getPreviewComponent(): string

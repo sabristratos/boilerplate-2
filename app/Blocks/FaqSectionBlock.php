@@ -23,7 +23,7 @@ class FaqSectionBlock extends Block
     {
         return [
             'faqs' => [
-                ['question' => 'First Question?', 'answer' => 'First answer.'],
+                ['question' => __('blocks.faq_section.default_question'), 'answer' => __('blocks.faq_section.default_answer')],
             ],
         ];
     }

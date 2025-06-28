@@ -72,7 +72,6 @@ class ResetPassword extends Component
             return;
         }
 
-        Session::flash('status', __($status));
         $this->showSuccessToast(__('auth.password_reset_success'));
 
         $this->redirectRoute('login', navigate: true);

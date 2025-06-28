@@ -11,8 +11,8 @@
     @else
         @foreach ($block->data['faqs'] ?? [] as $faq)
             <details class="mb-2">
-                <summary class="font-semibold">{{ $faq['question'] }}</summary>
-                <p class="mt-1">{{ $faq['answer'] }}</p>
+                <summary class="font-semibold">{{ $block->getTranslation('data', app()->getLocale())['faqs'][$loop->index]['question'] ?? $faq['question'] }}</summary>
+                <p class="mt-1">{{ $block->getTranslation('data', app()->getLocale())['faqs'][$loop->index]['answer'] ?? $faq['answer'] }}</p>
             </details>
         @endforeach
     @endif

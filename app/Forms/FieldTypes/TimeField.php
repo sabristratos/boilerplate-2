@@ -13,7 +13,7 @@ class TimeField extends FieldType
 
     public function getLabel(): string
     {
-        return 'Time';
+        return __('forms.field_types.time.name');
     }
 
     public function getPreviewComponent(): string

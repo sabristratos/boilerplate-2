@@ -98,7 +98,7 @@ class MediaLibrary extends Component
      */
     public function formatFileSize(int $bytes): string
     {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $units = [__('media.units.B'), __('media.units.KB'), __('media.units.MB'), __('media.units.GB'), __('media.units.TB')];
 
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));

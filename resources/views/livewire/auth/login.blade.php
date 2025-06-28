@@ -7,28 +7,28 @@
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form wire:submit="login" class="space-y-6 p-2">
-        <flux:field :label="__('labels.email')">
-            <flux:input
-                wire:model="email"
-                type="email"
-                required
-                autofocus
-            />
-        </flux:field>
+        <flux:input
+            wire:model="email"
+            type="email"
+            :label="__('labels.email')"
+            required
+            autofocus
+        />
 
-        <flux:field :label="__('labels.password')">
-            <flux:input
-                wire:model="password"
-                type="password"
-                required
-            />
-        </flux:field>
+        <flux:input
+            wire:model="password"
+            type="password"
+            :label="__('labels.password')"
+            required
+            viewable
+        />
 
         <div class="flex items-center justify-between">
-            <flux:field variant="inline">
-                <flux:label for="remember_me">{{ __('labels.remember_me') }}</flux:label>
-                <flux:checkbox id="remember_me" wire:model="remember" />
-            </flux:field>
+            <flux:checkbox
+                id="remember_me"
+                wire:model="remember"
+                :label="__('labels.remember_me')"
+            />
 
             <flux:link
                 href="{{ route('password.request') }}"
@@ -36,7 +36,6 @@
                 {{ __('auth.forgot_password_title') }}?
             </flux:link>
         </div>
-
 
         <flux:button
             type="submit"
@@ -49,9 +48,11 @@
 
     @if(setting('security.enable_registration'))
         <div class="text-center">
-            <flux:text href="{{ route('register') }}"
-                       variant="link" size="sm">
+            <flux:text size="sm">
                 {{ __('auth.register_prompt') }}
+                <flux:link href="{{ route('register') }}">
+                    {{ __('buttons.create_account') }}
+                </flux:link>
             </flux:text>
         </div>
     @endif

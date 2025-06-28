@@ -7,14 +7,13 @@
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form wire:submit="sendPasswordResetLink" class="space-y-6">
-        <flux:field :label="__('labels.email')">
-            <flux:input
-                wire:model="email"
-                type="email"
-                required
-                autofocus
-            />
-        </flux:field>
+        <flux:input
+            wire:model="email"
+            type="email"
+            :label="__('labels.email')"
+            required
+            autofocus
+        />
 
         <flux:button
             type="submit"

@@ -28,7 +28,7 @@ class HeroSectionBlock extends Block
     {
         return [
             'heading' => 'New Hero Heading',
-            'subheading' => 'Subheading text goes here.',
+            'subheading' => __('blocks.hero_section.default_subheading'),
         ];
     }
 

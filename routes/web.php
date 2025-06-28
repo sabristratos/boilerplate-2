@@ -13,7 +13,14 @@ use App\Livewire\Admin\PageManager;
 use App\Livewire\Auth\Login;
 use App\Livewire\SettingsPage;
 
+use App\Facades\Settings;
+use App\Models\Page;
+
 Route::get('/', function () {
+    $homepageId = Settings::get('general.homepage');
+    if ($homepageId && $page = Page::find($homepageId)) {
+        return app(PageController::class)->show($page);
+    }
     return view('welcome');
 })->name('home');
 

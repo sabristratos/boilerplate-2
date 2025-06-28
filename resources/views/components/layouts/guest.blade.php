@@ -36,7 +36,7 @@
                         </div>
                     @endforeach
                 </nav>
-                <p class="mt-8 text-center text-base text-gray-400">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. All rights reserved.</p>
+                <p class="mt-8 text-center text-base text-gray-400">&copy; {{ date('Y') }} {{ config('app.name', 'Laravel') }}. {{ __('general.all_rights_reserved') }}</p>
             </div>
         </footer>
 

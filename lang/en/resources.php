@@ -1,7 +1,10 @@
 <?php
 
-return array (
-  'user' => 'User',
+return [
+  'user' => 
+  [
+    'select_roles_placeholder' => 'Select roles',
+  ],
   'users' => 'Users',
   'testimonial' => 'Testimonial',
   'testimonials' => 'Testimonials',
@@ -9,4 +12,8 @@ return array (
   'to' => 'to',
   'of' => 'of',
   'results' => 'results',
-);
+  'labels' => 
+  [
+    '1_star' => '1 Star',
+  ],
+];

@@ -29,7 +29,7 @@ class Dashboard extends Component
                 'icon' => 'users',
             ],
             [
-                'name' => 'Testimonials',
+                'name' => __('dashboard.testimonials'),
                 'value' => Testimonial::count(),
                 'icon' => 'chat-bubble-left-right',
             ],

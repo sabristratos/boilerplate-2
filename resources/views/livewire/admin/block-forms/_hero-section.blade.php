@@ -19,7 +19,7 @@
         @endif
 
         <div>
-            <flux:label>Image</flux:label>
+            <flux:label>{{ __('blocks.hero_section.image_label') }}</flux:label>
             <div class="mt-1">
                 <livewire:media-uploader :model="$editingBlock" collection="image" />
             </div>

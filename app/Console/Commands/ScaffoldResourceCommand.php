@@ -149,7 +149,7 @@ class ScaffoldResourceCommand extends GeneratorCommand
             switch ($type) {
                 case 'boolean':
                     $imports[] = 'use App\Services\ResourceSystem\Columns\BadgeColumn;';
-                    $cols[] = "BadgeColumn::make('{$column}')->options([\n                1 => 'Yes',\n                0 => 'No',\n            ])";
+                    $cols[] = "BadgeColumn::make('{$column}')->options([\n                1 => __('general.yes'),\n                0 => __('general.no'),\n            ])";
                     break;
                 case 'date':
                     $imports[] = 'use App\Services\ResourceSystem\Columns\DateColumn;';
@@ -180,7 +180,7 @@ class ScaffoldResourceCommand extends GeneratorCommand
     protected function getOptions()
     {
         return [
-            ['force', 'f', InputOption::VALUE_NONE, 'Create the class even if the resource already exists'],
+            ['force', 'f', InputOption::VALUE_NONE, __('commands.make_resource.force_option_description')],
         ];
     }
 } 

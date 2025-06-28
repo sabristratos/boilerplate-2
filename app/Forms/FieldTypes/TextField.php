@@ -25,7 +25,7 @@ class TextField extends FieldType
     {
         return array_merge(parent::getComponentOptions(), [
             'viewable' => ['type' => 'boolean', 'label' => 'Viewable'],
-            'copyable' => ['type' => 'boolean', 'label' => 'Copyable'],
+            'copyable' => ['type' => 'boolean', 'label' => __('forms.field_types.text.copyable_label')],
         ]);
     }
 }

@@ -11,7 +11,7 @@ class CheckboxField extends FieldType
 
     public function getLabel(): string
     {
-        return 'Checkbox';
+        return __('forms.field_types.checkbox.name');
     }
 
     public function getPreviewComponent(): string
@@ -22,9 +22,9 @@ class CheckboxField extends FieldType
     public function getComponentOptions(): array
     {
         return array_merge(parent::getComponentOptions(), [
-            'variant' => ['type' => 'select', 'label' => 'Variant', 'options' => [
-                'default' => 'Default',
-                'cards' => 'Cards',
+            'variant' => ['type' => 'select', 'label' => __('forms.field_types.checkbox.variant_label'), 'options' => [
+                'default' => __('forms.field_types.checkbox.variant_default'),
+                'cards' => __('forms.field_types.checkbox.variant_cards'),
             ]],
         ]);
     }

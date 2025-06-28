@@ -85,7 +85,7 @@ class ManageTranslations extends Component
             Artisan::call('translations:sync-from-files');
             $this->showSuccessToast(__('messages.translations.scan_complete'));
         } catch (Exception $e) {
-            $this->showErrorToast($e->getMessage(), __('Scan Failed'));
+            $this->showErrorToast($e->getMessage(), __('messages.errors.scan_failed'));
         }
     }
 
@@ -115,7 +115,7 @@ class ManageTranslations extends Component
 
             $this->showSuccessToast(__('messages.translations.save_success'));
         } catch (Exception $e) {
-            $this->showErrorToast($e->getMessage(), __('Save failed'));
+            $this->showErrorToast($e->getMessage(), __('messages.errors.save_failed'));
         }
     }
 
@@ -154,7 +154,7 @@ class ManageTranslations extends Component
         } catch (Exception $e) {
             $this->showErrorToast(
                 $e->getMessage(),
-                __('Export failed')
+                __('messages.errors.export_failed')
             );
 
             return null;
@@ -200,7 +200,7 @@ class ManageTranslations extends Component
         } catch (Exception $e) {
             $this->showErrorToast(
                 $e->getMessage(),
-                __('Import failed')
+                __('messages.errors.import_failed')
             );
         }
     }

@@ -11,11 +11,11 @@
 
     <h1
         class="text-4xl font-bold text-center"
-        x-text="editingBlockId == {{ $block->id }} && liveState ? liveState.heading : '{{ addslashes($heading) }}'"
+        x-text="editingBlockId == {{ $block->id }} && liveState ? liveState.heading : @json($heading)"
     ></h1>
     <p
         class="text-lg text-center mt-2"
-        x-text="editingBlockId == {{ $block->id }} && liveState ? liveState.subheading : '{{ addslashes($subheading) }}'"
+        x-text="editingBlockId == {{ $block->id }} && liveState ? liveState.subheading : @json($subheading)"
     ></p>
 
     @if($block->hasMedia('images'))

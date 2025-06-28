@@ -38,6 +38,7 @@ class FormField extends Model implements Sortable
 
     protected $casts = [
         'type' => FormFieldType::class,
+        'options' => 'array',
         'component_options' => 'array',
         'layout_options' => 'array',
     ];

@@ -11,7 +11,7 @@ class SectionField extends FieldType
 
     public function getLabel(): string
     {
-        return 'Section';
+        return __('forms.field_types.section.name');
     }
 
     public function getPreviewComponent(): string

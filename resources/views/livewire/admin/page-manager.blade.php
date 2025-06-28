@@ -15,23 +15,23 @@
     <div>
         <div class="mb-4">
             <a href="{{ route('admin.pages.index') }}" wire:navigate class="text-sm text-zinc-500 hover:text-zinc-700">
-                &larr; Back to pages
+                &larr; {{ __('messages.page_manager.back_to_pages') }}
             </a>
         </div>
 
         <form wire:submit.prevent="savePageDetails" class="mb-6 pb-6 border-b border-zinc-200 dark:border-zinc-700">
             <div class="flex justify-between items-center mb-4">
                 <flux:heading>
-                    Edit Page: {{ $page->getTranslation('title', $activeLocale) ?: 'New Translation' }} ({{ strtoupper($activeLocale) }})
+                    {{ __('messages.page_manager.edit_page') }} {{ $page->getTranslation('title', $activeLocale) ?: __('messages.page_manager.new_translation') }} ({{ strtoupper($activeLocale) }})
                 </flux:heading>
-                <flux:button type="submit" variant="primary">Save Page</flux:button>
+                <flux:button type="submit" variant="primary">{{ __('messages.page_manager.save_page') }}</flux:button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <flux:input
                         wire:model.defer="title.{{ $activeLocale }}"
                         wire:change="generateSlug('{{ $activeLocale }}')"
-                        label="Title"
+                        label="{{ __('labels.title') }}"
                         id="title_{{ $activeLocale }}"
                     />
                     @error('title.'.$activeLocale) <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
@@ -39,7 +39,7 @@
                 <div>
                     <flux:input
                         wire:model.defer="slug.{{ $activeLocale }}"
-                        label="Slug"
+                        label="{{ __('labels.slug') }}"
                         id="slug_{{ $activeLocale }}"
                     />
                     @error('slug.'.$activeLocale) <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
@@ -92,8 +92,8 @@
                     @empty
                         <div class="flex flex-col items-center justify-center p-12 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
                             <flux:icon name="layout-grid" class="h-10 w-10 text-zinc-400" />
-                            <flux:text class="mt-4">This page has no content yet.</flux:text>
-                            <flux:text variant="subtle">Add a block from the library to get started.</flux:text>
+                            <flux:text class="mt-4">{{ __('This page has no content yet.') }}</flux:text>
+                            <flux:text variant="subtle">{{ __('Add a block from the library to get started.') }}</flux:text>
                         </div>
                     @endforelse
                 </div>
@@ -103,7 +103,7 @@
             <div class="md:col-span-1 flex flex-col h-full">
                 {{-- Block Library --}}
                 <div class="space-y-2 mb-4">
-                    <h3 class="text-sm font-medium text-zinc-900 dark:text-white">Block Library</h3>
+                    <h3 class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('messages.page_manager.block_library') }}</h3>
                     <div class="space-y-1 max-h-48 overflow-y-auto p-1">
                         @foreach($this->blockManager->getAvailableBlocks() as $block)
                             <button wire:click="createBlock('{{ $block->getType() }}')" type="button" class="w-full text-left p-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-sm">

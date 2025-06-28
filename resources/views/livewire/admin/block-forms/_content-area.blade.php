@@ -8,7 +8,7 @@
     @if ($alpine)
         <flux:textarea x-model="state.content" label="Content" rows="8" />
     @else
-        <flux:textarea wire:model.defer="state.content" label="Content" rows="8" />
+        <flux:textarea wire:model.defer="state.content" label="{{ __('blocks.content_area.content_label') }}" rows="8" />
     @endif
 
     <div class="mt-4">

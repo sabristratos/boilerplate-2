@@ -60,7 +60,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <flux:button href="{{ route('pages.show', $page) }}" target="_blank" variant="ghost" size="xs" icon="eye" square tooltip="View" />
                             <flux:button href="{{ route('admin.pages.editor', $page->id) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
-                            <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="Delete" />
+                            <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('general.delete') }}" />
                         </td>
                     </tr>
                 @empty

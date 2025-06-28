@@ -3,12 +3,13 @@
         <div class="flex h-16 items-center">
             <!-- Logo -->
             <div class="flex items-center gap-4">
+                <div x-data="{ open: false }" @keydown.window.escape="open = false" class="relative">
+                    <a href="{{ route('home') }}" class="block">
+                        <span class="sr-only">{{ config('app.name') }}</span>
+                        <x-app-logo class="h-8 w-8" />
+                    </a>
+                </div>
                 <a href="{{ route('dashboard') }}" class="flex items-center gap-2 text-zinc-800 dark:text-white font-semibold">
-                    @if ($siteLogo)
-                        <img src="{{ $siteLogo }}" alt="{{ $siteName }}" class="h-8 w-auto">
-                    @else
-                        <x-app-logo-icon class="h-8 w-8" />
-                    @endif
                     <span class="hidden sm:inline">{{ $siteName }}</span>
                 </a>
             </div>
@@ -24,7 +25,7 @@
                         icon="document-text"
                         variant="subtle"
                     >
-                        Pages
+                        {{ __('navigation.pages') }}
                     </flux:button>
                 @endcan
                 @can('edit content')
@@ -33,7 +34,7 @@
                         icon="photo"
                         variant="subtle"
                     >
-                        Media Library
+                        {{ __('navigation.media_library') }}
                     </flux:button>
                 @endcan
                 @foreach($resources as $resource)
@@ -65,9 +66,9 @@
                             circle
                         />
                         <flux:menu>
-                            <flux:menu.group heading="Settings">
-                                <flux:menu.item href="{{ route('admin.translations.index') }}" icon="language">Translations</flux:menu.item>
-                                <flux:menu.item href="{{ route('settings.group', 'general') }}" icon="cog-6-tooth">Settings</flux:menu.item>
+                            <flux:menu.group heading="{{ __('navigation.settings_group_heading') }}">
+                                <flux:menu.item href="{{ route('admin.translations.index') }}" icon="language">{{ __('navigation.translations') }}</flux:menu.item>
+                                <flux:menu.item href="{{ route('settings.group', 'general') }}" icon="cog-6-tooth">{{ __('navigation.settings') }}</flux:menu.item>
                             </flux:menu.group>
                             <flux:menu.separator />
                             <form method="POST" action="{{ route('logout') }}">
@@ -78,7 +79,7 @@
                                     variant="danger"
                                     icon="arrow-left-on-rectangle"
                                 >
-                                    Logout
+                                    {{ __('auth.logout') }}
                                 </flux:menu.item>
                             </form>
                         </flux:menu>
@@ -90,18 +91,18 @@
                     <flux:dropdown position="top" align="end">
                         <flux:button icon="bars-3" variant="ghost" />
                         <flux:menu>
-                            <flux:menu.item href="{{ route('dashboard') }}" icon="layout-grid">Dashboard</flux:menu.item>
-                            <flux:menu.group heading="Content">
+                            <flux:menu.item href="{{ route('dashboard') }}" icon="layout-grid">{{ __('navigation.dashboard') }}</flux:menu.item>
+                            <flux:menu.group heading="{{ __('navigation.content_group_heading') }}">
                                 @can('edit pages')
-                                    <flux:menu.item href="{{ route('admin.pages.index') }}" icon="document-text">Pages</flux:menu.item>
+                                    <flux:menu.item href="{{ route('admin.pages.index') }}" icon="document-text">{{ __('navigation.pages') }}</flux:menu.item>
                                 @endcan
                                 @can('edit content')
-                                    <flux:menu.item href="{{ route('media.index') }}" icon="photo">Media Library</flux:menu.item>
+                                    <flux:menu.item href="{{ route('media.index') }}" icon="photo">{{ __('navigation.media_library') }}</flux:menu.item>
                                 @endcan
                             </flux:menu.group>
 
                             @if(count($resources) > 0)
-                                <flux:menu.group heading="Resources">
+                                <flux:menu.group heading="{{ __('navigation.resources_group_heading') }}">
                                     @foreach($resources as $resource)
                                         @can($resource::$permission)
                                             <flux:menu.item href="{{ route('admin.resources.' . $resource::uriKey() . '.index') }}" icon="{{ $resource::$navigationIcon }}">
@@ -112,9 +113,9 @@
                                 </flux:menu.group>
                             @endif
 
-                            <flux:menu.group heading="Settings">
-                                <flux:menu.item href="{{ route('admin.translations.index') }}" icon="language">Translations</flux:menu.item>
-                                <flux:menu.item href="{{ route('settings.group', 'general') }}" icon="cog-6-tooth">Settings</flux:menu.item>
+                            <flux:menu.group heading="{{ __('navigation.settings_group_heading') }}">
+                                <flux:menu.item href="{{ route('admin.translations.index') }}" icon="language">{{ __('navigation.translations') }}</flux:menu.item>
+                                <flux:menu.item href="{{ route('settings.group', 'general') }}" icon="cog-6-tooth">{{ __('navigation.settings') }}</flux:menu.item>
                             </flux:menu.group>
                             <flux:menu.separator />
                             <form method="POST" action="{{ route('logout') }}">
@@ -125,7 +126,7 @@
                                     variant="danger"
                                     icon="arrow-left-on-rectangle"
                                 >
-                                    Logout
+                                    {{ __('auth.logout') }}
                                 </flux:menu.item>
                             </form>
                         </flux:menu>

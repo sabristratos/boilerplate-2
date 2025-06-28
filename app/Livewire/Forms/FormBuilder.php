@@ -339,7 +339,7 @@ class FormBuilder extends Component
         ]);
 
         $this->form->update($this->formState);
-        $this->showSuccessToast('Form saved successfully.');
+        $this->showSuccessToast(__('forms.form_builder.form_saved_success'));
     }
 
     public function addRepeaterItem(string $key)

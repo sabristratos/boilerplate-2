@@ -27,7 +27,7 @@ class SelectField extends FieldType
                 'listbox' => 'Listbox',
             ]],
             'multiple' => ['type' => 'boolean', 'label' => 'Multiple'],
-            'searchable' => ['type' => 'boolean', 'label' => 'Searchable'],
+            'searchable' => ['type' => 'boolean', 'label' => __('forms.field_types.select.searchable_label')],
         ]);
     }
 } 

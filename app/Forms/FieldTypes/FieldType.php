@@ -30,7 +30,7 @@ abstract class FieldType
     public function getComponentOptions(): array
     {
         return [
-            'tooltip' => ['type' => 'string', 'label' => 'Tooltip'],
+            'tooltip' => ['type' => 'string', 'label' => __('forms.field_types.field_type.tooltip_label')],
         ];
     }
 } 

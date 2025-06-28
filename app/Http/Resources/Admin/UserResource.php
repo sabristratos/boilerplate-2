@@ -111,7 +111,7 @@ class UserResource extends Resource
                 ->rules(['sometimes', 'array'])
                 ->multiple()
                 ->default(['user'])
-                ->placeholder('Select roles'),
+                ->placeholder(__('resources.user.select_roles_placeholder')),
         ];
     }
 

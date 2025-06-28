@@ -1,36 +1,325 @@
 <?php
 
-return array (
-  'delete_confirm_title' => 'Es-tu sûr?',
-  'delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer ceci ? Cette action est irréversible.',
-  'no_resources_found' => 'Aucune ressource trouvée.',
-  'saved' => 'Sauvé.',
-  'confirm_save' => 
-  array (
-    'title' => 'Veuillez confirmer',
-  ),
-  'resource' => 
-  array (
-    'created' => ':Ressource créée avec succès.',
-    'updated' => ':Ressource mise à jour avec succès.',
-    'deleted' => ':Ressource supprimée avec succès.',
-  ),
-  'errors' => 
-  array (
-    'generic' => 'Une erreur inattendue s\'est produite. Veuillez réessayer.',
-    'not_found' => 'La ressource demandée n\'a pas été trouvée.',
-    'unauthorized' => 'Vous n\'êtes pas autorisé à effectuer cette action.',
-  ),
-  'success' => 
-  array (
-    'generic' => 'Opération terminée avec succès.',
-    'cache_cleared' => 'Cache d\'application vidé.',
-  ),
-  'cache_cleared_successfully' => 'Le cache a été vidé avec succès.',
-  'translations' => 
-  array (
-    'scan_complete' => 'Analyse terminée. De nouvelles traductions ont été ajoutées.',
-    'save_success' => 'Les traductions ont été enregistrées avec succès.',
-    'import_success' => 'Les traductions ont été importées avec succès.',
-  ),
-);
+return [
+    'Back to pages' => 'Retour aux pages',
+    'Edit Page:' => 'Modifier la page :',
+    'New Translation' => 'Nouvelle traduction',
+    'Save Page' => 'Enregistrer la page',
+    'Title' => 'Titre',
+    'Slug' => 'Slug',
+    'This page has no content yet.' => 'Cette page n\'a pas encore de contenu.',
+    'Add a block from the library to get started.' => 'Ajoutez un bloc de la bibliothèque pour commencer.',
+    'Block Library' => 'Bibliothèque de blocs',
+    'Status:' => 'Statut :',
+    'Cancel' => 'Annuler',
+    'Save changes' => 'Enregistrer les modifications',
+    'delete_confirm_title' => 'Êtes-vous sûr ?',
+    'delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer ceci ? Cette action est irréversible.',
+    'no_resources_found' => 'Aucune ressource trouvée.',
+    'saved' => 'Sauvé.',
+    'confirm_save' => [
+        'title' => 'Veuillez confirmer',
+    ],
+    'resource' => [
+        'created' => ':Resource créée avec succès.',
+        'updated' => ':Resource mise à jour avec succès.',
+        'deleted' => ':Resource supprimée avec succès.',
+    ],
+    'errors' => [
+        'generic' => 'Une erreur inattendue est survenue. Veuillez réessayer.',
+        'not_found' => 'La ressource demandée n\'a pas été trouvée.',
+        'unauthorized' => 'Vous n\'êtes pas autorisé à effectuer cette action.',
+        'file_upload' => 'messages.errors.file_upload',
+        'scan_failed' => 'L\'analyse a échoué',
+        'save_failed' => 'La sauvegarde a échoué',
+        'export_failed' => 'L\'exportation a échoué',
+        'import_failed' => 'L\'importation a échoué',
+    ],
+    'success' => [
+        'generic' => 'Opération terminée avec succès.',
+        'cache_cleared' => 'Cache d\'application vidé.',
+    ],
+    'cache_cleared_successfully' => 'Le cache a été vidé avec succès.',
+    'translations' => [
+        'scan_complete' => 'Analyse terminée. De nouvelles traductions ont été ajoutées.',
+        'save_success' => 'Les traductions ont été enregistrées avec succès.',
+        'import_success' => 'Les traductions ont été importées avec succès.',
+    ],
+    'block_editor' => [
+        'block_not_found_text' => 'Le bloc de contenu que vous essayez de modifier n\'existe plus.',
+        'block_not_found_title' => 'Bloc introuvable',
+        'block_updated_text' => 'Le bloc de contenu a été mis à jour avec succès.',
+        'block_updated_title' => 'Bloc mis à jour',
+        'autosaved' => 'Enregistré automatiquement',
+        'status' => 'Statut :',
+    ],
+    'page_manager' => [
+        'page_details_saved_text' => 'Détails de la page enregistrés avec succès.',
+        'invalid_block_type_text' => 'Le type de bloc que vous essayez de créer n\'est pas disponible.',
+        'invalid_block_type_title' => 'Type de bloc non valide',
+        'block_created_text' => 'Un nouveau bloc :blockName a été ajouté à la page.',
+        'block_created_title' => 'Bloc créé',
+        'block_order_updated_text' => 'L\'ordre des blocs a été mis à jour avec succès.',
+        'block_order_update_error_text' => 'Un problème est survenu lors de la mise à jour de l\'ordre des blocs. Certains blocs peuvent ne plus exister.',
+        'block_order_update_error_title' => 'Erreur lors de la mise à jour de l\'ordre des blocs',
+        'block_deleted_text' => 'Bloc de contenu supprimé avec succès.',
+        'edit_page' => 'Modifier la page :',
+        'new_translation' => 'Nouvelle traduction',
+        'save_page' => 'Enregistrer la page',
+        'block_library' => 'Bibliothèque de blocs',
+        'back_to_pages' => 'Retour aux pages',
+    ],
+    'media' => [
+        'uploader' => [
+            'no_media_selected' => 'Veuillez télécharger un fichier, fournir une URL ou sélectionner un média existant.',
+            'save_success' => 'Média enregistré avec succès.',
+            'save_failed' => 'Échec de l\'enregistrement du média : :message',
+            'select_failed' => 'Échec de la sélection du média : :message',
+            'no_item_selected' => 'Veuillez sélectionner au moins un élément multimédia.',
+            'confirm_failed' => 'Échec de la confirmation de la sélection du média : :message',
+            'remove_success' => 'Média supprimé avec succès.',
+            'remove_failed' => 'Échec de la suppression du média : :message',
+        ],
+        'library' => [
+            'delete_success' => 'Média supprimé avec succès.',
+            'delete_failed' => 'Échec de la suppression du média : :message',
+        ],
+        'units' => [
+            'B' => 'O',
+            'KB' => 'Ko',
+            'MB' => 'Mo',
+            'GB' => 'Go',
+            'TB' => 'To',
+        ],
+    ],
+    'dashboard' => [
+        'total_pages' => 'Pages totales',
+        'form_submissions' => 'Soumissions de formulaires',
+        'total_users' => 'Utilisateurs totaux',
+        'testimonials' => 'Témoignages',
+    ],
+    'forms' => [
+        'form_builder' => [
+            'field_added_success' => 'Champ ajouté avec succès.',
+            'field_saved_success' => 'Champ enregistré avec succès.',
+            'field_deleted_success' => 'Champ supprimé avec succès.',
+            'field_order_updated_success' => 'Ordre des champs mis à jour avec succès.',
+            'field_order_updated_error' => 'Erreur lors de la mise à jour de l\'ordre des champs.',
+            'form_saved_success' => 'Formulaire enregistré avec succès.',
+        ],
+        'validation' => [
+            'required' => 'Ce champ doit être rempli.',
+            'min_3' => 'Le champ doit avoir une longueur minimale de 3 caractères.',
+            'max_255' => 'Le champ doit avoir une longueur maximale de 255 caractères.',
+            'email' => 'Le champ à valider doit être formaté comme une adresse e-mail.',
+            'numeric' => 'Le champ à valider doit être numérique.',
+            'url' => 'Le champ à valider doit être une URL valide.',
+            'string' => 'Le champ à valider doit être une chaîne de caractères.',
+            'boolean' => 'Le champ à valider doit pouvoir être converti en booléen. Les entrées acceptées sont true, false, 1, 0, \"1\" et \"0\".',
+            'date' => 'Le champ à valider doit être une date valide et non relative selon la fonction PHP strtotime.',
+            'image' => 'Le fichier à valider doit être une image (jpg, jpeg, png, bmp, gif, svg ou webp).',
+            'alpha' => 'Le champ à valider doit être entièrement composé de caractères alphabétiques.',
+            'alpha_dash' => 'Le champ à valider peut contenir des caractères alphanumériques, ainsi que des tirets et des underscores.',
+            'alpha_num' => 'Le champ à valider doit être entièrement composé de caractères alphanumériques.',
+        ],
+        'form_index' => [
+            'new_form' => 'Nouveau formulaire',
+        ],
+        'field_type_manager' => [
+            'invalid_field_type_class' => 'La classe :class doit étendre :fieldTypeClass',
+        ],
+        'field_types' => [
+            'time' => [
+                'name' => 'Heure',
+            ],
+            'text' => [
+                'name' => 'Texte',
+                'viewable_label' => 'Visible',
+                'copyable_label' => 'Copiable',
+            ],
+            'textarea' => [
+                'name' => 'Zone de texte',
+                'rows_label' => 'Lignes',
+                'resize_label' => 'Redimensionner',
+                'resize_vertical' => 'Vertical',
+                'resize_horizontal' => 'Horizontal',
+                'resize_both' => 'Les deux',
+                'resize_none' => 'Aucun',
+            ],
+            'select' => [
+                'name' => 'Sélectionner',
+                'variant_label' => 'Variante',
+                'variant_default' => 'Défaut',
+                'variant_listbox' => 'Liste déroulante',
+                'multiple_label' => 'Multiple',
+                'searchable_label' => 'Recherchable',
+            ],
+            'section' => [
+                'name' => 'Section',
+            ],
+            'radio' => [
+                'name' => 'Radio',
+                'variant_label' => 'Variante',
+                'variant_default' => 'Défaut',
+                'variant_segmented' => 'Segmenté',
+                'variant_cards' => 'Cartes',
+            ],
+            'number' => [
+                'name' => 'Nombre',
+            ],
+            'file' => [
+                'name' => 'Fichier',
+            ],
+            'field_type' => [
+                'tooltip_label' => 'Info-bulle',
+            ],
+            'email' => [
+                'name' => 'E-mail',
+            ],
+            'date' => [
+                'name' => 'Date',
+            ],
+            'checkbox' => [
+                'name' => 'Case à cocher',
+                'variant_label' => 'Variante',
+                'variant_default' => 'Défaut',
+                'variant_cards' => 'Cartes',
+            ],
+        ],
+    ],
+    'settings' => [
+        'errors' => [
+            'group_not_found' => 'Groupe de paramètres \':groupKey\' introuvable.',
+        ],
+    ],
+    'resources' => [
+        'filters' => [
+            'all' => 'Tout',
+        ],
+        'columns' => [
+            'status' => 'Statut',
+            'id' => 'ID',
+            'boolean' => ':column',
+        ],
+        'user' => [
+            'navigation_icon' => 'utilisateur',
+            'permission' => 'modifier les utilisateurs',
+            'with_roles' => 'rôles',
+            'avatar_help_text' => 'Téléchargez un avatar d\'utilisateur. La taille recommandée est de 200x200px.',
+            'password_help_text' => 'Laisser vide pour conserver le mot de passe actuel.',
+            'select_roles_placeholder' => 'Sélectionner les rôles',
+        ],
+        'testimonial' => [
+            'navigation_icon' => 'étoile',
+        ],
+        'labels' => [
+            'handle' => '',
+            '5_stars' => '5 étoiles',
+            '4_stars' => '4 étoiles',
+            '3_stars' => '3 étoiles',
+            '2_stars' => '2 étoiles',
+            '1_star' => '1 étoile',
+        ],
+    ],
+    'commands' => [
+        'sync_settings' => [
+            'description' => 'Synchroniser les paramètres du fichier de configuration à la base de données.',
+            'group_not_found_skip' => 'Groupe de paramètres \':group\' introuvable pour le paramètre \':key\'. Ignoré.',
+        ],
+        'make_resource' => [
+            'description' => 'Créer une nouvelle classe de ressource',
+            'name_argument_description' => 'Le nom de la ressource',
+            'model_argument_description' => 'La classe de modèle pour la ressource',
+            'force_option_description' => 'Créer la classe même si la ressource existe déjà',
+        ],
+        'make_block' => [
+            'description' => 'Créer un nouveau bloc de contenu avec des fichiers de classe et de vue',
+        ],
+        'sync_from_files' => [
+            'description' => 'Synchroniser les traductions des fichiers de langue à la base de données.',
+            'default_locale_not_found' => 'Le paramètre régional par défaut \':locale\' est introuvable dans les répertoires de langue.',
+            'processing_group' => 'Traitement du groupe : :group',
+        ],
+        'sync_from_db' => [
+            'description' => 'Synchroniser les traductions de la base de données aux fichiers de langue.',
+            'processing_locale' => 'Traitement du paramètre régional : :locale',
+        ],
+    ],
+    'general' => [
+        'yes' => 'Oui',
+        'no' => 'Non',
+        'all_rights_reserved' => 'Tous droits réservés.',
+        'view' => 'Voir',
+        'edit' => 'Modifier',
+        'delete' => 'Supprimer',
+    ],
+    'blocks' => [
+        'hero_section' => [
+            'name' => 'Section Héro',
+            'default_heading' => 'Nouveau titre de héros',
+            'default_subheading' => 'Le texte du sous-titre va ici.',
+            'heading_label' => 'Titre',
+            'subheading_label' => 'Sous-titre',
+            'image_label' => 'Image',
+        ],
+        'faq_section' => [
+            'name' => 'Section FAQ',
+            'default_question' => 'Première question ?',
+            'default_answer' => 'Première réponse.',
+            'items_heading' => 'Éléments de la FAQ',
+            'question_label' => 'Question',
+            'answer_label' => 'Réponse',
+            'add_item_button' => 'Ajouter un élément de FAQ',
+        ],
+        'content_area' => [
+            'name' => 'Zone de contenu',
+            'default_content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            'content_label' => 'Contenu',
+        ],
+    ],
+    'auth' => [
+        'verified_query_param' => '?verified=1',
+        'logout' => 'Se déconnecter',
+    ],
+    'mail' => [
+        'form_submission' => [
+            'subject' => 'Nouvelle soumission de formulaire : :formName',
+            'email_title' => 'Nouvelle soumission de formulaire',
+            'email_heading' => 'Nouvelle soumission pour :formName',
+            'email_body' => 'Une nouvelle soumission a été reçue.',
+        ],
+    ],
+    'navigation' => [
+        'dashboard' => 'Tableau de bord',
+        'media_library' => 'Médiathèque',
+        'translations' => 'Traductions',
+        'pages' => 'Pages',
+        'forms' => 'Formulaires',
+        'settings' => 'Paramètres',
+        'settings_group_heading' => 'Paramètres',
+        'content_group_heading' => 'Contenu',
+        'resources_group_heading' => 'Ressources',
+        'documentation' => 'Documentation',
+        'view_page' => 'Voir la page',
+    ],
+    'pages' => [
+        'index' => [
+            'new_page_button' => 'Nouvelle page',
+            'table_title_column' => 'Titre',
+            'table_translations_column' => 'Traductions',
+            'table_actions_column' => 'Actions',
+            'no_pages_found' => 'Aucune page trouvée.',
+            'filter_locale_label' => 'Paramètre régional',
+            'filter_all_locales_option' => 'Tous les paramètres régionaux',
+        ],
+    ],
+    'language_settings_reset' => 'messages.language_settings_reset',
+    'page_index' => [
+        'title' => 'Pages',
+        'search_placeholder' => 'Rechercher des pages...',
+    ],
+    'welcome' => [
+        'dashboard' => 'Tableau de bord',
+    ],
+    'no_pages_found' => 'Aucune page trouvée',
+];

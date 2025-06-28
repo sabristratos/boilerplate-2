@@ -51,8 +51,10 @@ class Page extends Model implements HasMedia
             return $this->where('id', $value)->firstOrFail();
         }
 
-        // Otherwise, find by slug in the current locale
-        return $this->where("slug->" . app()->getLocale(), $value)->firstOrFail();
+        // Otherwise, find by slug in the current locale, and if not found, search in any locale.
+        return $this->where("slug->" . app()->getLocale(), $value)
+            ->orWhere('slug', $value)
+            ->firstOrFail();
     }
 
     public function hasTranslation(string $locale): bool

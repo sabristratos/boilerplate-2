@@ -53,7 +53,7 @@ class SyncFromFiles extends Command
 
         foreach ($files as $file) {
             $group = File::name($file);
-            $this->line('Processing group: ' . $group);
+            $this->line(__('commands.sync_from_files.processing_group', ['group' => $group]));
 
             $translations = Arr::dot(include $file);
 

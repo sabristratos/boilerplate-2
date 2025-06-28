@@ -17,7 +17,7 @@
 
     <div class="mt-4">
         <flux:button @click="state.faqs.push({question: '', answer: ''})" variant="outline" icon="plus">
-            Add FAQ Item
+            {{ __('blocks.faq_section.add_item_button') }}
         </flux:button>
     </div>
 </div>

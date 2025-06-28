@@ -35,4 +35,5 @@ return array (
   'add_from_url' => 'Add from URL',
   'select_existing' => 'Select Existing',
   'select' => 'Select',
+  'save_and_create_another' => 'Save & Create Another',
 );

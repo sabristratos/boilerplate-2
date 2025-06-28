@@ -30,7 +30,7 @@ class SelectFilter extends Filter
      *
      * @var string
      */
-    protected $emptyOptionLabel = 'All';
+    protected $emptyOptionLabel = 'resources.filters.all';
 
     /**
      * Set the options for the select filter.

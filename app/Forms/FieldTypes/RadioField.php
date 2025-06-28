@@ -22,10 +22,10 @@ class RadioField extends FieldType
     public function getComponentOptions(): array
     {
         return array_merge(parent::getComponentOptions(), [
-            'variant' => ['type' => 'select', 'label' => 'Variant', 'options' => [
-                'default' => 'Default',
-                'segmented' => 'Segmented',
-                'cards' => 'Cards',
+            'variant' => ['type' => 'select', 'label' => __('forms.field_types.radio.variant_label'), 'options' => [
+            'default' => __('forms.field_types.radio.variant_default'),
+            'segmented' => __('forms.field_types.radio.variant_segmented'),
+            'cards' => __('forms.field_types.radio.variant_cards'),
             ]],
         ]);
     }

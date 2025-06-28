@@ -16,7 +16,7 @@
                 <div class="flex justify-between items-center">
                     <flux:heading size="sm">{{ $formTitle }}</flux:heading>
                     <div class="flex items-center gap-2">
-                        <flux:text size="sm" variant="subtle">Status:</flux:text>
+                        <flux:text size="sm" variant="subtle">{{ __('messages.block_editor.status') }}</flux:text>
                         <flux:select wire:model.live="blockStatus" size="sm" class="w-32">
                             @foreach(\App\Enums\ContentBlockStatus::cases() as $status)
                                 <flux:select.option value="{{ $status->value }}">{{ $status->label() }}</flux:select.option>
@@ -36,10 +36,10 @@
 
                 <div class="flex justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
                     <flux:button type="button" wire:click="cancelEdit" variant="subtle" size="sm">
-                        Cancel
+                        {{ __('buttons.cancel') }}
                     </flux:button>
                     <flux:button type="submit" @click="$wire.set('state', state)" variant="primary" size="sm">
-                        Save changes
+                        {{ __('buttons.save_changes') }}
                     </flux:button>
                 </div>
             </form>

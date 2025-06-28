@@ -13,7 +13,7 @@ class NumberField extends FieldType
 
     public function getLabel(): string
     {
-        return 'Number';
+        return __('forms.field_types.number.name');
     }
 
     public function getPreviewComponent(): string

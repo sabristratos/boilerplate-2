@@ -22,7 +22,7 @@ class ContentAreaBlock extends Block
     public function getDefaultData(): array
     {
         return [
-            'content' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+            'content' => __('blocks.content_area.default_content'),
         ];
     }
 

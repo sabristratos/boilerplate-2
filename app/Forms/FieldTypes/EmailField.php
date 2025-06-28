@@ -13,7 +13,7 @@ class EmailField extends FieldType
 
     public function getLabel(): string
     {
-        return 'Email';
+        return __('forms.field_types.email.name');
     }
 
     public function getPreviewComponent(): string

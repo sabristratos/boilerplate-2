@@ -72,7 +72,7 @@ class ContentBlock extends Model implements Sortable, HasMedia
     {
         // When called via HasTranslations, $value is already a decoded array for the current locale.
         // Otherwise, it might be a JSON string from the database.
-        $dataForLocale = is_string($value) ? json_decode($value, true) : $value;
+        $dataForLocale = is_array($value) ? $value : json_decode($value, true);
         $dataForLocale = $dataForLocale ?? [];
 
         $blockClass = app(BlockManager::class)->find($this->type);

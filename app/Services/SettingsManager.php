@@ -61,7 +61,7 @@ class SettingsManager
         $settingGroup = SettingGroup::where('key', $groupKey)->first();
 
         if (!$settingGroup) {
-            throw new \InvalidArgumentException("Setting group '{$groupKey}' not found.");
+            throw new \InvalidArgumentException(__('settings.errors.group_not_found', ['groupKey' => $groupKey]));
         }
 
         $setting = Setting::firstOrNew(['key' => $key]);

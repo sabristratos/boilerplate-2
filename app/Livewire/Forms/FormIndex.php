@@ -46,10 +46,10 @@ class FormIndex extends Component
 
         $form = Form::create([
             'name' => [
-                'en' => 'New Form',
+                'en' => __('forms.form_index.new_form'),
             ],
             'title' => [
-                'en' => 'New Form',
+                'en' => __('forms.form_index.new_form'),
             ],
             'success_message' => config('forms.defaults.success_message', []),
         ]);

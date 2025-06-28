@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 class ScaffoldBlockCommand extends Command
 {
     protected $signature = 'make:block {name}';
-    protected $description = 'Create a new content block with class and view files';
+    protected $description = 'commands.make_block.description';
 
     protected Filesystem $files;
 
