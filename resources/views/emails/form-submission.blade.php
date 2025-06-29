@@ -4,7 +4,7 @@
     <title>New Form Submission</title>
 </head>
 <body>
-    <h1>New Submission for {{ $submission->form->name }}</h1>
+    <h1>New Submission for {{ $submission->form->getTranslation('name', app()->getLocale()) }}</h1>
     <p>{{ __('mail.form_submission.email_body') }}</p>
     <ul>
         @foreach($submission->data as $key => $value)

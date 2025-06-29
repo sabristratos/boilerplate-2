@@ -52,6 +52,7 @@ return [
         'block_updated_title' => 'Block Updated',
         'autosaved' => 'Autosaved',
         'status' => 'Status:',
+        'editing_block_title' => 'Editing: :blockName',
     ],
     'page_manager' => [
         'page_details_saved_text' => 'Page details saved successfully.',
@@ -318,6 +319,7 @@ return [
     'block_deleted_text' => 'Content block deleted successfully.',
     'page_index' => [
         'title' => 'Pages',
+        'new_page_title' => 'New Page',
         'search_placeholder' => 'Search pages...',
     ],
     'welcome' => [

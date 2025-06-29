@@ -32,7 +32,7 @@
                 <flux:table.row :key="$form->id">
                     <flux:table.cell>
                         <a href="{{ route('admin.forms.edit', ['form' => $form]) }}" wire:navigate>
-                            <flux:text variant="strong">{{ $form->name }}</flux:text>
+                            <flux:text variant="strong">{{ $form->getTranslation('name', app()->getLocale()) }}</flux:text>
                         </a>
                     </flux:table.cell>
                     <flux:table.cell>

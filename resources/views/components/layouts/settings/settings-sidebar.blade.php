@@ -8,7 +8,7 @@
                     wire:navigate
                     icon="{{ $navGroup->icon }}"
                 >
-                    {{ $navGroup->label }}
+                    {{ $navGroup->getTranslation('label', app()->getLocale()) }}
                 </flux:navlist.item>
             @endforeach
         </flux:navlist>

@@ -4,12 +4,14 @@ namespace App\Livewire\Admin;
 
 use App\Facades\Settings;
 use App\Models\Page;
+use App\Traits\WithToastNotifications;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class PageIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithToastNotifications;
 
     public string $search = '';
     public int $perPage = 10;
@@ -23,8 +25,12 @@ class PageIndex extends Component
     public function getPagesProperty()
     {
         return Page::query()
-            ->when($this->search, fn ($query) => $query->whereTranslation('title', 'like', '%' . $this->search . '%'))
-            ->when($this->filters['locale'] ?? null, fn ($query, $locale) => $query->whereTranslation('title', 'like', '%' . $this->search . '%', $locale))
+            ->when($this->search, function ($query, $search) {
+                $locale = $this->filters['locale'] ?? app()->getLocale();
+                $query->where(fn($q) => $q->where('slug', 'like', '%' . $search . '%')
+                    ->orWhereTranslation('title', 'like', '%' . $search . '%', $locale)
+                );
+            })
             ->orderBy($this->sortBy, $this->sortDirection)
             ->paginate($this->perPage);
     }
@@ -57,19 +63,17 @@ class PageIndex extends Component
 
     public function createPage()
     {
+        $defaultLocale = config('app.fallback_locale');
+        $title = __('messages.page_index.new_page_title');
+
         $page = Page::create([
-            'title' => 'New Page',
-            'slug' => 'new-page-' . uniqid(),
+            'title' => [
+                $defaultLocale => $title,
+            ],
+            'slug' => Str::slug($title) . '-' . uniqid(),
         ]);
 
-        // Add debugging
-        \Illuminate\Support\Facades\Log::info('Creating new page', [
-            'page_id' => $page->id,
-            'page_slug' => $page->slug,
-            'redirect_params' => ['page' => $page->id]
-        ]);
-
-        $this->redirectRoute('admin.pages.editor', ['page' => $page->id]);
+        $this->redirectRoute('admin.pages.editor', ['page' => $page->id, 'locale' => $defaultLocale]);
     }
 
     public function resetFilters()
@@ -85,7 +89,8 @@ class PageIndex extends Component
 
     public function delete()
     {
-        Page::findOrFail($this->deleteId)->delete();
+        Page::find($this->deleteId)?->delete();
+
         $this->showDeleteModal = false;
         $this->showSuccessToast(__('Page deleted successfully.'));
     }

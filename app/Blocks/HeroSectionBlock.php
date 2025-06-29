@@ -9,39 +9,36 @@ class HeroSectionBlock extends Block
         return 'Hero Section';
     }
 
-    public function getAdminView(): string
-    {
-        return 'livewire.admin.block-forms._hero-section';
-    }
-
-    public function getFrontendView(): string
-    {
-        return 'frontend.blocks._hero-section';
-    }
-
     public function getIcon(): string
     {
-        return 'layout-grid';
+        return 'photo';
     }
 
     public function getDefaultData(): array
     {
         return [
-            'heading' => 'New Hero Heading',
-            'subheading' => __('blocks.hero_section.default_subheading'),
+            'overline' => 'Overline',
+            'heading' => 'Heading',
+            'subheading' => 'Subheading',
+            'buttons' => [],
         ];
     }
 
     public function getTranslatableFields(): array
     {
-        return ['heading', 'subheading'];
+        return ['overline', 'heading', 'subheading', 'buttons.*.text'];
     }
 
     public function validationRules(): array
     {
         return [
+            'overline' => 'nullable|string|max:255',
             'heading' => 'required|string|max:255',
             'subheading' => 'nullable|string|max:255',
+            'buttons' => 'nullable|array',
+            'buttons.*.text' => 'required|string|max:255',
+            'buttons.*.variant' => 'required|string|in:primary,secondary,ghost',
+            'buttons.*.url' => 'required|url',
         ];
     }
-} 
+}

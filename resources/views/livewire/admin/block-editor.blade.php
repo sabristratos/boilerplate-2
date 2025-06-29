@@ -1,7 +1,7 @@
 <div>
     @if($editingBlock)
         <div
-            class="flex-1 border-t border-zinc-200 dark:border-zinc-700 pt-4"
+            class="flex-1"
             x-data="{ state: $wire.entangle('state') }"
             x-init="$watch('state', value => {
                 window.dispatchEvent(new CustomEvent('block-state-updated', {
@@ -27,14 +27,15 @@
             </div>
 
             <form wire:submit.prevent="saveBlock" class="space-y-4">
+                @csrf
                 @php($blockClass = $this->blockManager->find($editingBlock->type))
                 @if($blockClass)
-                    <div class="overflow-y-auto max-h-[calc(100vh-300px)]">
+                    <div class="overflow-y-auto p-2 max-h-[calc(100vh-250px)]">
                         @include($blockClass->getAdminView(), ['alpine' => true])
                     </div>
                 @endif
 
-                <div class="flex justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                <div class="flex justify-end gap-2 pt-4">
                     <flux:button type="button" wire:click="cancelEdit" variant="subtle" size="sm">
                         {{ __('buttons.cancel') }}
                     </flux:button>

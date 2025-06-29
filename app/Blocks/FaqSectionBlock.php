@@ -9,28 +9,17 @@ class FaqSectionBlock extends Block
         return 'FAQ Section';
     }
 
-    public function getAdminView(): string
+    public function getIcon(): string
     {
-        return 'livewire.admin.block-forms._faq-section';
-    }
-
-    public function getFrontendView(): string
-    {
-        return 'frontend.blocks._faq-section';
+        return 'question-mark-circle';
     }
 
     public function getDefaultData(): array
     {
         return [
-            'faqs' => [
-                ['question' => __('blocks.faq_section.default_question'), 'answer' => __('blocks.faq_section.default_answer')],
-            ],
+            'heading' => 'Frequently Asked Questions',
+            'questions' => [],
         ];
-    }
-
-    public function getTranslatableFields(): array
-    {
-        return ['faqs'];
     }
 
     public function validationRules(): array

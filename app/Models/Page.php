@@ -20,7 +20,7 @@ class Page extends Model implements HasMedia
         'slug',
     ];
 
-    public array $translatable = ['title', 'slug'];
+    public array $translatable = ['title'];
 
     public function contentBlocks(): HasMany
     {
@@ -35,26 +35,6 @@ class Page extends Model implements HasMedia
     public function getRouteKeyName()
     {
         return 'slug';
-    }
-
-    /**
-     * Retrieve the model for a bound value.
-     *
-     * @param  mixed  $value
-     * @param  string|null  $field
-     * @return \Illuminate\Database\Eloquent\Model|null
-     */
-    public function resolveRouteBinding($value, $field = null)
-    {
-        // If the value is numeric, always find by ID.
-        if (is_numeric($value)) {
-            return $this->where('id', $value)->firstOrFail();
-        }
-
-        // Otherwise, find by slug in the current locale, and if not found, search in any locale.
-        return $this->where("slug->" . app()->getLocale(), $value)
-            ->orWhere('slug', $value)
-            ->firstOrFail();
     }
 
     public function hasTranslation(string $locale): bool

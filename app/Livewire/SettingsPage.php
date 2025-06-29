@@ -55,6 +55,12 @@ class SettingsPage extends Component
      */
     public array $files = [];
 
+    public SettingGroup $currentGroup;
+
+    protected $listeners = [
+        'repeater-updated' => 'onRepeaterUpdate',
+    ];
+
     /**
      * Mount the component.
      *
@@ -65,6 +71,7 @@ class SettingsPage extends Component
     {
         // Set the group to the provided value or default to 'general'
         $this->group = $group ?? 'general';
+        $this->currentGroup = SettingGroup::where('key', $this->group)->firstOrFail();
 
         // Validate that the group exists and user has access to it
         $authorizedGroups = $this->getAuthorizedGroups();
@@ -297,35 +304,24 @@ class SettingsPage extends Component
     }
 
     /**
-     * Get the setting groups the user is authorized to see.
+     * Get the authorized setting groups.
      *
      * @return \Illuminate\Support\Collection
      */
     protected function getAuthorizedGroups()
     {
-        // Get all groups from config
-        $groups = collect(config('settings.groups', []));
-
-        // Filter groups based on user permissions
-        return $groups->filter(function ($group, $key) {
-            // Get all settings for this group
-            $settingsInGroup = $this->getAuthorizedSettings($key);
-
-            // The group should only be shown if there is at least one setting the user can see
-            return $settingsInGroup->isNotEmpty();
-        })->map(function ($group, $key) {
-            return (object) [
-                'key' => $key,
-                'label' => is_array($group['label']) ? ($group['label'][app()->getLocale()] ?? $group['label']['en']) : $group['label'],
-                'description' => is_array($group['description']) ? ($group['description'][app()->getLocale()] ?? $group['description']['en']) : $group['description'],
-                'icon' => $this->getGroupIcon($key),
-                'order_column' => $group['order_column'] ?? 99,
-            ];
-        })->sortBy('order_column');
+        return SettingGroup::query()
+            ->whereIn('key', array_keys(config('settings.groups')))
+            ->get()
+            ->filter(function ($group) {
+                // If a permission is required for the group, check if the user has it
+                $permission = config('settings.groups.' . $group->key . '.permission');
+                return !$permission || $this->userCan($permission);
+            });
     }
 
     /**
-     * Get the settings for a group that the user is authorized to see.
+     * Get the settings for a given group.
      *
      * @param string $groupKey
      * @return \Illuminate\Support\Collection
@@ -395,6 +391,11 @@ class SettingsPage extends Component
     public function reloadSettings()
     {
         $this->loadSettings();
+    }
+
+    public function onRepeaterUpdate(array $data): void
+    {
+        data_set($this->state, $data['model'], $data['items']);
     }
 
     /**

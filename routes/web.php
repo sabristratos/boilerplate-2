@@ -12,19 +12,15 @@ use App\Livewire\Admin\PageIndex;
 use App\Livewire\Admin\PageManager;
 use App\Livewire\Auth\Login;
 use App\Livewire\SettingsPage;
+use App\Livewire\Dashboard;
+use App\Http\Controllers\HomeController;
 
 use App\Facades\Settings;
 use App\Models\Page;
 
-Route::get('/', function () {
-    $homepageId = Settings::get('general.homepage');
-    if ($homepageId && $page = Page::find($homepageId)) {
-        return app(PageController::class)->show($page);
-    }
-    return view('welcome');
-})->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::view('dashboard', 'dashboard')
+Route::get('dashboard', Dashboard::class)
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
@@ -44,7 +40,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Page Editor
     Route::get('admin/pages', \App\Livewire\Admin\PageIndex::class)->name('admin.pages.index');
-    Route::get('admin/pages/{page}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor')->whereNumber('page');
+    Route::get('admin/pages/{page:id}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor');
 
     // Form Builder
     Route::get('admin/forms', \App\Livewire\Forms\FormIndex::class)->name('admin.forms.index')->middleware('can:view forms');
@@ -55,5 +51,4 @@ Route::middleware(['auth'])->group(function () {
 require __DIR__.'/auth.php';
 
 Route::get('/{page:slug}', [PageController::class, 'show'])
-    ->where('page', '[a-zA-Z0-9_-]+')
     ->name('pages.show');

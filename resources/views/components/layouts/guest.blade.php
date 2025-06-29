@@ -21,7 +21,7 @@
             </div>
         </header>
 
-        <div class="container mx-auto py-8 px-4">
+        <div>
             {{ $slot }}
         </div>
 

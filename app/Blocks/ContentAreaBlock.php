@@ -9,20 +9,15 @@ class ContentAreaBlock extends Block
         return 'Content Area';
     }
 
-    public function getAdminView(): string
+    public function getIcon(): string
     {
-        return 'livewire.admin.block-forms._content-area';
-    }
-
-    public function getFrontendView(): string
-    {
-        return 'frontend.blocks._content-area';
+        return 'document-text';
     }
 
     public function getDefaultData(): array
     {
         return [
-            'content' => __('blocks.content_area.default_content'),
+            'content' => 'This is a content area.',
         ];
     }
 

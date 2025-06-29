@@ -8,18 +8,24 @@ abstract class Block
 {
     abstract public function getName(): string;
 
-    abstract public function getAdminView(): string;
-
-    abstract public function getFrontendView(): string;
-
     public function getType(): string
     {
-        return Str::kebab(Str::beforeLast(class_basename($this), 'Block'));
+        return Str::kebab(str_replace('Block', '', class_basename(static::class)));
     }
 
     public function getIcon(): string
     {
         return 'code-bracket';
+    }
+
+    public function getAdminView(): string
+    {
+        return 'livewire.admin.block-forms._' . Str::kebab($this->getType());
+    }
+
+    public function getFrontendView(): string
+    {
+        return 'frontend.blocks._' . Str::kebab($this->getType());
     }
 
     public function getDefaultData(): array
@@ -32,5 +38,8 @@ abstract class Block
         return [];
     }
 
-    abstract public function validationRules(): array;
+    public function validationRules(): array
+    {
+        return [];
+    }
 } 

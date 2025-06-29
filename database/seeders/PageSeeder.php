@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
+use App\Facades\Settings;
 use App\Models\Page;
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class PageSeeder extends Seeder
 {
@@ -15,28 +15,49 @@ class PageSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::first() ?? User::factory()->create();
-        Auth::login($user);
-
-        $page = Page::create([
+        // Homepage
+        $home = Page::create([
             'title' => [
-                'en' => 'About Us',
-                'fr' => 'À propos de nous',
+                'en' => 'Homepage',
+                'fr' => 'Page d\'accueil',
             ],
-            'slug' => [
-                'en' => 'about-us',
-                'fr' => 'a-propos-de-nous',
-            ],
+            'slug' => 'homepage',
         ]);
 
-        $page->contentBlocks()->create([
+        $home->contentBlocks()->create([
             'type' => 'hero-section',
             'data' => [
-                'heading' => 'Welcome to Our Company',
-                'subheading' => 'Learn more about what makes us special.',
+                'heading' => [
+                    'en' => 'Welcome to the boilerplate',
+                    'fr' => 'Bienvenue sur le boilerplate',
+                ],
+                'subheading' => [
+                    'en' => 'This is a starting point for your new project.',
+                    'fr' => 'Ceci est un point de départ pour votre nouveau projet.',
+                ]
             ],
         ]);
 
-        Auth::logout();
+        Settings::set('general.homepage', $home->id);
+
+        // About Us page
+        $aboutTitle = [
+            'en' => 'About Us',
+            'fr' => 'À propos de nous',
+        ];
+        $about = Page::create([
+            'title' => $aboutTitle,
+            'slug' => Str::slug($aboutTitle['en']),
+        ]);
+
+        $about->contentBlocks()->create([
+            'type' => 'content-area',
+            'data' => [
+                'content' => [
+                    'en' => 'This is the about us page.',
+                    'fr' => 'Ceci est la page à propos de nous.',
+                ],
+            ],
+        ]);
     }
 }

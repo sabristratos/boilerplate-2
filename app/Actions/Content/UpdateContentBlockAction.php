@@ -27,34 +27,30 @@ class UpdateContentBlockAction
         $blockClass = $blockManager->find($contentBlock->type);
         $translatableFields = $blockClass ? $blockClass->getTranslatableFields() : [];
 
-        // Separate incoming data into translatable and non-translatable
-        $translatableDataForLocale = [];
-        $nonTranslatableData = [];
+        $currentData = $contentBlock->getTranslation('data', $locale) ?? [];
+        $settings = $contentBlock->settings ?? [];
+
         foreach ($data as $key => $value) {
-            if (in_array($key, $translatableFields)) {
-                $translatableDataForLocale[$key] = $value;
+            $isTranslatable = in_array($key, $translatableFields);
+            if (!$isTranslatable) {
+                // Check for wildcard translatable fields (e.g., 'buttons.*.text')
+                foreach ($translatableFields as $translatableField) {
+                    if (str_ends_with($translatableField, '.*') && str_starts_with($translatableField, $key)) {
+                        $isTranslatable = true;
+                        break;
+                    }
+                }
+            }
+
+            if ($isTranslatable) {
+                $currentData[$key] = $value;
             } else {
-                $nonTranslatableData[$key] = $value;
+                $settings[$key] = $value;
             }
         }
 
-        // Save non-translatable data to the settings column
-        $contentBlock->settings = array_merge($contentBlock->settings ?? [], $nonTranslatableData);
-
-        // Get all existing translations for the 'data' attribute
-        $allDataTranslations = $contentBlock->getTranslations('data');
-
-        // Get existing data for the current locale, or an empty array if none exists
-        $existingDataForLocale = $allDataTranslations[$locale] ?? [];
-
-        // Merge the updated translatable data with the existing data for the current locale
-        $mergedData = array_merge($existingDataForLocale, $translatableDataForLocale);
-
-        // Set the merged data back for the current locale
-        $allDataTranslations[$locale] = $mergedData;
-
-        // Save all translations for the 'data' attribute
-        $contentBlock->setTranslations('data', $allDataTranslations);
+        $contentBlock->setTranslation('data', $locale, $currentData);
+        $contentBlock->settings = $settings;
 
         if ($status) {
             $contentBlock->status = $status;

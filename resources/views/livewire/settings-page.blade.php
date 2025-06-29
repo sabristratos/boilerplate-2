@@ -1,5 +1,5 @@
 <section class="max-w-3xl">
-    <x-layouts.settings.settings-sidebar :heading="$currentGroup->label" :subheading="$currentGroup->description" :groups="$groups" :currentGroup="$currentGroup">
+    <x-layouts.settings.settings-sidebar :heading="$currentGroup->getTranslation('label', app()->getLocale())" :subheading="$currentGroup->getTranslation('description', app()->getLocale())" :groups="$groups" :currentGroup="$currentGroup">
 
         <div class="space-y-6">
             <form wire:submit="save" class="space-y-6">
@@ -248,7 +248,18 @@
 
                                 {{-- Repeater --}}
                                 @case('repeater')
-                                    <x-settings.repeater :setting="$setting" />
+                                    <div class="space-y-2">
+                                        <flux:label>{{ __($setting->label) }}</flux:label>
+                                        @if($setting->description)
+                                            <flux:description>{{ __($setting->description) }}</flux:description>
+                                        @endif
+                                        <livewire:repeater
+                                            :items="data_get($state, $setting->key, [])"
+                                            :subfields="$setting->subfields"
+                                            model="{{ $setting->key }}"
+                                            :locale="app()->getLocale()"
+                                        />
+                                    </div>
                                     @break
 
                                 {{-- Default to Text Input --}}

@@ -1,6 +1,6 @@
 <div>
     <div class="flex items-center justify-between">
-        <flux:heading level="1">{{ __('forms.submissions_for', ['name' => $form->name]) }}</flux:heading>
+        <flux:heading level="1">{{ __('forms.submissions_for', ['name' => $form->getTranslation('name', app()->getLocale())]) }}</flux:heading>
         <flux:button href="{{ route('admin.forms.index') }}" wire:navigate variant="ghost">
             {{ __('forms.back_to_forms') }}
         </flux:button>

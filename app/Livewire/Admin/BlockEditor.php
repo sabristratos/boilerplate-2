@@ -10,12 +10,14 @@ use App\Services\BlockManager;
 use App\Traits\WithToastNotifications;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Reactive;
 
 class BlockEditor extends Component
 {
     use WithFileUploads, WithToastNotifications;
 
     public ?ContentBlock $editingBlock = null;
+
     public array $state = [];
     public $imageUpload;
     public string $formTitle = '';
@@ -28,6 +30,8 @@ class BlockEditor extends Component
     protected $listeners = [
         'editBlock' => 'startEditing',
         'autosave' => 'autosave',
+        'localeSwitched' => 'localeSwitched',
+        'repeater-updated' => 'onRepeaterUpdate',
     ];
 
     public function boot(BlockManager $blockManager)
@@ -38,6 +42,24 @@ class BlockEditor extends Component
     public function mount(string $activeLocale)
     {
         $this->activeLocale = $activeLocale;
+    }
+
+    public function updated(string $name, mixed $value): void
+    {
+        if ($name === 'activeLocale') {
+            $this->activeLocale = $value;
+            if ($this->editingBlock) {
+                $this->cancelEdit();
+            }
+        }
+    }
+
+    public function localeSwitched(string $locale): void
+    {
+        $this->activeLocale = $locale;
+        if ($this->editingBlock) {
+            $this->cancelEdit();
+        }
     }
 
     public function startEditing(int $blockId): void
@@ -56,12 +78,16 @@ class BlockEditor extends Component
 
         $blockClass = $this->blockManager->find($this->editingBlock->type);
         $this->formTitle = 'Editing: ' . ($blockClass ? $blockClass->getName() : 'Block');
-        $this->state = array_merge($this->editingBlock->data ?? [], $this->editingBlock->settings ?? []);
+
+        $defaultData = $blockClass ? $blockClass->getDefaultData() : [];
+        $this->state = array_merge($defaultData, $this->editingBlock->data ?? [], $this->editingBlock->settings ?? []);
+
         $this->blockStatus = $this->editingBlock->status ?? ContentBlockStatus::DRAFT;
         $this->imageUpload = null;
         $this->lastAutosaveTime = now();
 
         $this->dispatch('block-is-editing', state: $this->state);
+        $this->updatedState();
 
         if (Settings::get('content.autosave_enabled', true)) {
             $this->dispatch(
@@ -141,6 +167,17 @@ class BlockEditor extends Component
         $this->blockStatus = null;
         $this->lastAutosaveTime = null;
         $this->dispatch('stopAutosaveTimer');
+    }
+
+    public function updatedState()
+    {
+        $this->dispatch('block-state-updated', id: $this->editingBlock->id, state: $this->state);
+    }
+
+    public function onRepeaterUpdate(array $data): void
+    {
+        $this->state[str_replace('state.', '', $data['model'])] = $data['items'];
+        $this->updatedState();
     }
 
     public function render()

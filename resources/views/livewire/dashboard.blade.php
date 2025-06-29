@@ -5,7 +5,7 @@
                 <div class="flex items-center gap-2">
                     <flux:icon name="{{ $stat['icon'] }}" class="size-6 text-neutral-500" />
                     <flux:text variant="strong">
-                        {{ $stat['name'] }}
+                        {{ __($stat['name']) }}
                     </flux:text>
                 </div>
                 <div class="mt-4 text-3xl font-bold">
@@ -29,7 +29,7 @@
             <flux:table.rows>
                 @forelse ($recentSubmissions as $submission)
                     <flux:table.row>
-                        <flux:table.cell>{{ $submission->form->name }}</flux:table.cell>
+                        <flux:table.cell>{{ $submission->form->getTranslation('name', app()->getLocale()) }}</flux:table.cell>
                         <flux:table.cell>{{ $submission->created_at->diffForHumans() }}</flux:table.cell>
                         <flux:table.cell class="text-right">
                             <flux:button variant="subtle" size="sm" href="{{ route('admin.forms.submissions', ['form' => $submission->form]) }}">

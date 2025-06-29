@@ -204,18 +204,35 @@ class FormBuilder extends Component
     public function selectField($fieldId = null)
     {
         if ($fieldId === null) {
-            $this->selectedField = null;
-            $this->fieldData = [];
-            $this->fieldComponentOptions = [];
-            $this->activeFieldTab = 'general';
-            $this->selectedRules = [];
-            Flux::modal('edit-field-modal')->close();
+            $this->deselectField();
             return;
         }
 
-        $this->nameManuallyEdited = false;
-        $this->activeFieldTab = 'general';
         $this->selectedField = $this->form->fields()->with('options')->find($fieldId);
+        $this->resetFieldData();
+        $this->populateFieldData();
+
+        Flux::modal('edit-field-modal')->show();
+    }
+
+    protected function deselectField()
+    {
+        $this->selectedField = null;
+        $this->resetFieldData();
+        Flux::modal('edit-field-modal')->close();
+    }
+
+    protected function resetFieldData()
+    {
+        $this->fieldData = [];
+        $this->fieldComponentOptions = [];
+        $this->activeFieldTab = 'general';
+        $this->selectedRules = [];
+        $this->nameManuallyEdited = false;
+    }
+
+    protected function populateFieldData()
+    {
         $this->fieldData = $this->selectedField->only(['name', 'validation_rules']);
         $this->fieldComponentOptions = $this->selectedField->component_options ?? [];
         $this->fieldData['layout_options'] = $this->selectedField->layout_options ?? [
@@ -223,9 +240,11 @@ class FormBuilder extends Component
             'tablet' => 'full',
             'mobile' => 'full',
         ];
+
         foreach ($this->selectedField->getTranslatableAttributes() as $key) {
             $this->fieldData[$key] = $this->selectedField->getTranslation($key, $this->activeLocale, false);
         }
+
         $this->fieldData['options'] = $this->selectedField->options->map(function ($option) {
             return [
                 'id' => $option->id,
@@ -235,15 +254,6 @@ class FormBuilder extends Component
         })->toArray();
 
         $this->selectedRules = $this->fieldData['validation_rules'] ? array_filter(explode('|', $this->fieldData['validation_rules'])) : [];
-
-        Flux::modal('edit-field-modal')->show();
-    }
-
-    public function deselectField()
-    {
-        $this->selectedField = null;
-        $this->fieldData = [];
-        $this->selectedRules = [];
     }
 
     public function confirmDelete(int $fieldId)

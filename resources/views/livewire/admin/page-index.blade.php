@@ -25,7 +25,7 @@
                 <flux:select.option value="50">{{ __('labels.per_page', ['count' => 50]) }}</flux:select.option>
                 <flux:select.option value="100">{{ __('labels.per_page', ['count' => 100]) }}</flux:select.option>
             </flux:select>
-            <flux:button wire:click="createPage">New page</flux:button>
+            <flux:button wire:click="createPage">{{ __('buttons.create_item', ['item' => __('Pages')]) }}</flux:button>
         </div>
     </div>
     <div class="rounded-lg overflow-hidden py-2">
@@ -44,7 +44,7 @@
                     <tr wire:key="page-{{ $page->id }}">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-zinc-900 dark:text-white">{{ $page->getTranslation('title', $filters['locale'] ?? app()->getLocale()) }}</div>
-                            <div class="text-sm text-zinc-500">{{ $page->getTranslation('slug', $filters['locale'] ?? app()->getLocale()) }}</div>
+                            <div class="text-sm text-zinc-500">{{ $page->slug }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center gap-2">
@@ -58,8 +58,16 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <flux:button href="{{ route('pages.show', $page) }}" target="_blank" variant="ghost" size="xs" icon="eye" square tooltip="View" />
-                            <flux:button href="{{ route('admin.pages.editor', $page->id) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
+                            <flux:button
+                                href="{{ route('pages.show', $page) }}"
+                                target="_blank"
+                                variant="ghost"
+                                size="xs"
+                                icon="eye"
+                                square
+                                tooltip="View"
+                            />
+                            <flux:button href="{{ route('admin.pages.editor', ['page' => $page->id, 'locale' => $filters['locale'] ?? app()->getLocale()]) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
                             <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('general.delete') }}" />
                         </td>
                     </tr>

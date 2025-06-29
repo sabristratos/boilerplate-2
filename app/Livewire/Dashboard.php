@@ -7,7 +7,9 @@ use App\Models\Page;
 use App\Models\Testimonial;
 use App\Models\User;
 use Livewire\Component;
+use Livewire\Attributes\Layout;
 
+#[Layout('components.layouts.app', ['title' => 'Dashboard'])]
 class Dashboard extends Component
 {
     public function render()

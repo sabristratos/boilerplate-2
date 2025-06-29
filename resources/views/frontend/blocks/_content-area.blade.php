@@ -1,15 +1,21 @@
-@props(['block', 'alpine' => false])
+@props([
+    'block',
+    'data' => [],
+    'alpine' => false
+])
 
-<div class="prose dark:prose-invert max-w-none p-4">
-    @if ($alpine)
-        <div x-html="state.content"></div>
-    @else
-        {!! $block->data['content'] ?? '' !!}
-    @endif
+<div x-data="{ data: {{ json_encode($data) }} }">
+    <div class="prose dark:prose-invert max-w-none p-4">
+        @if ($alpine)
+            <div x-html="data.content"></div>
+        @else
+            {!! $data['content'] ?? '' !!}
+        @endif
 
-    @if($block->data['form_id'] ?? false)
-        <div class="mt-4">
-            @livewire('frontend.form-display', ['formId' => $block->data['form_id']])
-        </div>
-    @endif
+        @if($data['form_id'] ?? false)
+            <div class="mt-4">
+                @livewire('frontend.form-display', ['formId' => $data['form_id']])
+            </div>
+        @endif
+    </div>
 </div> 
