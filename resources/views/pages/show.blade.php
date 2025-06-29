@@ -1,4 +1,4 @@
-<x-layouts.guest :title="$page->title">
+<x-layouts.guest :page="$page">
     @foreach($page->contentBlocks->where('status', 'published') as $block)
         @php($blockClass = app(\App\Services\BlockManager::class)->find($block->type))
         @if($blockClass)

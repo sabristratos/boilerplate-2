@@ -13,6 +13,7 @@
             <flux:button
                 variant="outline"
                 x-on:click="$wire.set('showFiltersModal', true)"
+                :tooltip="__('buttons.filters')"
             >
                 {{ __('buttons.filters') }}
                 @if (count(array_filter($this->filters)) > 0)
@@ -25,7 +26,7 @@
                 <flux:select.option value="50">{{ __('labels.per_page', ['count' => 50]) }}</flux:select.option>
                 <flux:select.option value="100">{{ __('labels.per_page', ['count' => 100]) }}</flux:select.option>
             </flux:select>
-            <flux:button wire:click="createPage">{{ __('buttons.create_item', ['item' => __('Pages')]) }}</flux:button>
+            <flux:button wire:click="createPage" :tooltip="__('buttons.create_item', ['item' => __('Pages')])">{{ __('buttons.create_item', ['item' => __('Pages')]) }}</flux:button>
         </div>
     </div>
     <div class="rounded-lg overflow-hidden py-2">

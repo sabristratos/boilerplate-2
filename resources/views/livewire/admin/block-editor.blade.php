@@ -15,13 +15,18 @@
             <div class="mb-4">
                 <div class="flex justify-between items-center">
                     <flux:heading size="sm">{{ $formTitle }}</flux:heading>
-                    <div class="flex items-center gap-2">
-                        <flux:text size="sm" variant="subtle">{{ __('messages.block_editor.status') }}</flux:text>
-                        <flux:select wire:model.live="blockStatus" size="sm" class="w-32">
-                            @foreach(\App\Enums\ContentBlockStatus::cases() as $status)
-                                <flux:select.option value="{{ $status->value }}">{{ $status->label() }}</flux:select.option>
-                            @endforeach
-                        </flux:select>
+                    <div class="flex items-center gap-4">
+                        <flux:field :label="__('Status')" variant="inline">
+                            <flux:switch
+                                wire:model.live="isPublished"
+                            />
+                        </flux:field>
+                        <flux:badge
+                            :color="$isPublished ? 'lime' : 'zinc'"
+                            variant="solid"
+                        >
+                           {{ $isPublished ? __('Published') : __('Draft') }}
+                        </flux:badge>
                     </div>
                 </div>
             </div>
@@ -30,7 +35,7 @@
                 @csrf
                 @php($blockClass = $this->blockManager->find($editingBlock->type))
                 @if($blockClass)
-                    <div class="overflow-y-auto p-2 max-h-[calc(100vh-250px)]">
+                    <div class="overflow-y-auto p-2 max-h-[calc(100vh-300px)]">
                         @include($blockClass->getAdminView(), ['alpine' => true])
                     </div>
                 @endif

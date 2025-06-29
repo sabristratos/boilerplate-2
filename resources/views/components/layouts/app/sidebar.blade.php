@@ -75,7 +75,7 @@
 
         {{ $slot }}
 
-
+        @livewire('confirmation-modal')  
         @persist('toast')
         <flux:toast position="bottom right" />
         @endpersist

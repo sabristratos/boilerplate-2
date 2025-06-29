@@ -14,28 +14,50 @@ use App\Actions\Content\CreateContentBlockAction;
 use App\Actions\Content\UpdatePageDetailsAction;
 use App\Actions\Content\UpdateBlockOrderAction;
 use App\Actions\Content\DeleteContentBlockAction;
+use App\Traits\WithConfirmationModal;
+use Livewire\Attributes\On;
+use App\Enums\PublishStatus;
 
 class PageManager extends Component
 {
-    use WithToastNotifications, WithFileUploads;
+    use WithToastNotifications, WithFileUploads, WithConfirmationModal;
 
     public Page $page;
     public array $title = [];
     public ?string $slug = '';
+    public PublishStatus $status;
+    public array $meta_title = [];
+    public array $meta_description = [];
+    public bool $no_index = false;
     public string $activeLocale;
     public array $availableLocales = [];
     public array $editingBlockState = [];
     public ?int $editingBlockId = null;
     public string $activeSidebarTab = 'settings';
     public ?string $switchLocale = null;
+    public bool $isPublished;
 
     protected BlockManager $blockManager;
 
     protected $listeners = [
         'blockEditCancelled' => 'onBlockEditCancelled',
         'block-was-updated' => 'onBlockEditFinished',
-        'block-state-updated' => 'onBlockStateUpdate'
+        'block-state-updated' => 'onBlockStateUpdate',
+        'changePageStatus' => 'onStatusConfirmed',
+        'block-status-updated' => '$refresh',
     ];
+
+    #[On('deleteBlockConfirmed')]
+    public function deleteBlock(int $blockId): void
+    {
+        if (! $blockId) {
+            return;
+        }
+
+        app(DeleteContentBlockAction::class)->execute($blockId);
+        $this->showSuccessToast(__('messages.page_manager.block_deleted_text'));
+        $this->dispatch('$refresh');
+    }
 
     public function onBlockEditFinished()
     {
@@ -68,6 +90,11 @@ class PageManager extends Component
         $this->page = $page;
         $this->initializeLocale();
         $this->loadPageTranslations();
+        $this->status = $this->page->status;
+        $this->isPublished = $this->page->status === PublishStatus::PUBLISHED;
+        $this->meta_title = $this->page->getTranslations('meta_title');
+        $this->meta_description = $this->page->getTranslations('meta_description');
+        $this->no_index = $this->page->no_index;
     }
 
     protected function initializeLocale(): void
@@ -150,10 +177,9 @@ class PageManager extends Component
         }
     }
 
-    public function deleteBlock(int $blockId, DeleteContentBlockAction $deleteContentBlockAction): void
+    public function confirmDeleteBlock(int $blockId): void
     {
-        $deleteContentBlockAction->execute($blockId);
-        $this->showSuccessToast(__('messages.page_manager.block_deleted_text'));
+        $this->confirmDelete($blockId, 'deleteBlockConfirmed');
     }
 
     public function generateSlug(): void
@@ -168,15 +194,46 @@ class PageManager extends Component
         $updatePageDetailsAction->execute($this->page, [
             'title' => $this->title,
             'slug' => $this->slug,
+            'status' => $this->status,
+            'meta_title' => $this->meta_title,
+            'meta_description' => $this->meta_description,
+            'no_index' => $this->no_index,
         ]);
 
         $this->showSuccessToast(__('messages.page_manager.page_details_saved_text'));
     }
 
+    public function getIsPublishedProperty(): bool
+    {
+        return $this->status === PublishStatus::PUBLISHED;
+    }
+
+    public function updatedIsPublished(bool $value): void
+    {
+        $this->isPublished = !$value;
+
+        $title = $value ? __('messages.page_manager.publish_confirmation_title') : __('messages.page_manager.unpublish_confirmation_title');
+        $message = $value ? __('messages.page_manager.publish_confirmation_text') : __('messages.page_manager.unpublish_confirmation_text');
+
+        $this->confirmAction(
+            title: $title,
+            message: $message,
+            action: 'changePageStatus',
+            data: ['newStatus' => $value]
+        );
+    }
+
+    public function onStatusConfirmed(array $data)
+    {
+        $this->isPublished = $data['newStatus'];
+        $this->status = $this->isPublished ? PublishStatus::PUBLISHED : PublishStatus::DRAFT;
+        $this->savePageDetails(app(\App\Actions\Content\UpdatePageDetailsAction::class));
+    }
+
     public function render()
     {
         return view('livewire.admin.page-manager')
-            ->layout('components.layouts.app', [
+            ->layout('components.layouts.editors', [
                 'title' => 'Editing: ' . $this->page->getTranslation('title', $this->activeLocale, false)
             ]);
     }

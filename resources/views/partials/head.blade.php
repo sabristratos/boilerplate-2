@@ -1,8 +1,17 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-
-<title>{{ $title ?? config('app.name') }}</title>
+@isset($page)
+    <title>{{ $page->getTranslation('meta_title', app()->getLocale()) ?: $page->getTranslation('title', app()->getLocale()) }} | {{ config('app.name') }}</title>
+    @if($page->getTranslation('meta_description', app()->getLocale()))
+        <meta name="description" content="{{ $page->getTranslation('meta_description', app()->getLocale()) }}">
+    @endif
+    @if($page->no_index)
+        <meta name="robots" content="noindex, nofollow">
+    @endif
+@else
+    <title>{{ $title ?? config('app.name') }}</title>
+@endisset
 
 <meta name="csrf-token" content="{{ csrf_token() }}">
 

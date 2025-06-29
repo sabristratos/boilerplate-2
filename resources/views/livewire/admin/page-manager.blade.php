@@ -15,7 +15,7 @@
 >
 
     <div class="flex-1 flex overflow-hidden">
-        <main class="flex-1 overflow-y-auto p-6">
+        <main class="flex-1 overflow-y-auto p-4">
         <header class="bg-white dark:bg-zinc-800/50 backdrop-blur-md mb-6 z-20 shrink-0">
         <div class="mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
@@ -67,14 +67,16 @@
                     <div x-sort:item="{{ $block->id }}" wire:key="block-{{ $block->id }}" class="relative group">
                         <div class="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
                             <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <flux:button wire:click="editBlock({{ $block->id }})" size="xs" variant="filled" icon="pencil-square"></flux:button>
-                                <flux:button wire:click="deleteBlock({{ $block->id }})" size="xs" variant="danger" icon="trash"></flux:button>
+                                <flux:button wire:click="editBlock({{ $block->id }})" size="xs" variant="filled" icon="pencil-square" :tooltip="__('Edit')"></flux:button>
+                                <flux:button wire:click="confirmDeleteBlock({{ $block->id }})" size="xs" variant="danger" icon="trash" :tooltip="__('Delete')"></flux:button>
                             </div>
                             <div class="p-2 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center">
                                 <div class="flex items-center gap-2">
-                                    <div class="cursor-grab" x-sort:handle>
-                                        <flux:icon name="bars-3" class="h-4 w-4 text-zinc-400"></flux:icon>
-                                    </div>
+                                    <flux:tooltip :content="__('messages.page_manager.drag_to_reorder')">
+                                        <div class="cursor-grab" x-sort:handle>
+                                            <flux:icon name="bars-3" class="h-4 w-4 text-zinc-400"></flux:icon>
+                                        </div>
+                                    </flux:tooltip>
                                     <flux:badge size="sm">{{ Str::title(str_replace('-', ' ', $block->type)) }}</flux:badge>
                                     @if($block->status)
                                         <flux:badge size="sm" color="{{ $block->status->color() }}" class="ml-2">
@@ -113,6 +115,24 @@
         </main>
         <aside class="w-[450px] bg-white dark:bg-zinc-800 border-l border-zinc-200 dark:border-zinc-700 overflow-y-auto shrink-0">
             <div class="p-6 space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-x-4">
+                        <flux:button
+                            href="{{ route('pages.show', $page) }}"
+                            target="_blank"
+                            icon="eye"
+                            variant="subtle"
+                        >
+                            {{ __('View Page') }}
+                        </flux:button>
+                    </div>
+                    <flux:button
+                        wire:click="savePageDetails"
+                        variant="primary"
+                    >
+                        {{ __('messages.page_manager.save_page') }}
+                    </flux:button>
+                </div>
                 <flux:tab.group>
                     <flux:tabs wire:model.live="activeSidebarTab" class="grid grid-cols-3">
                         <flux:tab name="settings" class="flex justify-center" icon="cog-6-tooth">
@@ -133,33 +153,79 @@
                     </flux:tabs>
 
                     <flux:tab.panel name="settings">
-                        <form wire:submit.prevent="savePageDetails">
-                            <div class="flex justify-between items-center mb-4">
-                                <flux:heading size="sm">
-                                    {{ __('messages.page_manager.edit_page') }}
-                                </flux:heading>
-                                <flux:button type="submit" variant="primary">{{ __('messages.page_manager.save_page') }}</flux:button>
-                            </div>
-                            <div class="grid grid-cols-1 gap-4">
-                                <div>
-                                    <flux:input
-                                        wire:model.defer="title.{{ $activeLocale }}"
-                                        wire:change="generateSlug"
-                                        label="{{ __('labels.title') }}"
-                                        id="title_{{ $activeLocale }}"
+                        <div class="flex flex-col gap-y-6 p-4">
+                            <div class="flex items-center justify-between">
+                                <flux:field label="{{ __('Status') }}" variant="inline">
+                                    <flux:switch
+                                        wire:model.live="isPublished"
                                     />
-                                    @error('title.'.$activeLocale) <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
+                                </flux:field>
+
+                                <flux:badge
+                                    :color="$isPublished ? 'lime' : 'zinc'"
+                                    variant="solid"
+                                >
+                                   {{ $isPublished ? __('Published') : __('Draft') }}
+                                </flux:badge>
+                            </div>
+
+                            <flux:input
+                                wire:model.live="title.{{ $this->activeLocale }}"
+                                label="{{ __('messages.page_manager.title_label') }}"
+                                description="{{ __('messages.page_manager.title_help') }}"
+                            />
+
+                            <flux:field>
+                                <x-slot name="label">
+                                    <div class="flex items-center gap-x-2">
+                                        <flux:label>{{ __('messages.page_manager.slug_label') }}</flux:label>
+                                        <flux:tooltip toggleable>
+                                            <flux:button icon="information-circle" size="sm" variant="ghost" />
+                                            <flux:tooltip.content class="max-w-[20rem]">
+                                                {{ __('messages.page_manager.slug_tooltip') }}
+                                            </flux:tooltip.content>
+                                        </flux:tooltip>
+                                    </div>
+                                </x-slot>
+                                <flux:field>
+                                <flux:input.group>
+                                    <flux:input wire:model.live="slug" />
+                                        <flux:button tooltip="{{__('messages.page_manager.generate_slug_tooltip')}}"
+                                                x-on:click.prevent="$wire.generateSlug()">
+                                                {{ __('messages.page_manager.generate_slug_button') }}
+                                                </flux:button>
+                                </flux:input.group>
+                                </flux:field>
+                            </flux:field>
+
+                            <hr class="dark:border-zinc-700" />
+
+                            <div>
+                                <flux:heading size="lg">SEO</flux:heading>
+                                <div class="mt-4 space-y-6">
                                     <flux:input
-                                        wire:model.defer="slug"
-                                        label="{{ __('labels.slug') }}"
-                                        id="slug"
+                                        wire:model.live="meta_title.{{ $this->activeLocale }}"
+                                        label="{{ __('Meta Title') }}"
                                     />
-                                    @error('slug') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                                    <flux:textarea
+                                        wire:model.live="meta_description.{{ $this->activeLocale }}"
+                                        label="{{ __('Meta Description') }}"
+                                    />
+                                    <div class="flex items-center gap-x-2">
+                                        <flux:switch
+                                            wire:model.live="no_index"
+                                            label="{{ __('messages.page_manager.no_index_label') }}"
+                                        />
+                                        <flux:tooltip toggleable>
+                                            <flux:button icon="information-circle" size="sm" variant="ghost" />
+                                            <flux:tooltip.content class="max-w-[20rem]">
+                                                {{ __('messages.page_manager.visibility_tooltip') }}
+                                            </flux:tooltip.content>
+                                        </flux:tooltip>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
                     </flux:tab.panel>
 
                     <flux:tab.panel name="add">

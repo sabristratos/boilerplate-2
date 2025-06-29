@@ -20,13 +20,19 @@ class HeroSectionBlock extends Block
             'overline' => 'Overline',
             'heading' => 'Heading',
             'subheading' => 'Subheading',
-            'buttons' => [],
+            'buttons' => [
+                [
+                    'text' => 'Click me',
+                    'url' => '#',
+                    'variant' => 'primary',
+                ]
+            ],
         ];
     }
 
     public function getTranslatableFields(): array
     {
-        return ['overline', 'heading', 'subheading', 'buttons.*.text'];
+        return ['overline', 'heading', 'subheading', 'buttons'];
     }
 
     public function validationRules(): array
@@ -38,7 +44,7 @@ class HeroSectionBlock extends Block
             'buttons' => 'nullable|array',
             'buttons.*.text' => 'required|string|max:255',
             'buttons.*.variant' => 'required|string|in:primary,secondary,ghost',
-            'buttons.*.url' => 'required|url',
+            'buttons.*.url' => 'required|string',
         ];
     }
 }

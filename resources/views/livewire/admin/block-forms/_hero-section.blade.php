@@ -2,38 +2,47 @@
 
 <div>
     <div class="space-y-4">
-        <div>
-            <flux:input wire:model.live="state.overline" label="Overline" />
-        </div>
-        <div>
-            <flux:input wire:model.live="state.heading" label="Heading" />
-        </div>
-        <div>
-            <flux:textarea wire:model.live="state.subheading" label="Subheading" rows="3" />
-        </div>
-
-            <h3 class="text-lg font-medium">Buttons</h3>
-            <div class="mt-4">
-                <livewire:repeater
-                    :items="$state['buttons'] ?? []"
-                    :subfields="[
-                        'text' => ['type' => 'text', 'label' => 'Text'],
-                        'url' => ['type' => 'url', 'label' => 'URL'],
-                        'variant' => [
-                            'type' => 'select',
-                            'label' => 'Variant',
-                            'options' => [
-                                'primary' => 'Primary',
-                                'secondary' => 'Secondary',
-                                'ghost' => 'Ghost',
-                            ]
-                        ]
-                    ]"
-                    model="state.buttons"
-                    :locale="$activeLocale"
-                />
-        </div>
-
+        <x-flux::input
+            wire:model.defer="state.overline"
+            :label="__('labels.overline')"
+        />
+        <x-flux::input
+            wire:model.defer="state.heading"
+            :label="__('labels.heading')"
+            :required="true"
+        />
+        <x-flux::textarea
+            wire:model.defer="state.subheading"
+            :label="__('labels.subheading')"
+        />
+        <livewire:repeater
+            model="state.buttons"
+            :items="$state['buttons'] ?? []"
+            :subfields="[
+                'text' => [
+                    'label' => 'Button Text',
+                    'type' => 'text',
+                    'required' => true,
+                    'default' => 'Click me',
+                ],
+                'url' => [
+                    'label' => 'Button URL',
+                    'type' => 'text',
+                    'required' => true,
+                    'default' => '#',
+                ],
+                'variant' => [
+                    'label' => 'Button Variant',
+                    'type' => 'select',
+                    'options' => [
+                        'primary' => 'Primary',
+                        'outline' => 'Outline',
+                    ],
+                    'required' => true,
+                    'default' => 'primary',
+                ],
+            ]"
+        />
         <div>
             <flux:label>{{ __('blocks.hero_section.image_label') }}</flux:label>
             <div class="mt-1">

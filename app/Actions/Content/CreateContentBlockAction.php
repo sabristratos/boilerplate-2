@@ -26,8 +26,9 @@ class CreateContentBlockAction
         ]);
 
         $defaultData = $blockClass->getDefaultData();
+
         foreach ($availableLocales as $localeCode => $localeName) {
-            $block->setTranslation('data', $localeCode, array_fill_keys(array_keys($defaultData), ''));
+            $block->setTranslation('data', $localeCode, $defaultData);
         }
         $block->save();
 

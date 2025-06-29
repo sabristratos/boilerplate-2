@@ -8,20 +8,22 @@ use App\Facades\Settings;
 use App\Models\ContentBlock;
 use App\Services\BlockManager;
 use App\Traits\WithToastNotifications;
+use App\Traits\WithConfirmationModal;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Reactive;
 
 class BlockEditor extends Component
 {
-    use WithFileUploads, WithToastNotifications;
+    use WithFileUploads, WithToastNotifications, WithConfirmationModal;
 
     public ?ContentBlock $editingBlock = null;
 
     public array $state = [];
     public $imageUpload;
     public string $formTitle = '';
-    public ?ContentBlockStatus $blockStatus = null;
+    public ContentBlockStatus $blockStatus = ContentBlockStatus::DRAFT;
+    public bool $isPublished = false;
     public string $activeLocale;
 
     protected BlockManager $blockManager;
@@ -32,6 +34,7 @@ class BlockEditor extends Component
         'autosave' => 'autosave',
         'localeSwitched' => 'localeSwitched',
         'repeater-updated' => 'onRepeaterUpdate',
+        'changeBlockStatus' => 'onStatusConfirmed',
     ];
 
     public function boot(BlockManager $blockManager)
@@ -82,7 +85,8 @@ class BlockEditor extends Component
         $defaultData = $blockClass ? $blockClass->getDefaultData() : [];
         $this->state = array_merge($defaultData, $this->editingBlock->data ?? [], $this->editingBlock->settings ?? []);
 
-        $this->blockStatus = $this->editingBlock->status ?? ContentBlockStatus::DRAFT;
+        $this->blockStatus = $this->editingBlock->status;
+        $this->isPublished = $this->editingBlock->status === ContentBlockStatus::PUBLISHED;
         $this->imageUpload = null;
         $this->lastAutosaveTime = now();
 
@@ -154,9 +158,41 @@ class BlockEditor extends Component
         $this->showSuccessToast(__('messages.block_editor.autosaved'), duration: 2000);
     }
 
-    public function setBlockStatus(string $status)
+    public function updatedIsPublished(bool $value): void
     {
-        $this->blockStatus = ContentBlockStatus::tryFrom($status);
+        $this->isPublished = !$value;
+
+        $title = $value ? __('messages.block_editor.publish_confirmation_title') : __('messages.block_editor.unpublish_confirmation_title');
+        $message = $value ? __('messages.block_editor.publish_confirmation_text') : __('messages.block_editor.unpublish_confirmation_text');
+
+        $this->confirmAction(
+            title: $title,
+            message: $message,
+            action: 'changeBlockStatus',
+            data: ['newStatus' => $value]
+        );
+    }
+
+    public function onStatusConfirmed(array $data)
+    {
+        if (! $this->editingBlock) {
+            return;
+        }
+
+        $this->isPublished = $data['newStatus'];
+        $this->blockStatus = $this->isPublished ? ContentBlockStatus::PUBLISHED : ContentBlockStatus::DRAFT;
+
+        app(UpdateContentBlockAction::class)->execute(
+            $this->editingBlock,
+            $this->state,
+            $this->activeLocale,
+            $this->blockStatus,
+            null,
+            $this->blockManager
+        );
+
+        $this->showSuccessToast(__('messages.block_editor.block_updated_text'));
+        $this->dispatch('block-status-updated');
     }
 
     protected function finishEditing()
@@ -164,7 +200,8 @@ class BlockEditor extends Component
         $this->editingBlock = null;
         $this->state = [];
         $this->imageUpload = null;
-        $this->blockStatus = null;
+        $this->blockStatus = ContentBlockStatus::DRAFT;
+        $this->isPublished = false;
         $this->lastAutosaveTime = null;
         $this->dispatch('stopAutosaveTimer');
     }

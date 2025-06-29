@@ -1,68 +1,42 @@
 @props([
     'block',
     'data' => [],
-    'alpine' => false
 ])
 
-<div x-data="{ data: {{ json_encode($data) }} }">
-    <div class="container mx-auto px-4 py-8 rounded-lg">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-            <div class="text-center lg:text-left">
-                @php
-                    $overline = $data['overline'] ?? '';
-                    $heading = $data['heading'] ?? '';
-                    $subheading = $data['subheading'] ?? '';
-                    $buttons = $data['buttons'] ?? [];
-                @endphp
+<section class="relative h-screen w-full flex items-center justify-center text-center overflow-hidden">
+    <!-- Background Image with Overlay -->
+    <div class="absolute top-0 left-0 w-full h-full bg-cover bg-center" style="background-image: url('{{ $block->getFirstMediaUrl('background_image') ?: 'https://images.unsplash.com/photo-1543393716-375f47996a77?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' }}')"></div>
+    <div class="absolute top-0 left-0 w-full h-full bg-black/70"></div>
 
-                @if($alpine)
-                    <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400" x-text="data.overline"></p>
-                    <h1 class="mt-2 text-4xl font-bold" x-text="data.heading"></h1>
-                    <p class="mt-4 text-lg" x-text="data.subheading"></p>
-                @else
-                    @if($overline)
-                        <p class="text-sm font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400">{{ $overline }}</p>
-                    @endif
-                    <h1 class="mt-2 text-4xl font-bold">{{ $heading }}</h1>
-                    @if($subheading)
-                        <p class="mt-4 text-lg">{{ $subheading }}</p>
-                    @endif
-                @endif
+    <!-- Hero Content -->
+    <div class="relative z-10 px-4">
+        @if($data['overline'] ?? false)
+            <x-frontend.text style="overline" font="heading">
+                {{ $data['overline'] }}
+            </x-frontend.text>
+        @endif
 
-                @if($alpine)
-                    <div class="mt-6 flex items-center justify-center lg:justify-start gap-2" x-show="data.buttons && data.buttons.length > 0">
-                        <template x-for="(button, index) in data.buttons" :key="index">
-                            <a :href="button.url" class="inline-flex items-center px-4 py-2 border rounded-md font-semibold text-xs uppercase tracking-widest transition"
-                               :class="{
-                                   'bg-blue-600 text-white border-transparent hover:bg-blue-500': button.variant === 'primary',
-                                   'bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50': button.variant === 'secondary',
-                                   'text-zinc-600 hover:bg-zinc-100': button.variant === 'ghost'
-                               }"
-                               x-text="button.text"></a>
-                        </template>
-                    </div>
-                @else
-                    @if(count($buttons) > 0)
-                        <div class="mt-6 flex items-center justify-center lg:justify-start gap-2">
-                            @foreach($buttons as $button)
-                                <a href="{{ $button['url'] }}" class="inline-flex items-center px-4 py-2 border rounded-md font-semibold text-xs uppercase tracking-widest transition
-                                    @if($button['variant'] === 'primary') bg-blue-600 text-white border-transparent hover:bg-blue-500 @endif
-                                    @if($button['variant'] === 'secondary') bg-white text-zinc-700 border-zinc-300 hover:bg-zinc-50 @endif
-                                    @if($button['variant'] === 'ghost') text-zinc-600 hover:bg-zinc-100 @endif
-                                ">
-                                    {{ $button['text'] }}
-                                </a>
-                            @endforeach
-                        </div>
-                    @endif
-                @endif
-            </div>
+        @if($data['heading'] ?? false)
+            <x-frontend.heading as="h1" style="display" class="my-2 max-w-3xl mx-auto md:my-4">
+                {!! $data['heading'] !!}
+            </x-frontend.heading>
+        @endif
 
-            @if($block->hasMedia('image'))
-                <div class="mt-4 lg:mt-0 w-full">
-                    <img src="{{ $block->getFirstMedia('image')->getUrl() }}" alt="{{ $data['heading'] ?? 'Hero image' }}" class="w-full h-auto object-cover rounded-lg">
-                </div>
-            @endif
+        @if($data['subheading'] ?? false)
+            <x-frontend.text style="lede" class="mt-4">
+                {{ $data['subheading'] }}
+            </x-frontend.text>
+        @endif
+
+        <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+            @foreach($data['buttons'] ?? [] as $button)
+                <x-frontend.button
+                    :href="$button['url'] ?? '#'"
+                    :variant="$button['variant'] ?? 'primary'"
+                >
+                    {{ $button['text'] }}
+                </x-frontend.button>
+            @endforeach
         </div>
     </div>
-</div>
+</section>
