@@ -2,13 +2,13 @@
 
 namespace App\Models;
 
+use App\Enums\PublishStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Spatie\Translatable\HasTranslations;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Enums\PublishStatus;
+use Spatie\Translatable\HasTranslations;
 
 class Page extends Model implements HasMedia
 {
@@ -26,11 +26,6 @@ class Page extends Model implements HasMedia
     ];
 
     public array $translatable = ['title', 'meta_title', 'meta_description'];
-
-    protected $casts = [
-        'status' => PublishStatus::class,
-        'no_index' => 'boolean',
-    ];
 
     public function contentBlocks(): HasMany
     {
@@ -50,5 +45,13 @@ class Page extends Model implements HasMedia
     public function hasTranslation(string $locale): bool
     {
         return array_key_exists($locale, $this->getTranslations('title'));
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => PublishStatus::class,
+            'no_index' => 'boolean',
+        ];
     }
 }

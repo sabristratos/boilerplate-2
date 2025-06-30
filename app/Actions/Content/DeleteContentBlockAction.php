@@ -10,4 +10,4 @@ class DeleteContentBlockAction
     {
         ContentBlock::find($blockId)?->delete();
     }
-} 
+}

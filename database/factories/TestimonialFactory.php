@@ -17,12 +17,12 @@ class TestimonialFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name,
-            'title' => $this->faker->jobTitle,
-            'content' => $this->faker->realText,
-            'rating' => $this->faker->numberBetween(4, 5),
-            'source' => $this->faker->randomElement(['Twitter', 'Google', 'Facebook']),
-            'order' => $this->faker->unique()->numberBetween(1, 100),
+            'name' => fake()->name,
+            'title' => fake()->jobTitle,
+            'content' => fake()->realText,
+            'rating' => fake()->numberBetween(4, 5),
+            'source' => fake()->randomElement(['Twitter', 'Google', 'Facebook']),
+            'order' => fake()->unique()->numberBetween(1, 100),
         ];
     }
 }

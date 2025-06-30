@@ -16,7 +16,6 @@ class DateColumn extends Column
     /**
      * Set the date format.
      *
-     * @param  string  $format
      * @return $this
      */
     public function format(string $format): static
@@ -31,9 +30,8 @@ class DateColumn extends Column
      *
      * @param  mixed  $value
      * @param  mixed  $resource
-     * @return mixed
      */
-    public function formatValue($value, $resource)
+    public function formatValue($value, $resource): ?string
     {
         if (is_null($value)) {
             return null;
@@ -41,4 +39,4 @@ class DateColumn extends Column
 
         return Carbon::parse($value)->format($this->format);
     }
-} 
+}

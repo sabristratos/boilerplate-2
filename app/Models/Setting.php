@@ -30,33 +30,18 @@ class Setting extends Model implements HasMedia
      */
     protected $guarded = [];
 
-    protected $casts = [
-        'options' => 'array',
-        'subfields' => 'array',
-        'callout' => 'array',
-    ];
-
     /**
      * Interact with the setting's value.
-     *
-     * @return Attribute
      */
     protected function value(): Attribute
     {
         return Attribute::make(
-            get: function ($value) {
-                switch ($this->cast) {
-                    case 'array':
-                        return is_array($value) ? $value : json_decode($value, true) ?? [];
-                    case 'boolean':
-                        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
-                    case 'integer':
-                        return (int) $value;
-                    case 'float':
-                        return (float) $value;
-                    default:
-                        return $value;
-                }
+            get: fn ($value) => match ($this->cast) {
+                'array' => is_array($value) ? $value : json_decode((string) $value, true) ?? [],
+                'boolean' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+                'integer' => (int) $value,
+                'float' => (float) $value,
+                default => $value,
             },
             set: fn ($value) => match ($this->cast) {
                 'array' => json_encode($value),
@@ -80,5 +65,14 @@ class Setting extends Model implements HasMedia
     {
         $this->addMediaCollection('default')
             ->singleFile();
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'options' => 'array',
+            'subfields' => 'array',
+            'callout' => 'array',
+        ];
     }
 }

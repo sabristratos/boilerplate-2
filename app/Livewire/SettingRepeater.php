@@ -2,22 +2,23 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use Livewire\Attributes\Model;
+use Livewire\Component;
 
 class SettingRepeater extends Component
 {
     #[Model]
     public array $items = [];
+
     public array $fields = [];
 
-    public function mount(array $fields = [], array $items = [])
+    public function mount(array $fields = [], array $items = []): void
     {
         $this->fields = $fields;
         $this->items = $items ?? [];
     }
 
-    public function addItem()
+    public function addItem(): void
     {
         $newItem = [];
         foreach ($this->fields as $field) {
@@ -26,7 +27,7 @@ class SettingRepeater extends Component
         $this->items[] = $newItem;
     }
 
-    public function removeItem($index)
+    public function removeItem($index): void
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
@@ -36,4 +37,4 @@ class SettingRepeater extends Component
     {
         return view('livewire.setting-repeater');
     }
-} 
+}

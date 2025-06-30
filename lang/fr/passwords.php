@@ -19,4 +19,4 @@ return [
     'token' => 'Ce jeton de réinitialisation de mot de passe n\'est pas valide.',
     'user' => "Nous ne trouvons pas d'utilisateur avec cette adresse e-mail.",
 
-]; 
+];

@@ -23,7 +23,7 @@ class RoleOrPermissionMiddleware
             throw UnauthorizedException::notLoggedIn();
         }
 
-        $rolesOrPermissions = is_array($roleOrPermission) ? $roleOrPermission : explode('|', $roleOrPermission);
+        $rolesOrPermissions = is_array($roleOrPermission) ? $roleOrPermission : explode('|', (string) $roleOrPermission);
 
         if (! Auth::guard($guard)->user()->hasAnyRole($rolesOrPermissions) &&
             ! Auth::guard($guard)->user()->hasAnyPermission($rolesOrPermissions)) {

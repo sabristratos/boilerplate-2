@@ -21,7 +21,6 @@ class Select extends Field
     /**
      * Set the field's options.
      *
-     * @param  array  $options
      * @return $this
      */
     public function options(array $options): static
@@ -33,8 +32,6 @@ class Select extends Field
 
     /**
      * Get the field's options.
-     *
-     * @return array
      */
     public function getOptions(): array
     {
@@ -44,7 +41,6 @@ class Select extends Field
     /**
      * Set whether the select allows multiple selections.
      *
-     * @param  bool  $multiple
      * @return $this
      */
     public function multiple(bool $multiple = true): static
@@ -56,8 +52,6 @@ class Select extends Field
 
     /**
      * Check if the select allows multiple selections.
-     *
-     * @return bool
      */
     public function isMultiple(): bool
     {
@@ -73,4 +67,4 @@ class Select extends Field
     {
         return 'select';
     }
-} 
+}

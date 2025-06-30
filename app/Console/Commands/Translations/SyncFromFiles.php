@@ -27,7 +27,7 @@ class SyncFromFiles extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $this->info('Truncating translations table...');
         Translation::truncate();
@@ -39,12 +39,14 @@ class SyncFromFiles extends Command
 
         if ($locales->isEmpty()) {
             $this->warn('No language directories found.');
+
             return;
         }
 
         $defaultLocale = Settings::get('general.default_locale', config('app.locale'));
-        if (! $locales->contains($defaultLocale)) {
+        if ($locales->doesntContain($defaultLocale)) {
             $this->error("Default locale '{$defaultLocale}' not found in language directories.");
+
             return;
         }
 
@@ -60,7 +62,7 @@ class SyncFromFiles extends Command
             foreach ($translations as $key => $value) {
                 $translationsData = [];
                 foreach ($locales as $locale) {
-                    $localeFilePath = lang_path($locale . '/' . $group . '.php');
+                    $localeFilePath = lang_path($locale.'/'.$group.'.php');
                     if (File::exists($localeFilePath)) {
                         $localeTranslations = Arr::dot(include $localeFilePath);
                         if (isset($localeTranslations[$key])) {

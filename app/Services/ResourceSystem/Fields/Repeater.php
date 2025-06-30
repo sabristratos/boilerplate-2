@@ -14,7 +14,6 @@ class Repeater extends Field
     /**
      * Set the fields for the repeater.
      *
-     * @param  array  $fields
      * @return $this
      */
     public function fields(array $fields): static
@@ -26,8 +25,6 @@ class Repeater extends Field
 
     /**
      * Get the fields for the repeater.
-     *
-     * @return array
      */
     public function getFields(): array
     {
@@ -43,4 +40,4 @@ class Repeater extends Field
     {
         return 'repeater';
     }
-} 
+}

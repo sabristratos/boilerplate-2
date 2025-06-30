@@ -9,8 +9,6 @@ enum ContentBlockStatus: string
 
     /**
      * Get all available statuses as an array for select inputs
-     *
-     * @return array
      */
     public static function options(): array
     {
@@ -22,12 +20,10 @@ enum ContentBlockStatus: string
 
     /**
      * Get the label for the status
-     *
-     * @return string
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'Draft',
             self::PUBLISHED => 'Published',
         };
@@ -35,12 +31,10 @@ enum ContentBlockStatus: string
 
     /**
      * Get the color for the status badge
-     *
-     * @return string
      */
     public function color(): string
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'amber',
             self::PUBLISHED => 'lime',
         };

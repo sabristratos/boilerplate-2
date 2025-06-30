@@ -3,26 +3,6 @@ import sort from '@alpinejs/sort'
 
 Alpine.plugin(sort)
 
-document.addEventListener('alpine:init', () => {
-    Alpine.data('formBuilderCanvas', (config) => ({
-        aligns: config.aligns || {},
-        get align() {
-            return this.aligns[this.breakpoint] || 'left';
-        },
-        get alignmentClass() {
-            switch(this.align) {
-                case 'center': return 'justify-center';
-                case 'right': return 'justify-end';
-                default: return 'justify-start';
-            }
-        },
-        get isFullWidth() {
-            return this.align === 'full';
-        }
-    }));
-});
-
-
 document.addEventListener('livewire:init', () => {
     Livewire.on('settings-updated', (event) => {
         if (!event || !event.settings) {
@@ -33,9 +13,29 @@ document.addEventListener('livewire:init', () => {
 
         // Handle app name change
         if (settings.hasOwnProperty('general.app_name')) {
-            const appName = settings['general.app_name'];
-            document.querySelectorAll('.app-logo-name').forEach(el => el.textContent = appName);
-            document.querySelectorAll('.app-logo-image').forEach(el => el.alt = appName);
+            document.title = settings['general.app_name'];
+        }
+
+        // Handle primary color change
+        if (settings.hasOwnProperty('appearance.primary_color')) {
+            const primaryColor = settings['appearance.primary_color'];
+            document.documentElement.style.setProperty('--color-primary-500', primaryColor);
+        }
+
+        // Handle accent color change
+        if (settings.hasOwnProperty('appearance.accent_color')) {
+            const accentColor = settings['appearance.accent_color'];
+            document.documentElement.style.setProperty('--color-accent', accentColor);
+        }
+
+        // Handle theme change
+        if (settings.hasOwnProperty('appearance.theme')) {
+            const theme = settings['appearance.theme'];
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
         }
 
         // Handle logo change
@@ -80,21 +80,27 @@ document.addEventListener('livewire:init', () => {
                 appleTouchIconLink.href = faviconUrl || '/favicon.png';
             }
         }
+    });
 
-        // Handle primary color change
-        if (settings.hasOwnProperty('appearance.primary_color')) {
-            const primaryColor = settings['appearance.primary_color'];
-            document.documentElement.style.setProperty('--color-accent', primaryColor);
-        }
+    const getBreakpoint = (width) => {
+        if (width < 640) return 'xs';
+        if (width < 768) return 'sm';
+        if (width < 1024) return 'md';
+        if (width < 1280) return 'lg';
+        if (width < 1536) return 'xl';
+        return '2xl';
+    };
 
-        // Handle theme change
-        if (settings.hasOwnProperty('appearance.theme')) {
-            const theme = settings['appearance.theme'];
-            if (theme === 'dark') {
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.classList.remove('dark');
-            }
+    let lastBreakpoint = getBreakpoint(window.innerWidth);
+    if(lastBreakpoint) {
+        Livewire.dispatch('breakpoint-updated', { breakpoint: lastBreakpoint });
+    }
+
+    window.addEventListener('resize', () => {
+        const newBreakpoint = getBreakpoint(window.innerWidth);
+        if (newBreakpoint !== lastBreakpoint) {
+            lastBreakpoint = newBreakpoint;
+            Livewire.dispatch('breakpoint-updated', { breakpoint: newBreakpoint });
         }
     });
 });

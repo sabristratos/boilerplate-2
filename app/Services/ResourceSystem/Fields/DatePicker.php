@@ -6,11 +6,9 @@ class DatePicker extends Field
 {
     /**
      * Get the component name for the field.
-     *
-     * @return string
      */
     public function component(): string
     {
         return 'resource-system::fields.date-picker';
     }
-} 
+}

@@ -7,13 +7,6 @@ use Illuminate\Support\Str;
 abstract class Filter
 {
     /**
-     * The filter's name.
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
      * The filter's label.
      *
      * @var string
@@ -23,20 +16,15 @@ abstract class Filter
     /**
      * Create a new filter.
      *
-     * @param  string  $name
      * @return void
      */
-    public function __construct(string $name)
+    public function __construct(protected string $name)
     {
-        $this->name = $name;
-        $this->label = Str::title(Str::replace('_', ' ', $name));
+        $this->label = Str::title(Str::replace('_', ' ', $this->name));
     }
 
     /**
      * Create a new filter instance.
-     *
-     * @param  string  $name
-     * @return static
      */
     public static function make(string $name): static
     {
@@ -46,7 +34,6 @@ abstract class Filter
     /**
      * Set the filter's label.
      *
-     * @param  string  $label
      * @return $this
      */
     public function label(string $label): static
@@ -58,8 +45,6 @@ abstract class Filter
 
     /**
      * Get the filter's name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -68,8 +53,6 @@ abstract class Filter
 
     /**
      * Get the filter's label.
-     *
-     * @return string
      */
     public function getLabel(): string
     {
@@ -78,8 +61,6 @@ abstract class Filter
 
     /**
      * Get the component name for the filter.
-     *
-     * @return string
      */
     abstract public function component(): string;
 
@@ -94,8 +75,6 @@ abstract class Filter
 
     /**
      * Get the filter's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

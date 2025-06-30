@@ -15,16 +15,24 @@ use Livewire\WithPagination;
 
 class ManageTranslations extends Component
 {
-    use WithPagination, WithFileUploads, WithToastNotifications;
+    use WithFileUploads, WithPagination, WithToastNotifications;
 
     public $locales = [];
+
     public $selectedLocales = [];
+
     public $searchQuery = '';
+
     public $filterGroup = '';
+
     public $perPage = 10;
+
     public $sortBy = 'group';
+
     public $sortDirection = 'asc';
+
     public array $translationsData = [];
+
     public $upload;
 
     protected $queryString = [
@@ -36,13 +44,13 @@ class ManageTranslations extends Component
         'selectedLocales' => [],
     ];
 
-    public function resetFilters()
+    public function resetFilters(): void
     {
         $this->reset(['searchQuery', 'filterGroup', 'perPage', 'selectedLocales']);
         $this->selectedLocales = $this->locales;
     }
 
-    public function mount()
+    public function mount(): void
     {
         // Get available locales from settings
         $availableLocales = Settings::get('general.available_locales', []);
@@ -54,22 +62,22 @@ class ManageTranslations extends Component
         }
     }
 
-    public function updatedSearchQuery()
+    public function updatedSearchQuery(): void
     {
         $this->resetPage();
     }
 
-    public function updatedFilterGroup()
+    public function updatedFilterGroup(): void
     {
         $this->resetPage();
     }
 
-    public function updatedPerPage()
+    public function updatedPerPage(): void
     {
         $this->resetPage();
     }
 
-    public function sort($column)
+    public function sort($column): void
     {
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -79,7 +87,7 @@ class ManageTranslations extends Component
         }
     }
 
-    public function scan()
+    public function scan(): void
     {
         try {
             Artisan::call('translations:sync-from-files');
@@ -89,7 +97,7 @@ class ManageTranslations extends Component
         }
     }
 
-    public function save()
+    public function save(): void
     {
         try {
             $this->validate([
@@ -124,7 +132,7 @@ class ManageTranslations extends Component
         try {
             $translations = Translation::all();
             $locales = $this->locales;
-            $filename = 'translations-' . now()->format('Y-m-d') . '.csv';
+            $filename = 'translations-'.now()->format('Y-m-d').'.csv';
 
             $headers = [
                 'Content-type' => 'text/csv',
@@ -134,7 +142,7 @@ class ManageTranslations extends Component
                 'Expires' => '0',
             ];
 
-            $callback = function () use ($translations, $locales) {
+            $callback = function () use ($translations, $locales): void {
                 $file = fopen('php://output', 'w');
                 $header = ['group', 'key', ...$locales];
                 fputcsv($file, $header);
@@ -161,7 +169,7 @@ class ManageTranslations extends Component
         }
     }
 
-    public function updatedUpload()
+    public function updatedUpload(): void
     {
         try {
             $this->validate([
@@ -205,7 +213,7 @@ class ManageTranslations extends Component
         }
     }
 
-    private function syncToFiles()
+    private function syncToFiles(): void
     {
         $allTranslations = Translation::all();
         $allGroups = $allTranslations->pluck('group')->unique();
@@ -218,7 +226,7 @@ class ManageTranslations extends Component
             }
 
             foreach ($allGroups as $group) {
-                $filePath = $localePath . '/' . $group . '.php';
+                $filePath = $localePath.'/'.$group.'.php';
 
                 $groupTranslations = $allTranslations->where('group', $group);
 
@@ -230,7 +238,7 @@ class ManageTranslations extends Component
                     }
                 }
 
-                $content = '<?php' . PHP_EOL . PHP_EOL . 'return ' . var_export($output, true) . ';' . PHP_EOL;
+                $content = '<?php'.PHP_EOL.PHP_EOL.'return '.var_export($output, true).';'.PHP_EOL;
                 File::put($filePath, $content);
             }
         }
@@ -248,12 +256,12 @@ class ManageTranslations extends Component
         $query = Translation::query();
 
         if ($this->searchQuery) {
-            $query->where(function ($query) {
+            $query->where(function ($query): void {
                 $query->where('key', 'like', "%{$this->searchQuery}%")
-                      ->orWhere('group', 'like', "%{$this->searchQuery}%");
+                    ->orWhere('group', 'like', "%{$this->searchQuery}%");
 
                 // Also search in the default locale's text
-                if (!empty($this->locales)) {
+                if (! empty($this->locales)) {
                     $defaultLocale = Settings::get('general.default_locale', config('app.locale'));
                     $query->orWhereRaw("JSON_EXTRACT(text, '$.\"{$defaultLocale}\"') LIKE ?", ["%{$this->searchQuery}%"]);
                 }
@@ -269,9 +277,7 @@ class ManageTranslations extends Component
             ->paginate($this->perPage);
 
         $this->translationsData = $translations
-            ->mapWithKeys(function ($translation) {
-                return [$translation->id => $translation->getTranslations('text')];
-            })
+            ->mapWithKeys(fn ($translation) => [$translation->id => $translation->getTranslations('text')])
             ->toArray();
 
         return view('livewire.translations.manage-translations', [

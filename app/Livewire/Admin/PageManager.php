@@ -2,39 +2,50 @@
 
 namespace App\Livewire\Admin;
 
-use App\Enums\ContentBlockStatus;
-use App\Models\ContentBlock;
+use App\Actions\Content\CreateContentBlockAction;
+use App\Actions\Content\DeleteContentBlockAction;
+use App\Actions\Content\UpdateBlockOrderAction;
+use App\Actions\Content\UpdatePageDetailsAction;
+use App\Enums\PublishStatus;
 use App\Models\Page;
 use App\Services\BlockManager;
-use App\Traits\WithToastNotifications;
-use Livewire\Component;
-use Illuminate\Support\Str;
-use Livewire\WithFileUploads;
-use App\Actions\Content\CreateContentBlockAction;
-use App\Actions\Content\UpdatePageDetailsAction;
-use App\Actions\Content\UpdateBlockOrderAction;
-use App\Actions\Content\DeleteContentBlockAction;
 use App\Traits\WithConfirmationModal;
+use App\Traits\WithToastNotifications;
+use Illuminate\Support\Str;
 use Livewire\Attributes\On;
-use App\Enums\PublishStatus;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class PageManager extends Component
 {
-    use WithToastNotifications, WithFileUploads, WithConfirmationModal;
+    use WithConfirmationModal, WithFileUploads, WithToastNotifications;
 
     public Page $page;
+
     public array $title = [];
+
     public ?string $slug = '';
+
     public PublishStatus $status;
+
     public array $meta_title = [];
+
     public array $meta_description = [];
+
     public bool $no_index = false;
+
     public string $activeLocale;
+
     public array $availableLocales = [];
+
     public array $editingBlockState = [];
+
     public ?int $editingBlockId = null;
+
     public string $activeSidebarTab = 'settings';
+
     public ?string $switchLocale = null;
+
     public bool $isPublished;
 
     protected BlockManager $blockManager;
@@ -50,7 +61,7 @@ class PageManager extends Component
     #[On('deleteBlockConfirmed')]
     public function deleteBlock(int $blockId): void
     {
-        if (! $blockId) {
+        if ($blockId === 0) {
             return;
         }
 
@@ -59,7 +70,7 @@ class PageManager extends Component
         $this->dispatch('$refresh');
     }
 
-    public function onBlockEditFinished()
+    public function onBlockEditFinished(): void
     {
         $this->editingBlockId = null;
         $this->editingBlockState = [];
@@ -67,20 +78,20 @@ class PageManager extends Component
         $this->dispatch('$refresh');
     }
 
-    public function onBlockEditCancelled()
+    public function onBlockEditCancelled(): void
     {
         $this->editingBlockId = null;
         $this->editingBlockState = [];
         $this->activeSidebarTab = 'settings';
     }
 
-    public function onBlockStateUpdate(int $id, array $state)
+    public function onBlockStateUpdate(int $id, array $state): void
     {
         $this->editingBlockId = $id;
         $this->editingBlockState = $state;
     }
 
-    public function boot(BlockManager $blockManager)
+    public function boot(BlockManager $blockManager): void
     {
         $this->blockManager = $blockManager;
     }
@@ -102,7 +113,7 @@ class PageManager extends Component
         $this->availableLocales = $this->getAvailableLocales();
         $this->activeLocale = request()->query('locale', config('app.fallback_locale'));
 
-        if (!array_key_exists($this->activeLocale, $this->availableLocales)) {
+        if (! array_key_exists($this->activeLocale, $this->availableLocales)) {
             $this->activeLocale = config('app.fallback_locale');
         }
         $this->switchLocale = $this->activeLocale;
@@ -122,10 +133,10 @@ class PageManager extends Component
         return collect($localesSetting)->pluck('name', 'code')->all();
     }
 
-    public function updatedSwitchLocale($locale): void
+    public function updatedSwitchLocale(string $locale): void
     {
         // Add debugging toast to verify method is called
-        $this->showSuccessToast("Switching locale to: " . $locale);
+        $this->showSuccessToast('Switching locale to: '.$locale);
 
         if (array_key_exists($locale, $this->availableLocales)) {
             $this->redirect(route('admin.pages.editor', ['page' => $this->page, 'locale' => $locale]));
@@ -152,7 +163,7 @@ class PageManager extends Component
                 __('messages.page_manager.block_created_title')
             );
             $this->editBlock($block->id);
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.invalid_block_type_text'),
                 __('messages.page_manager.invalid_block_type_title')
@@ -169,7 +180,7 @@ class PageManager extends Component
                 null,
                 2000
             );
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.block_order_update_error_text'),
                 __('messages.page_manager.block_order_update_error_title')
@@ -210,7 +221,7 @@ class PageManager extends Component
 
     public function updatedIsPublished(bool $value): void
     {
-        $this->isPublished = !$value;
+        $this->isPublished = ! $value;
 
         $title = $value ? __('messages.page_manager.publish_confirmation_title') : __('messages.page_manager.unpublish_confirmation_title');
         $message = $value ? __('messages.page_manager.publish_confirmation_text') : __('messages.page_manager.unpublish_confirmation_text');
@@ -223,7 +234,7 @@ class PageManager extends Component
         );
     }
 
-    public function onStatusConfirmed(array $data)
+    public function onStatusConfirmed(array $data): void
     {
         $this->isPublished = $data['newStatus'];
         $this->status = $this->isPublished ? PublishStatus::PUBLISHED : PublishStatus::DRAFT;
@@ -234,7 +245,7 @@ class PageManager extends Component
     {
         return view('livewire.admin.page-manager')
             ->layout('components.layouts.editors', [
-                'title' => 'Editing: ' . $this->page->getTranslation('title', $this->activeLocale, false)
+                'title' => 'Editing: '.$this->page->getTranslation('title', $this->activeLocale, false),
             ]);
     }
 }

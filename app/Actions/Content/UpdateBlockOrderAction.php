@@ -10,4 +10,4 @@ class UpdateBlockOrderAction
     {
         ContentBlock::setNewOrder($sortOrder);
     }
-} 
+}

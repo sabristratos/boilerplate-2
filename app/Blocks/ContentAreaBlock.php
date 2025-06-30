@@ -32,4 +32,4 @@ class ContentAreaBlock extends Block
             'content' => 'required|string',
         ];
     }
-} 
+}

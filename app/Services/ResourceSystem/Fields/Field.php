@@ -7,13 +7,6 @@ use Illuminate\Support\Str;
 abstract class Field
 {
     /**
-     * The field's name.
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
      * The field's label.
      *
      * @var string
@@ -79,20 +72,15 @@ abstract class Field
     /**
      * Create a new field.
      *
-     * @param  string  $name
      * @return void
      */
-    public function __construct(string $name)
+    public function __construct(protected string $name)
     {
-        $this->name = $name;
-        $this->label = Str::title(Str::replace('_', ' ', $name));
+        $this->label = Str::title(Str::replace('_', ' ', $this->name));
     }
 
     /**
      * Create a new field instance.
-     *
-     * @param  string  $name
-     * @return static
      */
     public static function make(string $name): static
     {
@@ -102,7 +90,6 @@ abstract class Field
     /**
      * Set the field's label.
      *
-     * @param  string  $label
      * @return $this
      */
     public function label(string $label): static
@@ -115,7 +102,6 @@ abstract class Field
     /**
      * Set the field's help text.
      *
-     * @param  string  $helpText
      * @return $this
      */
     public function helpText(string $helpText): static
@@ -128,7 +114,6 @@ abstract class Field
     /**
      * Set the field's placeholder.
      *
-     * @param  string  $placeholder
      * @return $this
      */
     public function placeholder(string $placeholder): static
@@ -158,17 +143,16 @@ abstract class Field
     /**
      * Mark the field as required.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function required(bool $value = true): static
     {
         $this->required = $value;
 
-        if ($value && !in_array('required', $this->rules)) {
+        if ($value && ! in_array('required', $this->rules)) {
             $this->rules[] = 'required';
-        } elseif (!$value && in_array('required', $this->rules)) {
-            $this->rules = array_filter($this->rules, fn ($rule) => $rule !== 'required');
+        } elseif (! $value && in_array('required', $this->rules)) {
+            $this->rules = array_filter($this->rules, fn ($rule): bool => $rule !== 'required');
         }
 
         return $this;
@@ -177,7 +161,6 @@ abstract class Field
     /**
      * Mark the field as readonly.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function readonly(bool $value = true): static
@@ -190,7 +173,6 @@ abstract class Field
     /**
      * Mark the field as disabled.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function disabled(bool $value = true): static
@@ -203,7 +185,6 @@ abstract class Field
     /**
      * Mark the field as reactive.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function reactive(bool $value = true): static
@@ -228,8 +209,6 @@ abstract class Field
 
     /**
      * Get the field's name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -238,8 +217,6 @@ abstract class Field
 
     /**
      * Get the field's label.
-     *
-     * @return string
      */
     public function getLabel(): string
     {
@@ -248,8 +225,6 @@ abstract class Field
 
     /**
      * Get the field's help text.
-     *
-     * @return string|null
      */
     public function getHelpText(): ?string
     {
@@ -258,8 +233,6 @@ abstract class Field
 
     /**
      * Get the field's placeholder.
-     *
-     * @return string|null
      */
     public function getPlaceholder(): ?string
     {
@@ -268,8 +241,6 @@ abstract class Field
 
     /**
      * Get the validation rules for the field.
-     *
-     * @return array
      */
     public function getRules(): array
     {
@@ -278,8 +249,6 @@ abstract class Field
 
     /**
      * Determine if the field is required.
-     *
-     * @return bool
      */
     public function isRequired(): bool
     {
@@ -288,8 +257,6 @@ abstract class Field
 
     /**
      * Determine if the field is readonly.
-     *
-     * @return bool
      */
     public function isReadonly(): bool
     {
@@ -298,8 +265,6 @@ abstract class Field
 
     /**
      * Determine if the field is disabled.
-     *
-     * @return bool
      */
     public function isDisabled(): bool
     {
@@ -308,8 +273,6 @@ abstract class Field
 
     /**
      * Check if the field is reactive.
-     *
-     * @return bool
      */
     public function isReactive(): bool
     {
@@ -328,15 +291,11 @@ abstract class Field
 
     /**
      * Get the component name for the field.
-     *
-     * @return string
      */
     abstract public function component(): string;
 
     /**
      * Get the field's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

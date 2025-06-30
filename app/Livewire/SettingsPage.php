@@ -2,19 +2,19 @@
 
 namespace App\Livewire;
 
-use Flux\Flux;
-use Livewire\Component;
+use App\Enums\SettingGroupKey;
+use App\Enums\SettingType;
 use App\Facades\Settings;
 use App\Models\Setting;
 use App\Models\SettingGroup;
-use App\Enums\SettingGroupKey;
-use App\Enums\SettingType;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Artisan;
-use Livewire\Attributes\On;
-use Livewire\WithFileUploads;
 use App\Traits\WithToastNotifications;
+use Flux\Flux;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
+use Livewire\Attributes\On;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class SettingsPage extends Component
 {
@@ -22,36 +22,26 @@ class SettingsPage extends Component
 
     /**
      * The state of the settings.
-     *
-     * @var array
      */
     public array $state = [];
 
     /**
      * The initial state of the settings.
-     *
-     * @var array
      */
     public array $initialState = [];
 
     /**
      * The warning message for the confirmation modal.
-     *
-     * @var string
      */
     public string $confirmationWarning = '';
 
     /**
      * The current group.
-     *
-     * @var string
      */
     public string $group = 'general';
 
     /**
      * Temporary file uploads.
-     *
-     * @var array
      */
     public array $files = [];
 
@@ -63,9 +53,6 @@ class SettingsPage extends Component
 
     /**
      * Mount the component.
-     *
-     * @param string|null $group
-     * @return void
      */
     public function mount(?string $group = null): void
     {
@@ -75,7 +62,7 @@ class SettingsPage extends Component
 
         // Validate that the group exists and user has access to it
         $authorizedGroups = $this->getAuthorizedGroups();
-        if (!$authorizedGroups->contains('key', $this->group)) {
+        if ($authorizedGroups->doesntContain('key', $this->group)) {
             // If the group doesn't exist or user doesn't have access, redirect to the first available group
             $firstGroup = $authorizedGroups->first();
             if ($firstGroup) {
@@ -92,8 +79,6 @@ class SettingsPage extends Component
 
     /**
      * Load settings into state.
-     *
-     * @return void
      */
     protected function loadSettings(): void
     {
@@ -104,7 +89,7 @@ class SettingsPage extends Component
                 continue;
             }
 
-            if (!$this->userCan($setting['permission'] ?? null)) {
+            if (! $this->userCan($setting['permission'] ?? null)) {
                 continue;
             }
 
@@ -131,8 +116,6 @@ class SettingsPage extends Component
 
     /**
      * Save the settings.
-     *
-     * @return void
      */
     public function save(): void
     {
@@ -144,7 +127,7 @@ class SettingsPage extends Component
 
         foreach ($currentState as $key => $value) {
             if (data_get($initialState, $key) != $value) {
-                $fullKey = $this->group . '.' . $key;
+                $fullKey = $this->group.'.'.$key;
                 if (isset($settingsConfig[$fullKey]['warning'])) {
                     $label = $settingsConfig[$fullKey]['label'];
                     $labelText = is_array($label) ? ($label[app()->getLocale()] ?? $label['en']) : $label;
@@ -153,7 +136,7 @@ class SettingsPage extends Component
             }
         }
 
-        if (!empty($warnings)) {
+        if ($warnings !== []) {
             $warningHtml = '<p>'.__('messages.confirm_save.title').':</p><ul class="mt-2 list-disc list-inside space-y-1">';
             foreach ($warnings as $label => $text) {
                 $warningHtml .= "<li><strong>{$label}:</strong> {$text}</li>";
@@ -183,22 +166,22 @@ class SettingsPage extends Component
             // 1. Identify changed fields and build validation rules ONLY for them.
             foreach ($currentState as $key => $value) {
                 if (data_get($initialState, $key) != $value) {
-                    $fullKey = $this->group . '.' . $key;
+                    $fullKey = $this->group.'.'.$key;
                     $changedData[$fullKey] = $value;
 
                     if (isset($settings[$fullKey]['rules'])) {
-                        $validationRules['state.' . $fullKey] = $settings[$fullKey]['rules'];
+                        $validationRules['state.'.$fullKey] = $settings[$fullKey]['rules'];
                     }
                     if (isset($settings[$fullKey]['messages'])) {
                         foreach ($settings[$fullKey]['messages'] as $rule => $message) {
-                            $validationMessages['state.' . $fullKey . '.' . $rule] = $message;
+                            $validationMessages['state.'.$fullKey.'.'.$rule] = $message;
                         }
                     }
                 }
             }
 
             // 2. Validate ONLY the changed fields.
-            if (!empty($validationRules)) {
+            if ($validationRules !== []) {
                 $this->validate($validationRules, $validationMessages);
             }
 
@@ -221,7 +204,7 @@ class SettingsPage extends Component
             $this->showSuccessToast($message);
 
             // Dispatch a global event to notify other components
-            if (!empty($changedSettings)) {
+            if ($changedSettings !== []) {
                 $this->dispatch('settings-updated', settings: $changedSettings);
             }
 
@@ -237,8 +220,6 @@ class SettingsPage extends Component
 
     /**
      * Revert changes to the initial state.
-     *
-     * @return void
      */
     public function cancelChanges(): void
     {
@@ -247,15 +228,13 @@ class SettingsPage extends Component
 
     /**
      * Handle file upload.
-     *
-     * @param string $key
-     * @return string
      */
     protected function handleFileUpload(string $key): string
     {
         try {
             $file = $this->files[$key];
             $path = $file->store('public/settings');
+
             return str_replace('public/', 'storage/', $path);
         } catch (\Exception $e) {
             $this->showErrorToast(__('messages.errors.file_upload'), $e->getMessage());
@@ -265,8 +244,6 @@ class SettingsPage extends Component
 
     /**
      * Clear the application cache.
-     *
-     * @return void
      */
     public function clearCache(): void
     {
@@ -281,8 +258,6 @@ class SettingsPage extends Component
     /**
      * Fix the language settings by resetting them to defaults.
      * This addresses issues with incorrect data structure in the database.
-     *
-     * @return void
      */
     public function fixLanguageSettings(): void
     {
@@ -313,26 +288,29 @@ class SettingsPage extends Component
         return SettingGroup::query()
             ->whereIn('key', array_keys(config('settings.groups')))
             ->get()
-            ->filter(function ($group) {
+            ->filter(function ($group): bool {
                 // If a permission is required for the group, check if the user has it
-                $permission = config('settings.groups.' . $group->key . '.permission');
-                return !$permission || $this->userCan($permission);
+                $permission = config('settings.groups.'.$group->key.'.permission');
+
+                return ! $permission || $this->userCan($permission);
             });
     }
 
     /**
      * Get the settings for a given group.
      *
-     * @param string $groupKey
      * @return \Illuminate\Support\Collection
      */
     protected function getAuthorizedSettings(string $groupKey)
     {
         $settings = collect(config('settings.settings', []));
 
-        return $settings->filter(function ($setting, $key) use ($groupKey) {
-            return ($setting['group'] ?? '') === $groupKey && $this->userCan($setting['permission'] ?? null);
-        })->map(function ($settingData, $key) {
+        return $settings->filter(fn ($setting, $key): bool => ($setting['group'] ?? '') === $groupKey && $this->userCan($setting['permission'] ?? null))->map(function ($settingData, $key) {
+            // Check if the user has permission to manage the setting
+            if (! $this->userCan($settingData['permission'] ?? null)) {
+                return null;
+            }
+
             // For media settings, we load the Setting model instance.
             if ($settingData['type'] === SettingType::MEDIA->value) {
                 $setting = Setting::firstOrCreate(['key' => $key], $settingData);
@@ -341,24 +319,25 @@ class SettingsPage extends Component
                 $settingData['value'] = Settings::get($key);
                 $settingData['label'] = is_array($settingData['label']) ? ($settingData['label'][app()->getLocale()] ?? $settingData['label']['en']) : $settingData['label'];
                 $settingData['description'] = isset($settingData['description']) ? (is_array($settingData['description']) ? ($settingData['description'][app()->getLocale()] ?? $settingData['description']['en']) : $settingData['description']) : null;
+                if (isset($settingData['options']) && is_callable($settingData['options'])) {
+                    $settingData['options'] = call_user_func($settingData['options']);
+                }
                 if (isset($settingData['callout']['text'])) {
                     $settingData['callout']['text'] = is_array($settingData['callout']['text']) ? ($settingData['callout']['text'][app()->getLocale()] ?? $settingData['callout']['text']['en']) : $settingData['callout']['text'];
                 }
                 $setting = (object) $settingData;
             }
+
             return $setting;
-        });
+        })->filter();
     }
 
     /**
      * Check if the user can perform the given permission.
-     *
-     * @param string|null $permission
-     * @return bool
      */
     protected function userCan(?string $permission): bool
     {
-        if (!$permission) {
+        if ($permission === null || $permission === '' || $permission === '0') {
             return true;
         }
 
@@ -368,9 +347,6 @@ class SettingsPage extends Component
 
     /**
      * Get the icon for a group.
-     *
-     * @param string $groupKey
-     * @return string
      */
     protected function getGroupIcon(string $groupKey): string
     {
@@ -387,8 +363,7 @@ class SettingsPage extends Component
     }
 
     #[On('media-updated')]
-    #[On('repeater-updated')]
-    public function reloadSettings()
+    public function reloadSettings(): void
     {
         $this->loadSettings();
     }

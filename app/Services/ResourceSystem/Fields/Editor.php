@@ -14,7 +14,6 @@ class Editor extends Field
     /**
      * Set the field's toolbar.
      *
-     * @param  string  $toolbar
      * @return $this
      */
     public function toolbar(string $toolbar): static
@@ -26,8 +25,6 @@ class Editor extends Field
 
     /**
      * Get the field's toolbar.
-     *
-     * @return string|null
      */
     public function getToolbar(): ?string
     {
@@ -36,8 +33,6 @@ class Editor extends Field
 
     /**
      * Get the component name for the field.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -46,8 +41,6 @@ class Editor extends Field
 
     /**
      * Get the field's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {
@@ -55,4 +48,4 @@ class Editor extends Field
             'toolbar' => $this->getToolbar(),
         ]);
     }
-} 
+}

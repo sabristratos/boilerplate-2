@@ -13,6 +13,7 @@ use Livewire\Component;
 class VerifyEmail extends Component
 {
     use WithToastNotifications;
+
     /**
      * Send an email verification notification to the user.
      */

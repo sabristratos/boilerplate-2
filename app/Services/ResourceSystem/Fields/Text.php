@@ -14,7 +14,6 @@ class Text extends Field
     /**
      * Set the field's type.
      *
-     * @param  string  $type
      * @return $this
      */
     public function type(string $type): static
@@ -26,8 +25,6 @@ class Text extends Field
 
     /**
      * Get the field's type.
-     *
-     * @return string
      */
     public function getType(): string
     {
@@ -36,8 +33,6 @@ class Text extends Field
 
     /**
      * Get the component name for the field.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -46,8 +41,6 @@ class Text extends Field
 
     /**
      * Get the field's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

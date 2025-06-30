@@ -4,12 +4,10 @@ namespace App\Livewire\ResourceSystem;
 
 use App\Services\ResourceSystem\Resource;
 use App\Traits\WithToastNotifications;
-use Flux\Flux;
-use Livewire\Component;
-use Livewire\WithPagination;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Schema;
+use Livewire\Component;
+use Livewire\WithPagination;
 
 class ResourceTable extends Component
 {
@@ -34,7 +32,7 @@ class ResourceTable extends Component
      *
      * @var string|null
      */
-    public $sortBy = null;
+    public $sortBy;
 
     /**
      * The direction to sort.
@@ -59,8 +57,6 @@ class ResourceTable extends Component
 
     /**
      * Whether to show the filter modal.
-     *
-     * @var bool
      */
     public bool $showFiltersModal = false;
 
@@ -76,12 +72,10 @@ class ResourceTable extends Component
      *
      * @var int|null
      */
-    public $deleteId = null;
+    public $deleteId;
 
     /**
      * Whether reordering is enabled.
-     *
-     * @var bool
      */
     public bool $reorderingEnabled = false;
 
@@ -100,13 +94,10 @@ class ResourceTable extends Component
 
     /**
      * Mount the component.
-     *
-     * @param  Resource  $resource
-     * @return void
      */
-    public function mount(Resource $resource)
+    public function mount(Resource $resource): void
     {
-        $this->resource = get_class($resource);
+        $this->resource = $resource::class;
         $modelTable = $this->getResourceInstance()::$model::make()->getTable();
 
         if (Schema::hasColumn($modelTable, 'order')) {
@@ -118,7 +109,7 @@ class ResourceTable extends Component
     /**
      * Get the resource instance.
      *
-     * @return Resource
+     * @return resource
      */
     public function getResourceInstance()
     {
@@ -127,11 +118,8 @@ class ResourceTable extends Component
 
     /**
      * Sort by the given column.
-     *
-     * @param  string  $column
-     * @return void
      */
-    public function sort(string $column)
+    public function sort(string $column): void
     {
         if ($this->sortBy === $column) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -143,20 +131,16 @@ class ResourceTable extends Component
 
     /**
      * Reset the search.
-     *
-     * @return void
      */
-    public function resetSearch()
+    public function resetSearch(): void
     {
         $this->search = '';
     }
 
     /**
      * Reset the filters.
-     *
-     * @return void
      */
-    public function resetFilters()
+    public function resetFilters(): void
     {
         $this->filters = [];
         $this->showFiltersModal = false;
@@ -164,21 +148,16 @@ class ResourceTable extends Component
 
     /**
      * Reset the pagination.
-     *
-     * @return void
      */
-    public function resetPage()
+    public function resetPage(): void
     {
         $this->resetPage();
     }
 
     /**
      * Confirm the deletion of the resource.
-     *
-     * @param  int  $id
-     * @return void
      */
-    public function confirmDelete(int $id)
+    public function confirmDelete(int $id): void
     {
         $this->deleteId = $id;
         $this->showDeleteModal = true;
@@ -186,10 +165,8 @@ class ResourceTable extends Component
 
     /**
      * Delete the resource.
-     *
-     * @return void
      */
-    public function delete()
+    public function delete(): void
     {
         $model = $this->resource::$model;
         $model::findOrFail($this->deleteId)->delete();
@@ -205,10 +182,8 @@ class ResourceTable extends Component
 
     /**
      * Cancel the deletion of the resource.
-     *
-     * @return void
      */
-    public function cancelDelete()
+    public function cancelDelete(): void
     {
         $this->showDeleteModal = false;
         $this->deleteId = null;
@@ -216,28 +191,23 @@ class ResourceTable extends Component
 
     /**
      * Reorder the resources.
-     *
-     * @param  array  $order
-     * @return void
      */
-    public function reorder(array $order)
+    public function reorder(array $order): void
     {
         $modelClass = $this->resource::$model;
 
         if (in_array(\Spatie\EloquentSortable\SortableTrait::class, class_uses_recursive($modelClass))) {
             $modelClass::setNewOrder($order);
-            $this->showSuccessToast(__("messages.success.generic"));
+            $this->showSuccessToast(__('messages.success.generic'));
         }
     }
 
     /**
      * Build the query for the resource.
-     *
-     * @return Builder
      */
     public function buildQuery(array $columns, array $filters): Builder
     {
-        $resource = $this->getResourceInstance();
+        $this->getResourceInstance();
         $query = $this->resource::newQuery();
 
         // Apply search
@@ -247,18 +217,16 @@ class ResourceTable extends Component
             ->toArray();
 
         if ($this->search && count($searchableColumns) > 0) {
-            $query->where(function (Builder $query) use ($searchableColumns) {
+            $query->where(function (Builder $query) use ($searchableColumns): void {
                 foreach ($searchableColumns as $column) {
-                    $query->orWhere($column, 'like', '%' . $this->search . '%');
+                    $query->orWhere($column, 'like', '%'.$this->search.'%');
                 }
             });
         }
 
         // Apply sorting
         if ($this->sortBy) {
-            $column = collect($columns)->first(function ($column) {
-                return $column->getName() === $this->sortBy;
-            });
+            $column = collect($columns)->first(fn ($column): bool => $column->getName() === $this->sortBy);
 
             if ($column && $column->isSortable()) {
                 $query = $column->applySort($query, $this->sortDirection);
@@ -273,9 +241,7 @@ class ResourceTable extends Component
 
         // Apply filters
         foreach ($this->filters as $name => $value) {
-            $filter = collect($filters)->first(function ($filter) use ($name) {
-                return $filter->getName() === $name;
-            });
+            $filter = collect($filters)->first(fn ($filter): bool => $filter->getName() === $name);
 
             if ($filter) {
                 $query = $filter->apply($query, $value);
@@ -332,7 +298,7 @@ class ResourceTable extends Component
         if ($orderColumn && $handleColumnIndex !== -1 && $orderColumnIndex !== -1) {
             unset($columns[$orderColumnIndex]);
             $columns = array_values($columns);
-            $handleColumnIndex = array_search('handle', array_map(fn($col) => $col->getName(), $columns));
+            $handleColumnIndex = array_search('handle', array_map(fn ($col) => $col->getName(), $columns));
             if ($handleColumnIndex !== false) {
                 array_splice($columns, $handleColumnIndex + 1, 0, [$orderColumn]);
             }

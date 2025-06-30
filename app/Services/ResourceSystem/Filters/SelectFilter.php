@@ -16,7 +16,7 @@ class SelectFilter extends Filter
      *
      * @var callable|null
      */
-    protected $applyCallback = null;
+    protected $applyCallback;
 
     /**
      * Whether to include an empty option.
@@ -35,7 +35,6 @@ class SelectFilter extends Filter
     /**
      * Set the options for the select filter.
      *
-     * @param  array  $options
      * @return $this
      */
     public function options(array $options): static
@@ -48,7 +47,6 @@ class SelectFilter extends Filter
     /**
      * Set whether to include an empty option.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function includeEmptyOption(bool $value = true): static
@@ -61,7 +59,6 @@ class SelectFilter extends Filter
     /**
      * Set the label for the empty option.
      *
-     * @param  string  $label
      * @return $this
      */
     public function emptyOptionLabel(string $label): static
@@ -73,8 +70,6 @@ class SelectFilter extends Filter
 
     /**
      * Get the options for the select filter.
-     *
-     * @return array
      */
     public function getOptions(): array
     {
@@ -89,8 +84,6 @@ class SelectFilter extends Filter
 
     /**
      * Get the component name for the filter.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -100,7 +93,6 @@ class SelectFilter extends Filter
     /**
      * Set a custom callback to apply the filter.
      *
-     * @param  callable  $callback
      * @return $this
      */
     public function setApplyCallback(callable $callback): static
@@ -132,8 +124,6 @@ class SelectFilter extends Filter
 
     /**
      * Get the filter's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

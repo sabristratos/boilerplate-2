@@ -4,14 +4,14 @@ namespace App\Livewire\ResourceSystem;
 
 use App\Services\ResourceSystem\Resource;
 use App\Traits\WithToastNotifications;
-use Livewire\Component;
-use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 
 class ResourceForm extends Component
 {
     use WithToastNotifications;
+
     /**
      * The resource class.
      *
@@ -35,14 +35,10 @@ class ResourceForm extends Component
 
     /**
      * Mount the component.
-     *
-     * @param  \App\Services\ResourceSystem\Resource  $resource
-     * @param  int|null  $resourceId
-     * @return void
      */
-    public function mount(Resource $resource, ?int $resourceId = null)
+    public function mount(Resource $resource, ?int $resourceId = null): void
     {
-        $this->resource = get_class($resource);
+        $this->resource = $resource::class;
         $this->resourceId = $resourceId;
 
         $this->loadData();
@@ -60,12 +56,10 @@ class ResourceForm extends Component
 
     /**
      * Get the model instance.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|null
      */
     public function getModelInstance(): ?Model
     {
-        if (!$this->resourceId) {
+        if (! $this->resourceId) {
             return $this->resource::newModel();
         }
 
@@ -76,10 +70,8 @@ class ResourceForm extends Component
 
     /**
      * Load the form data.
-     *
-     * @return void
      */
-    public function loadData()
+    public function loadData(): void
     {
         $model = $this->getModelInstance();
         $fields = $this->getResourceInstance()->fields();
@@ -87,11 +79,7 @@ class ResourceForm extends Component
         foreach ($fields as $field) {
             $name = $field->getName();
             if ($model->exists) {
-                if ($name === 'roles') {
-                    $value = $model->getRoleNames()->toArray();
-                } else {
-                    $value = $model->{$name};
-                }
+                $value = $name === 'roles' ? $model->getRoleNames()->toArray() : $model->{$name};
             } else {
                 $value = $field->getDefaultValue();
             }
@@ -102,16 +90,14 @@ class ResourceForm extends Component
 
     /**
      * Get the validation rules.
-     *
-     * @return array
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = [];
         $fields = $this->getResourceInstance()->fields();
 
         foreach ($fields as $field) {
-            $rules['data.' . $field->getName()] = $field->getRules();
+            $rules['data.'.$field->getName()] = $field->getRules();
         }
 
         return $rules;
@@ -119,16 +105,14 @@ class ResourceForm extends Component
 
     /**
      * Get the validation attributes.
-     *
-     * @return array
      */
-    public function validationAttributes()
+    public function validationAttributes(): array
     {
         $attributes = [];
         $fields = $this->getResourceInstance()->fields();
 
         foreach ($fields as $field) {
-            $attributes['data.' . $field->getName()] = $field->getLabel();
+            $attributes['data.'.$field->getName()] = $field->getLabel();
         }
 
         return $attributes;
@@ -136,12 +120,10 @@ class ResourceForm extends Component
 
     /**
      * Save the resource.
-     *
-     * @return \Illuminate\Http\RedirectResponse
      */
-    public function save()
+    public function save(): void
     {
-        if (isset($this->data['roles']) && !is_array($this->data['roles'])) {
+        if (isset($this->data['roles']) && ! is_array($this->data['roles'])) {
             $this->data['roles'] = [];
         }
 
@@ -151,7 +133,7 @@ class ResourceForm extends Component
 
         try {
             $model = $this->getModelInstance();
-            $isNew = !$model->exists;
+            $isNew = ! $model->exists;
 
             $data = collect($this->data)->except(['avatar', 'roles']);
 

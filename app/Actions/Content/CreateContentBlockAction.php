@@ -8,15 +8,13 @@ use App\Services\BlockManager;
 
 class CreateContentBlockAction
 {
-    public function __construct(protected BlockManager $blockManager)
-    {
-    }
+    public function __construct(protected BlockManager $blockManager) {}
 
     public function execute(Page $page, string $type, array $availableLocales): \App\Models\ContentBlock
     {
         $blockClass = $this->blockManager->find($type);
 
-        if (! $blockClass) {
+        if (! $blockClass instanceof \App\Blocks\Block) {
             throw new \Exception('Invalid block type.');
         }
 
@@ -27,11 +25,11 @@ class CreateContentBlockAction
 
         $defaultData = $blockClass->getDefaultData();
 
-        foreach ($availableLocales as $localeCode => $localeName) {
+        foreach (array_keys($availableLocales) as $localeCode) {
             $block->setTranslation('data', $localeCode, $defaultData);
         }
         $block->save();
 
         return $block;
     }
-} 
+}

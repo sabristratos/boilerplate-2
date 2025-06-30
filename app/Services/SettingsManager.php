@@ -12,9 +12,6 @@ class SettingsManager
 {
     /**
      * Check if a setting exists.
-     *
-     * @param string $key
-     * @return bool
      */
     public function has(string $key): bool
     {
@@ -25,10 +22,6 @@ class SettingsManager
 
     /**
      * Get a setting value.
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
      */
     public function get(string $key, mixed $default = null): mixed
     {
@@ -37,11 +30,15 @@ class SettingsManager
         $value = $settings[$key]['value'] ?? null;
         $dbValueFound = isset($settings[$key]);
 
-        if (!$dbValueFound) {
+        if (! $dbValueFound) {
             $settingConfig = Config::get("settings.settings.{$key}");
             if (isset($settingConfig['config'])) {
                 return Config::get($settingConfig['config'], $default);
             }
+            if (isset($settingConfig['default'])) {
+                return $settingConfig['default'];
+            }
+
             return $default;
         }
 
@@ -50,23 +47,19 @@ class SettingsManager
 
     /**
      * Set a setting value.
-     *
-     * @param string $key
-     * @param mixed $value
-     * @return void
      */
     public function set(string $key, mixed $value): void
     {
         $groupKey = $this->getGroupKey($key);
         $settingGroup = SettingGroup::where('key', $groupKey)->first();
 
-        if (!$settingGroup) {
+        if (! $settingGroup) {
             throw new \InvalidArgumentException(__('settings.errors.group_not_found', ['groupKey' => $groupKey]));
         }
 
         $setting = Setting::firstOrNew(['key' => $key]);
 
-        if (!$setting->exists) {
+        if (! $setting->exists) {
             $setting->setting_group_id = $settingGroup->id;
         }
 
@@ -78,8 +71,6 @@ class SettingsManager
 
     /**
      * Get all settings.
-     *
-     * @return array
      */
     public function getAll(): array
     {
@@ -94,8 +85,6 @@ class SettingsManager
 
     /**
      * Clear the settings cache.
-     *
-     * @return void
      */
     public function clearCache(): void
     {
@@ -104,8 +93,6 @@ class SettingsManager
 
     /**
      * Get the cache key for settings.
-     *
-     * @return string
      */
     protected function getCacheKey(): string
     {
@@ -114,9 +101,6 @@ class SettingsManager
 
     /**
      * Get the group key from a setting key.
-     *
-     * @param string $key
-     * @return string
      */
     protected function getGroupKey(string $key): string
     {

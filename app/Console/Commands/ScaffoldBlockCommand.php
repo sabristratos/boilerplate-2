@@ -9,17 +9,15 @@ use Illuminate\Support\Str;
 class ScaffoldBlockCommand extends Command
 {
     protected $signature = 'make:block {name}';
+
     protected $description = 'commands.make_block.description';
 
-    protected Filesystem $files;
-
-    public function __construct(Filesystem $files)
+    public function __construct(protected Filesystem $files)
     {
         parent::__construct();
-        $this->files = $files;
     }
 
-    public function handle()
+    public function handle(): void
     {
         $name = $this->argument('name');
 
@@ -101,4 +99,4 @@ class ScaffoldBlockCommand extends Command
     {
         return Str::title(Str::snake(Str::beforeLast($name, 'Block'), ' '));
     }
-} 
+}

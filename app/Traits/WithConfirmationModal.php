@@ -6,11 +6,6 @@ trait WithConfirmationModal
 {
     /**
      * Show a confirmation modal by dispatching a browser event.
-     *
-     * @param string $action
-     * @param array $actionParams
-     * @param array $data
-     * @return void
      */
     protected function showConfirmation(string $action, array $actionParams = [], array $data = []): void
     {
@@ -23,11 +18,6 @@ trait WithConfirmationModal
 
     /**
      * Show a delete confirmation modal.
-     *
-     * @param int|string $itemId
-     * @param string $action
-     * @param array $data
-     * @return void
      */
     public function confirmDelete(int|string $itemId, string $action = 'delete', array $data = []): void
     {
@@ -44,12 +34,6 @@ trait WithConfirmationModal
 
     /**
      * Show a custom confirmation modal.
-     *
-     * @param string $title
-     * @param string $message
-     * @param string $action
-     * @param array $data
-     * @return void
      */
     public function confirmAction(string $title, string $message, string $action, array $data = []): void
     {
@@ -63,4 +47,4 @@ trait WithConfirmationModal
             'data' => $data,
         ]);
     }
-} 
+}

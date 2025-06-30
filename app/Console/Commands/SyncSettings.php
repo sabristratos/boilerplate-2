@@ -32,7 +32,7 @@ class SyncSettings extends Command
     {
         $this->info('Starting settings synchronization...');
 
-        DB::transaction(function () {
+        DB::transaction(function (): void {
             $groups = Config::get('settings.groups', []);
             $settings = Config::get('settings.settings', []);
 
@@ -57,6 +57,7 @@ class SyncSettings extends Command
 
                 if (! $group) {
                     $this->warn(__('commands.sync_settings.group_not_found_skip', ['group' => $setting['group'], 'key' => $key]));
+
                     continue;
                 }
 
@@ -89,7 +90,7 @@ class SyncSettings extends Command
                 }
 
                 // If the setting is new and a default value is defined, add it to the data for creation.
-                if (!$settingModel->exists && isset($setting['default'])) {
+                if (! $settingModel->exists && isset($setting['default'])) {
                     $data['value'] = $setting['default'];
                 }
 

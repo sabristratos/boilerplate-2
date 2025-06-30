@@ -14,10 +14,9 @@ trait WithToastNotifications
     /**
      * Display a success toast notification.
      *
-     * @param string $message The message to display
-     * @param string|null $heading Optional heading for the toast
-     * @param int $duration Duration in milliseconds (default: 5000)
-     * @return void
+     * @param  string  $message  The message to display
+     * @param  string|null  $heading  Optional heading for the toast
+     * @param  int  $duration  Duration in milliseconds (default: 5000)
      */
     public function showSuccessToast(string $message, ?string $heading = null, int $duration = 5000): void
     {
@@ -32,10 +31,9 @@ trait WithToastNotifications
     /**
      * Display a warning toast notification.
      *
-     * @param string $message The message to display
-     * @param string|null $heading Optional heading for the toast
-     * @param int $duration Duration in milliseconds (default: 5000)
-     * @return void
+     * @param  string  $message  The message to display
+     * @param  string|null  $heading  Optional heading for the toast
+     * @param  int  $duration  Duration in milliseconds (default: 5000)
      */
     public function showWarningToast(string $message, ?string $heading = null, int $duration = 5000): void
     {
@@ -50,10 +48,9 @@ trait WithToastNotifications
     /**
      * Display an error toast notification.
      *
-     * @param string $message The message to display
-     * @param string|null $heading Optional heading for the toast
-     * @param int $duration Duration in milliseconds (default: 5000)
-     * @return void
+     * @param  string  $message  The message to display
+     * @param  string|null  $heading  Optional heading for the toast
+     * @param  int  $duration  Duration in milliseconds (default: 5000)
      */
     public function showErrorToast(string $message, ?string $heading = null, int $duration = 5000): void
     {
@@ -68,18 +65,17 @@ trait WithToastNotifications
     /**
      * Display a toast notification with a translated message.
      *
-     * @param string $key The translation key
-     * @param array $replace Values to replace in the translation
-     * @param string|null $heading Optional heading for the toast
-     * @param string $variant Toast variant (success, warning, danger)
-     * @param int $duration Duration in milliseconds (default: 5000)
-     * @return void
+     * @param  string  $key  The translation key
+     * @param  array  $replace  Values to replace in the translation
+     * @param  string|null  $heading  Optional heading for the toast
+     * @param  string  $variant  Toast variant (success, warning, danger)
+     * @param  int  $duration  Duration in milliseconds (default: 5000)
      */
     public function showTranslatedToast(string $key, array $replace = [], ?string $heading = null, string $variant = 'success', int $duration = 5000): void
     {
         Flux::toast(
             text: __($key, $replace),
-            heading: $heading ? __($heading) : null,
+            heading: $heading !== null && $heading !== '' && $heading !== '0' ? __($heading) : null,
             variant: $variant,
             duration: $duration
         );

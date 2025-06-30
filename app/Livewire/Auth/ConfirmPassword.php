@@ -12,6 +12,7 @@ use Livewire\Component;
 class ConfirmPassword extends Component
 {
     use WithToastNotifications;
+
     public string $password = '';
 
     /**

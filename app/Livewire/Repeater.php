@@ -2,18 +2,21 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
 use Livewire\Attributes\Modelable;
+use Livewire\Component;
 
 class Repeater extends Component
 {
     #[Modelable]
     public array $items = [];
+
     public array $subfields = [];
+
     public string $model;
+
     public string $locale;
 
-    public function mount(array $items = [], array $subfields = [], string $model = '', string $locale = 'en')
+    public function mount(array $items = [], array $subfields = [], string $model = '', string $locale = 'en'): void
     {
         $this->items = $items;
         $this->subfields = $subfields;
@@ -21,7 +24,7 @@ class Repeater extends Component
         $this->locale = $locale;
     }
 
-    public function addItem()
+    public function addItem(): void
     {
         $newItem = [];
         foreach ($this->subfields as $key => $field) {
@@ -31,7 +34,7 @@ class Repeater extends Component
         $this->dispatchItemsUpdated();
     }
 
-    public function removeItem($index)
+    public function removeItem($index): void
     {
         if (isset($this->items[$index])) {
             unset($this->items[$index]);
@@ -40,7 +43,7 @@ class Repeater extends Component
         }
     }
 
-    public function updatedItems()
+    public function updatedItems(): void
     {
         $this->dispatchItemsUpdated();
     }

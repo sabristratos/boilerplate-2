@@ -9,7 +9,7 @@
                 <img src="https://images.unsplash.com/photo-1550684393-8e0b1468ca57?q=80&w=686&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Door" class="object-cover absolute inset-0 h-full w-full" />
                 <div class="absolute inset-0 bg-gradient-to-r from-black/60 to-black/30"></div>
                 <div class="relative hidden w-0 flex-1 lg:block">
-                    <div class="absolute inset-0 flex h-full w-full items-center justify-center">
+                    <div class="absolute top-0 left-0 flex items-center justify-center">
                         <a href="{{ route('home') }}" class="flex items-center gap-2 font-medium" wire:navigate>
                             <x-app-logo class="me-2 h-7 fill-current text-white" />
                         </a>

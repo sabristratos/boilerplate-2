@@ -2,13 +2,11 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\ServiceProvider;
-use App\Providers\ResourceManagerServiceProvider;
-use App\Services\SettingsManager;
-use Illuminate\Support\Facades\Schema;
 use App\Facades\Settings;
+use App\Services\SettingsManager;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,9 +19,7 @@ class AppServiceProvider extends ServiceProvider
             return;
         }
 
-        $this->app->singleton('settings', function () {
-            return new SettingsManager();
-        });
+        $this->app->singleton('settings', fn (): \App\Services\SettingsManager => new SettingsManager);
     }
 
     /**
@@ -38,13 +34,11 @@ class AppServiceProvider extends ServiceProvider
         View::share('headerLinks', Settings::get('navigation.header_links', []));
         View::share('footerLinks', Settings::get('navigation.footer_links', []));
 
-        $primaryColor = Settings::get('appearance.primary_color', 'oklch(64.5% .246 16.439)');
-        $theme = Settings::get('appearance.theme', 'light');
+        Settings::get('appearance.primary_color', 'oklch(64.5% .246 16.439)');
+        Settings::get('appearance.theme', 'light');
 
         // Implicitly grant "Super Admin" role all permissions
         // This works in the app by using gate-related functions like auth()->user->can() and @can()
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('Super Admin') ? true : null;
-        });
+        Gate::before(fn ($user, $ability): ?true => $user->hasRole('Super Admin') ? true : null);
     }
 }

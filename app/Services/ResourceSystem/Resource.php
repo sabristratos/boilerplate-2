@@ -41,7 +41,7 @@ abstract class Resource
      *
      * @var string|null
      */
-    public static $permission = null;
+    public static $permission;
 
     /**
      * The relationships to eager load.
@@ -59,22 +59,16 @@ abstract class Resource
 
     /**
      * Get the fields displayed by the resource.
-     *
-     * @return array
      */
     abstract public function fields(): array;
 
     /**
      * Get the columns displayed by the resource's table.
-     *
-     * @return array
      */
     abstract public function columns(): array;
 
     /**
      * Get the filters available for the resource's table.
-     *
-     * @return array
      */
     public function filters(): array
     {
@@ -83,8 +77,6 @@ abstract class Resource
 
     /**
      * Get the actions available for the resource's table.
-     *
-     * @return array
      */
     public function actions(): array
     {
@@ -93,52 +85,36 @@ abstract class Resource
 
     /**
      * Get the searchable columns for the resource.
-     *
-     * @return array
      */
     public function searchableColumns(): array
     {
         return collect($this->columns())
-            ->filter(function ($column) {
-                return $column->isSearchable();
-            })
-            ->map(function ($column) {
-                return $column->getName();
-            })
+            ->filter(fn ($column) => $column->isSearchable())
+            ->map(fn ($column) => $column->getName())
             ->toArray();
     }
 
     /**
      * Get the sortable columns for the resource.
-     *
-     * @return array
      */
     public function sortableColumns(): array
     {
         return collect($this->columns())
-            ->filter(function ($column) {
-                return $column->isSortable();
-            })
-            ->map(function ($column) {
-                return $column->getName();
-            })
+            ->filter(fn ($column) => $column->isSortable())
+            ->map(fn ($column) => $column->getName())
             ->toArray();
     }
 
     /**
      * Get the URI key for the resource.
-     *
-     * @return string
      */
     public static function uriKey(): string
     {
-        return Str::plural(Str::kebab(class_basename(get_called_class())));
+        return Str::plural(Str::kebab(class_basename(static::class)));
     }
 
     /**
      * Get the singular label for the resource.
-     *
-     * @return string
      */
     public static function singularLabel(): string
     {
@@ -147,8 +123,6 @@ abstract class Resource
 
     /**
      * Get the plural label for the resource.
-     *
-     * @return string
      */
     public static function pluralLabel(): string
     {
@@ -157,12 +131,10 @@ abstract class Resource
 
     /**
      * Create a new instance of the resource.
-     *
-     * @return static
      */
     public static function make(): static
     {
-        return new static();
+        return new static;
     }
 
     /**
@@ -177,8 +149,6 @@ abstract class Resource
 
     /**
      * Get a fresh instance of the model represented by the resource.
-     *
-     * @return \Illuminate\Database\Eloquent\Model
      */
     public static function newModel(): Model
     {

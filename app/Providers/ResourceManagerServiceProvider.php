@@ -2,38 +2,28 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\View;
 use App\Services\BlockManager;
 use App\Services\ResourceManager;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\ServiceProvider;
 
 class ResourceManagerServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
-     *
-     * @return void
      */
-    public function register()
+    public function register(): void
     {
-        $this->app->singleton(BlockManager::class, function ($app) {
-            return new BlockManager();
-        });
+        $this->app->singleton(BlockManager::class, fn ($app): \App\Services\BlockManager => new BlockManager);
 
-        $this->app->singleton(ResourceManager::class, function ($app) {
-            return new ResourceManager();
-        });
+        $this->app->singleton(ResourceManager::class, fn ($app): \App\Services\ResourceManager => new ResourceManager);
     }
 
     /**
      * Bootstrap services.
-     *
-     * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->registerRoutes();
         $this->registerViewComposers();
@@ -50,7 +40,7 @@ class ResourceManagerServiceProvider extends ServiceProvider
         Route::middleware(['web', 'auth'])
             ->prefix('admin')
             ->name('admin.')
-            ->group(function () {
+            ->group(function (): void {
                 try {
                     foreach ($this->app->make(ResourceManager::class)->getResources() as $resource) {
                         $uriKey = $resource::uriKey();
@@ -62,28 +52,22 @@ class ResourceManagerServiceProvider extends ServiceProvider
                             $routeGroup->middleware("can:{$permission}");
                         }
 
-                        $routeGroup->group(function () use ($resource, $uriKey) {
-                            Route::get($uriKey, function () use ($resource) {
-                                return view('resource-system.index', [
-                                    'resource' => new $resource,
-                                ]);
-                            })->name("index");
+                        $routeGroup->group(function () use ($resource, $uriKey): void {
+                            Route::get($uriKey, fn () => view('resource-system.index', [
+                                'resource' => new $resource,
+                            ]))->name('index');
 
-                            Route::get("{$uriKey}/create", function () use ($resource) {
-                                return view('resource-system.create', [
-                                    'resource' => new $resource,
-                                ]);
-                            })->name("create");
+                            Route::get("{$uriKey}/create", fn () => view('resource-system.create', [
+                                'resource' => new $resource,
+                            ]))->name('create');
 
-                            Route::get("{$uriKey}/{id}/edit", function ($id) use ($resource) {
-                                return view('resource-system.edit', [
-                                    'resource' => new $resource,
-                                    'resourceId' => $id,
-                                ]);
-                            })->name("edit");
+                            Route::get("{$uriKey}/{id}/edit", fn ($id) => view('resource-system.edit', [
+                                'resource' => new $resource,
+                                'resourceId' => $id,
+                            ]))->name('edit');
                         });
                     }
-                } catch (\Exception $e) {
+                } catch (\Exception) {
                     // If there's an error (like missing database tables), just skip registering these routes
                 }
             });
@@ -96,10 +80,10 @@ class ResourceManagerServiceProvider extends ServiceProvider
      */
     protected function registerViewComposers()
     {
-        View::composer('components.layouts.app.sidebar', function ($view) {
+        View::composer('components.layouts.app.sidebar', function ($view): void {
             try {
                 $view->with('resources', $this->app->make(ResourceManager::class)->getResourcesWithInstances());
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // If there's an error (like missing database tables), just provide an empty array
                 $view->with('resources', []);
             }

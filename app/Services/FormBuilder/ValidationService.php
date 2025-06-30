@@ -1,0 +1,149 @@
+<?php
+
+namespace App\Services\FormBuilder;
+
+class ValidationService
+{
+    private array $availableRules;
+
+    private array $defaultMessages;
+
+    public function __construct()
+    {
+        $this->availableRules = config('forms.validation.rules');
+        $this->defaultMessages = config('forms.validation.default_messages');
+    }
+
+    /**
+     * Generate validation rules for an element
+     */
+    public function generateRules(array $element): array
+    {
+        $rules = [];
+        $validation = $element['validation'] ?? [];
+        $selectedRules = $validation['rules'] ?? [];
+        $ruleValues = $validation['values'] ?? [];
+
+        foreach ($selectedRules as $ruleKey) {
+            if (isset($this->availableRules[$ruleKey])) {
+                $rule = $this->availableRules[$ruleKey];
+                $ruleString = $rule['rule'];
+
+                // Add value if the rule requires it
+                if (($rule['has_value'] ?? false) && isset($ruleValues[$ruleKey])) {
+                    $ruleString .= ':'.$ruleValues[$ruleKey];
+                }
+
+                $rules[] = $ruleString;
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Generate validation messages for an element
+     */
+    public function generateMessages(array $element): array
+    {
+        $messages = [];
+        $validation = $element['validation'] ?? [];
+        $selectedRules = $validation['rules'] ?? [];
+        $customMessages = $validation['messages'] ?? [];
+        $ruleValues = $validation['values'] ?? [];
+
+        foreach ($selectedRules as $ruleKey) {
+            if (isset($this->availableRules[$ruleKey])) {
+                $rule = $this->availableRules[$ruleKey];
+                $fieldName = $element['properties']['label'] ?? 'field';
+
+                // Use custom message if provided, otherwise generate default
+                if (isset($customMessages[$ruleKey]) && ! empty($customMessages[$ruleKey])) {
+                    $messages[$ruleKey] = $customMessages[$ruleKey];
+                } else {
+                    // Generate default message
+                    $messages[$ruleKey] = $this->generateDefaultMessage($rule, $fieldName, $ruleValues[$ruleKey] ?? null);
+                }
+            }
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Get all available validation rules
+     */
+    public function getAvailableRules(): array
+    {
+        return $this->availableRules;
+    }
+
+    /**
+     * Update validation rules for an element
+     */
+    public function updateValidationRules(array &$elements, string $elementId, array $rules): void
+    {
+        $elementManager = new ElementManager;
+        $index = $elementManager->findElementIndex($elements, $elementId);
+
+        if ($index !== null) {
+            // Ensure the validation structure exists
+            if (! isset($elements[$index]['validation'])) {
+                $elements[$index]['validation'] = config('forms.elements.default_validation');
+            }
+
+            $elements[$index]['validation']['rules'] = $rules;
+        }
+    }
+
+    /**
+     * Update validation message for a specific rule
+     */
+    public function updateValidationMessage(array &$elements, string $elementId, string $rule, string $message): void
+    {
+        $elementManager = new ElementManager;
+        $index = $elementManager->findElementIndex($elements, $elementId);
+
+        if ($index !== null) {
+            // Ensure the validation structure exists
+            if (! isset($elements[$index]['validation'])) {
+                $elements[$index]['validation'] = config('forms.elements.default_validation');
+            }
+
+            $elements[$index]['validation']['messages'][$rule] = $message;
+        }
+    }
+
+    /**
+     * Update validation rule value
+     */
+    public function updateValidationRuleValue(array &$elements, string $elementId, string $rule, string $value): void
+    {
+        $elementManager = new ElementManager;
+        $index = $elementManager->findElementIndex($elements, $elementId);
+
+        if ($index !== null) {
+            // Ensure the validation structure exists
+            if (! isset($elements[$index]['validation'])) {
+                $elements[$index]['validation'] = config('forms.elements.default_validation');
+            }
+
+            if (! isset($elements[$index]['validation']['values'])) {
+                $elements[$index]['validation']['values'] = [];
+            }
+
+            $elements[$index]['validation']['values'][$rule] = $value;
+        }
+    }
+
+    /**
+     * Generate default validation message for a rule
+     */
+    private function generateDefaultMessage(array $rule, string $fieldName, ?string $value = null): string
+    {
+        $fieldName = strtolower($fieldName);
+        $message = $this->defaultMessages[$rule['rule']] ?? 'The :field field is invalid.';
+
+        return str_replace([':field', ':value'], [$fieldName, $value], $message);
+    }
+}

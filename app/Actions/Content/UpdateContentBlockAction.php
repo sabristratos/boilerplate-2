@@ -6,9 +6,6 @@ use App\Enums\ContentBlockStatus;
 use App\Models\ContentBlock;
 use App\Services\BlockManager;
 use Illuminate\Http\UploadedFile;
-use Spatie\MediaLibrary\HasMedia;
-use Spatie\MediaLibrary\InteractsWithMedia;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class UpdateContentBlockAction
 {
@@ -20,22 +17,22 @@ class UpdateContentBlockAction
         ?UploadedFile $imageUpload,
         BlockManager $blockManager
     ): ContentBlock {
-        if ($imageUpload) {
+        if ($imageUpload instanceof \Illuminate\Http\UploadedFile) {
             $contentBlock->addMedia($imageUpload)->toMediaCollection('images');
         }
 
         $blockClass = $blockManager->find($contentBlock->type);
-        $translatableFields = $blockClass ? $blockClass->getTranslatableFields() : [];
+        $translatableFields = $blockClass instanceof \App\Blocks\Block ? $blockClass->getTranslatableFields() : [];
 
         $currentData = $contentBlock->getTranslation('data', $locale) ?? [];
         $settings = $contentBlock->settings ?? [];
 
         foreach ($data as $key => $value) {
             $isTranslatable = in_array($key, $translatableFields);
-            if (!$isTranslatable) {
+            if (! $isTranslatable) {
                 // Check for wildcard translatable fields (e.g., 'buttons.*.text')
                 foreach ($translatableFields as $translatableField) {
-                    if (str_ends_with($translatableField, '.*') && str_starts_with($translatableField, $key)) {
+                    if (str_ends_with((string) $translatableField, '.*') && str_starts_with((string) $translatableField, $key)) {
                         $isTranslatable = true;
                         break;
                     }
@@ -52,7 +49,7 @@ class UpdateContentBlockAction
         $contentBlock->setTranslation('data', $locale, $currentData);
         $contentBlock->settings = $settings;
 
-        if ($status) {
+        if ($status instanceof \App\Enums\ContentBlockStatus) {
             $contentBlock->status = $status;
         }
 

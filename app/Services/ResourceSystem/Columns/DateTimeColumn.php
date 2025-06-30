@@ -10,4 +10,4 @@ class DateTimeColumn extends DateColumn
      * @var string
      */
     protected $format = 'M j, Y, g:i a';
-} 
+}

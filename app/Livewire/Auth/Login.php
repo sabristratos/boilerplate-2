@@ -17,6 +17,7 @@ use Livewire\Component;
 class Login extends Component
 {
     use WithToastNotifications;
+
     #[Validate('required|string|email')]
     public string $email = '';
 

@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Database\Factories\FormSubmissionFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +10,12 @@ class FormSubmission extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['form_id', 'data'];
+    protected $fillable = [
+        'form_id',
+        'data',
+        'ip_address',
+        'user_agent',
+    ];
 
     protected $casts = [
         'data' => 'array',
@@ -21,9 +25,4 @@ class FormSubmission extends Model
     {
         return $this->belongsTo(Form::class);
     }
-
-    protected static function newFactory(): FormSubmissionFactory
-    {
-        return FormSubmissionFactory::new();
-    }
-}
+} 

@@ -22,11 +22,6 @@ class Testimonial extends Model implements HasMedia, Sortable
         'order',
     ];
 
-    protected $casts = [
-        'rating' => 'integer',
-        'order' => 'integer',
-    ];
-
     public array $sortable = [
         'order_column_name' => 'order',
         'sort_when_creating' => true,
@@ -35,8 +30,16 @@ class Testimonial extends Model implements HasMedia, Sortable
     /**
      * Get the user's avatar URL.
      */
-    public function getAvatarAttribute(): ?string
+    protected function avatar(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return $this->getFirstMediaUrl('avatar');
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn (): string => $this->getFirstMediaUrl('avatar'));
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'rating' => 'integer',
+            'order' => 'integer',
+        ];
     }
 }

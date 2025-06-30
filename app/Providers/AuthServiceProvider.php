@@ -3,14 +3,14 @@
 namespace App\Providers;
 
 use App\Enums\SettingGroupKey;
+use App\Models\ContentBlock;
+use App\Models\Form;
+use App\Models\FormSubmission;
+use App\Policies\ContentBlockPolicy;
+use App\Policies\FormPolicy;
+use App\Policies\FormSubmissionPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
-use App\Models\ContentBlock;
-use App\Policies\ContentBlockPolicy;
-use App\Models\Form;
-use App\Policies\FormPolicy;
-use App\Models\FormSubmission;
-use App\Policies\FormSubmissionPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -30,15 +30,11 @@ class AuthServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Gate::before(function ($user, $ability) {
-            return $user->hasRole('Super Admin') ? true : null;
-        });
+        Gate::before(fn ($user, $ability): ?true => $user->hasRole('Super Admin') ? true : null);
 
         // Register settings permissions
         foreach (SettingGroupKey::cases() as $group) {
-            Gate::define("settings.{$group->value}.manage", function ($user) use ($group) {
-                return $user->hasPermissionTo("settings.{$group->value}.manage");
-            });
+            Gate::define("settings.{$group->value}.manage", fn ($user) => $user->hasPermissionTo("settings.{$group->value}.manage"));
         }
     }
 }

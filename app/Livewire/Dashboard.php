@@ -2,12 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\FormSubmission;
 use App\Models\Page;
 use App\Models\Testimonial;
 use App\Models\User;
-use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Component;
 
 #[Layout('components.layouts.app', ['title' => 'Dashboard'])]
 class Dashboard extends Component
@@ -21,11 +20,6 @@ class Dashboard extends Component
                 'icon' => 'book-open-text',
             ],
             [
-                'name' => 'Form Submissions',
-                'value' => FormSubmission::count(),
-                'icon' => 'inbox-stack',
-            ],
-            [
                 'name' => 'Total Users',
                 'value' => User::count(),
                 'icon' => 'users',
@@ -37,14 +31,8 @@ class Dashboard extends Component
             ],
         ];
 
-        $recentSubmissions = FormSubmission::with('form')
-            ->latest()
-            ->take(5)
-            ->get();
-
         return view('livewire.dashboard', [
             'stats' => $stats,
-            'recentSubmissions' => $recentSubmissions,
         ]);
     }
 }

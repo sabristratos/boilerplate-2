@@ -38,4 +38,4 @@ class AdminBar extends Component
             'resources' => $this->resources,
         ]);
     }
-} 
+}

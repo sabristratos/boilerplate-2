@@ -14,7 +14,6 @@ class BadgeColumn extends Column
     /**
      * Set the badge colors.
      *
-     * @param  array  $colors
      * @return $this
      */
     public function colors(array $colors): static
@@ -26,8 +25,6 @@ class BadgeColumn extends Column
 
     /**
      * Get the badge colors.
-     *
-     * @return array
      */
     public function getColors(): array
     {
@@ -36,9 +33,6 @@ class BadgeColumn extends Column
 
     /**
      * Get the color for a specific value.
-     *
-     * @param  string  $value
-     * @return string|null
      */
     public function getColorForValue(string $value): ?string
     {
@@ -47,8 +41,6 @@ class BadgeColumn extends Column
 
     /**
      * Get the component name for the column.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -57,8 +49,6 @@ class BadgeColumn extends Column
 
     /**
      * Get the column's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {
@@ -72,9 +62,8 @@ class BadgeColumn extends Column
      *
      * @param  mixed  $value
      * @param  mixed  $resource
-     * @return mixed
      */
-    public function formatValue($value, $resource)
+    public function formatValue($value, $resource): array
     {
         if ($this->formatValueCallback) {
             $value = call_user_func($this->formatValueCallback, $value, $resource);

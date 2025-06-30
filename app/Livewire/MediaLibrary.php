@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
+use Flux\Flux;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Flux\Flux;
 
 class MediaLibrary extends Component
 {
@@ -34,7 +34,7 @@ class MediaLibrary extends Component
     /**
      * Reset pagination when search changes.
      */
-    public function updatingSearch()
+    public function updatingSearch(): void
     {
         $this->resetPage();
     }
@@ -42,7 +42,7 @@ class MediaLibrary extends Component
     /**
      * Set the sort field and direction.
      */
-    public function sortBy($field)
+    public function sortBy($field): void
     {
         if ($this->sortField === $field) {
             $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
@@ -55,7 +55,7 @@ class MediaLibrary extends Component
     /**
      * Delete a media item.
      */
-    public function deleteMedia(int $id)
+    public function deleteMedia(int $id): void
     {
         try {
             $media = Media::findOrFail($id);
@@ -63,7 +63,7 @@ class MediaLibrary extends Component
 
             Flux::toast('Media deleted successfully.', variant: 'success');
         } catch (\Exception $e) {
-            Flux::toast('Failed to delete media: ' . $e->getMessage(), variant: 'danger');
+            Flux::toast('Failed to delete media: '.$e->getMessage(), variant: 'danger');
         }
     }
 
@@ -106,7 +106,7 @@ class MediaLibrary extends Component
 
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, 2) . ' ' . $units[$pow];
+        return round($bytes, 2).' '.$units[$pow];
     }
 
     /**
@@ -117,15 +117,15 @@ class MediaLibrary extends Component
         $query = Media::query();
 
         if ($this->search) {
-            $query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('file_name', 'like', '%' . $this->search . '%')
-                  ->orWhere('mime_type', 'like', '%' . $this->search . '%');
+            $query->where(function ($q): void {
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('file_name', 'like', '%'.$this->search.'%')
+                    ->orWhere('mime_type', 'like', '%'.$this->search.'%');
             });
         }
 
         $media = $query->orderBy($this->sortField, $this->sortDirection)
-                      ->paginate($this->perPage);
+            ->paginate($this->perPage);
 
         return view('livewire.media-library', [
             'media' => $media,

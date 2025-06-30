@@ -22,9 +22,9 @@ class ResourceManager
         }
 
         foreach (File::allFiles($path) as $file) {
-            $class = 'App\\Http\\Resources\\Admin\\' . str_replace('.php', '', $file->getFilename());
+            $class = 'App\\Http\\Resources\\Admin\\'.str_replace('.php', '', $file->getFilename());
 
-            if (class_exists($class) && is_subclass_of($class, 'App\\Services\\ResourceSystem\\Resource')) {
+            if (class_exists($class) && is_subclass_of($class, \App\Services\ResourceSystem\Resource::class)) {
                 $resources[] = $class;
             }
         }
@@ -34,6 +34,6 @@ class ResourceManager
 
     public function getResourcesWithInstances(): array
     {
-        return array_map(fn ($resource) => new $resource(), $this->getResources());
+        return array_map(fn ($resource): object => new $resource, $this->getResources());
     }
-} 
+}

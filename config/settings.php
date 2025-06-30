@@ -155,7 +155,6 @@ return [
             'type' => SettingType::SELECT->value,
             'cast' => 'integer',
             'rules' => 'nullable|integer|exists:pages,id',
-            'options' => fn() => \App\Models\Page::all()->pluck('title', 'id')->toArray(),
             'permission' => 'settings.general.manage',
         ],
         'appearance.theme' => [

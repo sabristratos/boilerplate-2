@@ -19,7 +19,7 @@ class SettingsManagerTest extends TestCase
     {
         parent::setUp();
 
-        $this->settingsManager = new SettingsManager();
+        $this->settingsManager = new SettingsManager;
 
         // Create a test setting group
         $group = SettingGroup::create([
@@ -39,7 +39,7 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_can_get_a_setting()
+    public function it_can_get_a_setting(): void
     {
         $value = $this->settingsManager->get('test.key');
 
@@ -47,7 +47,7 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_returns_default_value_if_setting_does_not_exist()
+    public function it_returns_default_value_if_setting_does_not_exist(): void
     {
         $value = $this->settingsManager->get('non.existent.key', 'default-value');
 
@@ -55,7 +55,7 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_can_set_a_setting()
+    public function it_can_set_a_setting(): void
     {
         $this->settingsManager->set('test.new_key', 'new-value');
 
@@ -65,14 +65,14 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_can_check_if_a_setting_exists()
+    public function it_can_check_if_a_setting_exists(): void
     {
         $this->assertTrue($this->settingsManager->has('test.key'));
         $this->assertFalse($this->settingsManager->has('non.existent.key'));
     }
 
     /** @test */
-    public function it_can_get_all_settings()
+    public function it_can_get_all_settings(): void
     {
         $settings = $this->settingsManager->getAll();
 
@@ -81,7 +81,7 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_can_clear_the_cache()
+    public function it_can_clear_the_cache(): void
     {
         Cache::shouldReceive('forget')
             ->once()
@@ -91,7 +91,7 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_can_handle_keys_without_dots()
+    public function it_can_handle_keys_without_dots(): void
     {
         $group = SettingGroup::create([
             'key' => 'simple',
@@ -113,7 +113,7 @@ class SettingsManagerTest extends TestCase
     }
 
     /** @test */
-    public function it_can_cast_values_correctly()
+    public function it_can_cast_values_correctly(): void
     {
         // Create settings with different types
         $group = SettingGroup::where('key', 'test')->first();

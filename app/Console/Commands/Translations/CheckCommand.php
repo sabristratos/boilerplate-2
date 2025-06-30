@@ -25,38 +25,40 @@ class CheckCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $this->info('Checking translations...');
 
         $baseLocale = 'en';
         $otherLocales = collect(File::directories(lang_path()))
-            ->map(fn ($dir) => basename($dir))
-            ->filter(fn ($locale) => $locale !== $baseLocale);
+            ->map(fn ($dir): string => basename((string) $dir))
+            ->filter(fn ($locale): bool => $locale !== $baseLocale);
 
         if ($otherLocales->isEmpty()) {
             $this->warn('No other locales to compare with.');
+
             return;
         }
 
         $baseFiles = collect(File::allFiles(lang_path($baseLocale)))
-            ->map(fn ($file) => $file->getRelativePathname());
+            ->map(fn ($file): string => $file->getRelativePathname());
 
         foreach ($baseFiles as $file) {
             try {
                 $this->line('');
                 $this->line("Checking <fg=yellow>{$file}</>");
 
-                $baseTranslations = Arr::dot(include(lang_path($baseLocale . '/' . $file)));
+                $baseTranslations = Arr::dot(include lang_path($baseLocale.'/'.$file));
 
                 foreach ($otherLocales as $locale) {
-                    $localeFilePath = lang_path($locale . '/' . $file);
+                    $localeFilePath = lang_path($locale.'/'.$file);
                     if (! File::exists($localeFilePath)) {
                         $this->warn("File missing for locale <fg=cyan>{$locale}</>: <fg=yellow>{$file}</>");
+
                         continue;
                     }
 
-                    $localeTranslations = Arr::dot(include($localeFilePath));
+                    $localeTranslations = Arr::dot(include $localeFilePath);
 
                     $missingKeys = array_diff_key($baseTranslations, $localeTranslations);
                     $extraKeys = array_diff_key($localeTranslations, $baseTranslations);
@@ -80,10 +82,10 @@ class CheckCommand extends Command
                     }
                 }
             } catch (\Throwable $e) {
-                $this->error("Error processing file {$file}: " . $e->getMessage());
+                $this->error("Error processing file {$file}: ".$e->getMessage());
             }
         }
 
         $this->info('Done.');
     }
-} 
+}

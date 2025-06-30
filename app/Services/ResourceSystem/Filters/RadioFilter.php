@@ -21,7 +21,6 @@ class RadioFilter extends Filter
     /**
      * Set the filter's options.
      *
-     * @param  array  $options
      * @return $this
      */
     public function options(array $options): static
@@ -33,8 +32,6 @@ class RadioFilter extends Filter
 
     /**
      * Get the filter's options.
-     *
-     * @return array
      */
     public function getOptions(): array
     {
@@ -44,7 +41,6 @@ class RadioFilter extends Filter
     /**
      * Set the callback to apply the filter.
      *
-     * @param  \Closure  $callback
      * @return $this
      */
     public function setApplyCallback(\Closure $callback): static
@@ -76,11 +72,9 @@ class RadioFilter extends Filter
 
     /**
      * Get the component name for the filter.
-     *
-     * @return string
      */
     public function component(): string
     {
         return 'radio-filter';
     }
-} 
+}

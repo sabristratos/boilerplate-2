@@ -28,7 +28,6 @@ class ImageColumn extends Column
     /**
      * Set the width of the image.
      *
-     * @param  int  $width
      * @return $this
      */
     public function width(int $width): static
@@ -41,7 +40,6 @@ class ImageColumn extends Column
     /**
      * Set the height of the image.
      *
-     * @param  int  $height
      * @return $this
      */
     public function height(int $height): static
@@ -54,7 +52,6 @@ class ImageColumn extends Column
     /**
      * Set the size of the image.
      *
-     * @param  int  $size
      * @return $this
      */
     public function size(int $size): static
@@ -68,7 +65,6 @@ class ImageColumn extends Column
     /**
      * Make the image circular.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function circular(bool $value = true): static
@@ -80,8 +76,6 @@ class ImageColumn extends Column
 
     /**
      * Get the width of the image.
-     *
-     * @return int
      */
     public function getWidth(): int
     {
@@ -90,8 +84,6 @@ class ImageColumn extends Column
 
     /**
      * Get the height of the image.
-     *
-     * @return int
      */
     public function getHeight(): int
     {
@@ -100,8 +92,6 @@ class ImageColumn extends Column
 
     /**
      * Determine if the image is circular.
-     *
-     * @return bool
      */
     public function isCircular(): bool
     {
@@ -110,8 +100,6 @@ class ImageColumn extends Column
 
     /**
      * Get the component name for the column.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -120,8 +108,6 @@ class ImageColumn extends Column
 
     /**
      * Get the column's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

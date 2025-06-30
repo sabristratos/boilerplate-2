@@ -3,74 +3,414 @@
 return [
     /*
     |--------------------------------------------------------------------------
-    | Default Form Values
+    | Form Model
     |--------------------------------------------------------------------------
     |
-    | Here you can specify the default values for newly created forms.
-    | These values will be used when a form is created through the
-    | form builder.
+    | This is the model that will be used by the form builder.
     |
     */
-    'defaults' => [
-        'success_message' => [
-            'en' => 'Your submission was successful.',
-            'fr' => 'Votre soumission a été envoyée avec succès.',
+    'form_model' => \App\Models\Form::class,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Form Builder Settings
+    |--------------------------------------------------------------------------
+    |
+    | Default settings for the form builder interface and behavior.
+    |
+    */
+    'builder' => [
+        'default_settings' => [
+            'backgroundColor' => '#ffffff',
+            'defaultFont' => 'system-ui',
+        ],
+        'default_tab' => 'toolbox',
+        'default_breakpoint' => 'desktop',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Breakpoints Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Responsive breakpoints for the form builder.
+    |
+    */
+    'breakpoints' => [
+        'desktop' => [
+            'name' => 'Desktop',
+            'icon' => 'computer-desktop',
+            'max_width' => 'max-w-full',
+            'description' => 'Large screens (1024px and above)',
+            'min_width' => 1024,
+        ],
+        'tablet' => [
+            'name' => 'Tablet',
+            'icon' => 'device-tablet',
+            'max_width' => 'max-w-3xl',
+            'description' => 'Medium tablets (768px - 1024px)',
+            'min_width' => 768,
+            'max_width_px' => 1023,
+        ],
+        'mobile' => [
+            'name' => 'Mobile',
+            'icon' => 'device-phone-mobile',
+            'max_width' => 'max-w-sm',
+            'description' => 'Phones and small tablets (up to 768px)',
+            'max_width_px' => 767,
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Predefined Validation Rules
+    | Grid System Configuration
     |--------------------------------------------------------------------------
     |
-    | Define a list of common validation rules that users can easily
-    | apply to form fields. You can customize the rule and provide
-    | a user-friendly label.
+    | Grid system settings for responsive layouts.
     |
     */
-    'validation_rules' => [
-        'required' => [
-            'label' => 'Required',
-            'rule' => 'required',
-        ],
-        'email' => [
-            'label' => 'Email',
-            'rule' => 'email',
-        ],
-        'min' => [
-            'label' => 'Minimum Length',
-            'rule' => 'min:', // Example: min:5
-        ],
-        'max' => [
-            'label' => 'Maximum Length',
-            'rule' => 'max:', // Example: max:255
-        ],
-        'numeric' => [
-            'label' => 'Numeric',
-            'rule' => 'numeric',
+    'grid' => [
+        'columns' => 12,
+        'widths' => [
+            'full' => [
+                'label' => 'Full Width',
+                'columns' => 12,
+                'description' => 'Takes up the full width (12 columns)',
+            ],
+            '1/2' => [
+                'label' => 'Half Width (1/2)',
+                'columns' => 6,
+                'description' => 'Takes up half the width (6 columns)',
+            ],
+            '1/3' => [
+                'label' => 'One Third (1/3)',
+                'columns' => 4,
+                'description' => 'Takes up one-third width (4 columns)',
+            ],
+            '2/3' => [
+                'label' => 'Two Thirds (2/3)',
+                'columns' => 8,
+                'description' => 'Takes up two-thirds width (8 columns)',
+            ],
+            '1/4' => [
+                'label' => 'Quarter (1/4)',
+                'columns' => 3,
+                'description' => 'Takes up quarter width (3 columns)',
+            ],
+            '3/4' => [
+                'label' => 'Three Quarters (3/4)',
+                'columns' => 9,
+                'description' => 'Takes up three-quarters width (9 columns)',
+            ],
         ],
     ],
 
     /*
     |--------------------------------------------------------------------------
-    | Field Types
+    | Validation Rules Configuration
     |--------------------------------------------------------------------------
     |
-    | Here you can register your custom field types. The key is the field type
-    | name, and the value is the class name of the field type.
+    | Available validation rules and their configurations.
     |
     */
-    'field_types' => [
-        'text' => \App\Forms\FieldTypes\TextField::class,
-        'textarea' => \App\Forms\FieldTypes\TextareaField::class,
-        'select' => \App\Forms\FieldTypes\SelectField::class,
-        'checkbox' => \App\Forms\FieldTypes\CheckboxField::class,
-        'radio' => \App\Forms\FieldTypes\RadioField::class,
-        'file' => \App\Forms\FieldTypes\FileField::class,
-        'email' => \App\Forms\FieldTypes\EmailField::class,
-        'number' => \App\Forms\FieldTypes\NumberField::class,
-        'date' => \App\Forms\FieldTypes\DateField::class,
-        'time' => \App\Forms\FieldTypes\TimeField::class,
-        'section' => \App\Forms\FieldTypes\SectionField::class,
+    'validation' => [
+        'rules' => [
+            'required' => [
+                'label' => 'Required',
+                'description' => 'Field must be filled out',
+                'rule' => 'required',
+                'icon' => 'exclamation-triangle',
+                'has_value' => false,
+            ],
+            'email' => [
+                'label' => 'Email',
+                'description' => 'Must be a valid email address',
+                'rule' => 'email',
+                'icon' => 'envelope',
+                'has_value' => false,
+            ],
+            'numeric' => [
+                'label' => 'Numeric',
+                'description' => 'Must contain only numbers',
+                'rule' => 'numeric',
+                'icon' => 'calculator',
+                'has_value' => false,
+            ],
+            'min' => [
+                'label' => 'Minimum Length',
+                'description' => 'Must be at least X characters',
+                'rule' => 'min',
+                'icon' => 'arrow-down',
+                'has_value' => true,
+            ],
+            'max' => [
+                'label' => 'Maximum Length',
+                'description' => 'Must be no more than X characters',
+                'rule' => 'max',
+                'icon' => 'arrow-up',
+                'has_value' => true,
+            ],
+            'min_value' => [
+                'label' => 'Minimum Value',
+                'description' => 'Must be at least X (for numbers)',
+                'rule' => 'min',
+                'icon' => 'arrow-down',
+                'has_value' => true,
+            ],
+            'max_value' => [
+                'label' => 'Maximum Value',
+                'description' => 'Must be no more than X (for numbers)',
+                'rule' => 'max',
+                'icon' => 'arrow-up',
+                'has_value' => true,
+            ],
+            'date' => [
+                'label' => 'Valid Date',
+                'description' => 'Must be a valid date',
+                'rule' => 'date',
+                'icon' => 'calendar',
+                'has_value' => false,
+            ],
+            'date_after' => [
+                'label' => 'Date After',
+                'description' => 'Must be after a specific date',
+                'rule' => 'date_after',
+                'icon' => 'calendar-days',
+                'has_value' => true,
+            ],
+            'date_before' => [
+                'label' => 'Date Before',
+                'description' => 'Must be before a specific date',
+                'rule' => 'date_before',
+                'icon' => 'calendar-days',
+                'has_value' => true,
+            ],
+            'url' => [
+                'label' => 'URL',
+                'description' => 'Must be a valid URL',
+                'rule' => 'url',
+                'icon' => 'link',
+                'has_value' => false,
+            ],
+            'alpha' => [
+                'label' => 'Letters Only',
+                'description' => 'Must contain only letters',
+                'rule' => 'alpha',
+                'icon' => 'document-text',
+                'has_value' => false,
+            ],
+            'alpha_num' => [
+                'label' => 'Letters & Numbers',
+                'description' => 'Must contain only letters and numbers',
+                'rule' => 'alpha_num',
+                'icon' => 'hashtag',
+                'has_value' => false,
+            ],
+            'regex' => [
+                'label' => 'Custom Pattern',
+                'description' => 'Must match a specific pattern',
+                'rule' => 'regex',
+                'icon' => 'code-bracket',
+                'has_value' => true,
+            ],
+            'file' => [
+                'label' => 'Valid File',
+                'description' => 'Must be a valid file upload',
+                'rule' => 'file',
+                'icon' => 'document',
+                'has_value' => false,
+            ],
+            'image' => [
+                'label' => 'Image File',
+                'description' => 'Must be a valid image file',
+                'rule' => 'image',
+                'icon' => 'photo',
+                'has_value' => false,
+            ],
+            'mimes' => [
+                'label' => 'File Type',
+                'description' => 'Must be one of the specified file types',
+                'rule' => 'mimes',
+                'icon' => 'document-text',
+                'has_value' => true,
+            ],
+            'max_file_size' => [
+                'label' => 'Maximum File Size',
+                'description' => 'File size must not exceed X KB/MB',
+                'rule' => 'max',
+                'icon' => 'arrow-up',
+                'has_value' => true,
+            ],
+            'confirmed' => [
+                'label' => 'Password Confirmation',
+                'description' => 'Must match the password confirmation field',
+                'rule' => 'confirmed',
+                'icon' => 'check-circle',
+                'has_value' => false,
+            ],
+        ],
+        'default_messages' => [
+            'required' => 'The :field field is required.',
+            'email' => 'The :field must be a valid email address.',
+            'numeric' => 'The :field must be a number.',
+            'min' => 'The :field must be at least :value characters.',
+            'max' => 'The :field may not be greater than :value characters.',
+            'min_value' => 'The :field must be at least :value.',
+            'max_value' => 'The :field may not be greater than :value.',
+            'date' => 'The :field must be a valid date.',
+            'date_after' => 'The :field must be a date after :value.',
+            'date_before' => 'The :field must be a date before :value.',
+            'url' => 'The :field must be a valid URL.',
+            'alpha' => 'The :field may only contain letters.',
+            'alpha_num' => 'The :field may only contain letters and numbers.',
+            'regex' => 'The :field format is invalid.',
+            'file' => 'The :field must be a valid file.',
+            'image' => 'The :field must be a valid image file.',
+            'mimes' => 'The :field must be a file of type: :values.',
+            'max_file_size' => 'The :field may not be greater than :value kilobytes.',
+            'confirmed' => 'The :field confirmation does not match.',
+        ],
     ],
-]; 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Icons Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Available icons for form elements.
+    |
+    */
+    'icons' => [
+        'available' => [
+            'user' => 'User',
+            'envelope' => 'Email',
+            'phone' => 'Phone',
+            'map-pin' => 'Location',
+            'calendar' => 'Calendar',
+            'calendar-days' => 'Calendar Days',
+            'clock' => 'Time',
+            'credit-card' => 'Payment',
+            'lock-closed' => 'Password',
+            'magnifying-glass' => 'Search',
+            'cog-6-tooth' => 'Settings',
+            'star' => 'Rating',
+            'heart' => 'Favorite',
+            'bookmark' => 'Bookmark',
+            'share' => 'Share',
+            'download' => 'Download',
+            'upload' => 'Upload',
+            'link' => 'Link',
+            'document' => 'Document',
+            'document-arrow-up' => 'File Upload',
+            'document-text' => 'Document Text',
+            'folder' => 'Folder',
+            'image' => 'Image',
+            'photo' => 'Photo',
+            'video-camera' => 'Video',
+            'microphone' => 'Audio',
+            'chat-bubble-left' => 'Comment',
+            'flag' => 'Flag',
+            'exclamation-triangle' => 'Warning',
+            'check-circle' => 'Success',
+            'x-circle' => 'Error',
+            'information-circle' => 'Info',
+            'question-mark-circle' => 'Help',
+            'calculator' => 'Calculator',
+            'arrow-down' => 'Arrow Down',
+            'arrow-up' => 'Arrow Up',
+            'code-bracket' => 'Code Bracket',
+            'hashtag' => 'Hashtag',
+        ],
+        'categories' => [
+            'User Interface' => [
+                'user', 'envelope', 'phone', 'map-pin', 'calendar', 'calendar-days', 'clock',
+            ],
+            'Actions' => [
+                'magnifying-glass', 'download', 'upload', 'share', 'bookmark', 'heart',
+            ],
+            'Security & Settings' => [
+                'lock-closed', 'credit-card', 'cog-6-tooth',
+            ],
+            'Content' => [
+                'document', 'document-arrow-up', 'document-text', 'folder', 'image', 'photo', 'video-camera', 'microphone', 'link',
+            ],
+            'Feedback' => [
+                'exclamation-triangle', 'check-circle', 'x-circle', 'information-circle', 'question-mark-circle', 'star',
+            ],
+            'Communication' => [
+                'chat-bubble-left', 'flag',
+            ],
+            'Data & Numbers' => [
+                'calculator', 'arrow-down', 'arrow-up', 'code-bracket', 'hashtag',
+            ],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Element Default Properties
+    |--------------------------------------------------------------------------
+    |
+    | Default properties for different element types.
+    |
+    */
+    'elements' => [
+        'default_properties' => [
+            'fluxProps' => [
+                'clearable' => false,
+                'copyable' => false,
+                'viewable' => false,
+                'icon' => '',
+                'iconTrailing' => '',
+                'variant' => 'default',
+                'searchable' => false,
+                'multiple' => false,
+            ],
+        ],
+        'default_styles' => [
+            'desktop' => [
+                'width' => 'full',
+                'fontSize' => '',
+            ],
+            'tablet' => [
+                'width' => 'full',
+                'fontSize' => '',
+            ],
+            'mobile' => [
+                'width' => 'full',
+                'fontSize' => '',
+            ],
+        ],
+        'default_validation' => [
+            'rules' => [],
+            'messages' => [],
+            'values' => [],
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | UI Configuration
+    |--------------------------------------------------------------------------
+    |
+    | UI-related configurations for the form builder.
+    |
+    */
+    'ui' => [
+        'sortable' => [
+            'animation' => 150,
+            'ghost_class' => 'sortable-ghost',
+        ],
+        'tooltips' => [
+            'save' => 'Save your form changes',
+            'preview' => 'Preview the form as users will see it',
+            'drag_handle' => 'Drag to reorder this element',
+            'delete' => 'Delete this element',
+            'width_select' => 'Choose how much horizontal space this element takes up in the 12-column grid system',
+            'font_size' => 'Set a custom font size for this element. Use CSS units like px, rem, em, or %',
+            'mobile_breakpoint' => 'Mobile breakpoint (up to 768px)',
+            'tablet_breakpoint' => 'Tablet breakpoint (768px - 1024px)',
+            'desktop_breakpoint' => 'Desktop breakpoint (1024px and above)',
+        ],
+    ],
+];

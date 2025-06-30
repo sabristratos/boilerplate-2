@@ -6,11 +6,9 @@ class RatingColumn extends Column
 {
     /**
      * Get the component name for the column.
-     *
-     * @return string
      */
     public function component(): string
     {
         return 'resource-system::columns.rating-column';
     }
-} 
+}

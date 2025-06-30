@@ -30,7 +30,6 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Seeding content...');
         $this->call([
             PageSeeder::class,
-            FormSeeder::class,
         ]);
         Testimonial::factory(10)->create();
 

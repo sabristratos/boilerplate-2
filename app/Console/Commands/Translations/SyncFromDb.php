@@ -4,8 +4,8 @@ namespace App\Console\Commands\Translations;
 
 use App\Models\Translation;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\File;
 
 class SyncFromDb extends Command
 {
@@ -26,7 +26,7 @@ class SyncFromDb extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
         $this->info('Synchronizing translations from database to files...');
 
@@ -35,6 +35,7 @@ class SyncFromDb extends Command
 
         if ($locales->isEmpty()) {
             $this->warn('No locales found in translations data.');
+
             return;
         }
 
@@ -42,14 +43,14 @@ class SyncFromDb extends Command
             $this->line(__('commands.sync_from_db.processing_locale', ['locale' => $locale]));
             $localePath = lang_path($locale);
 
-            if (!File::exists($localePath)) {
+            if (! File::exists($localePath)) {
                 File::makeDirectory($localePath);
             }
 
             $groupedTranslations = $translations->groupBy('group');
 
             foreach ($groupedTranslations as $group => $groupTranslations) {
-                $filePath = $localePath . '/' . $group . '.php';
+                $filePath = $localePath.'/'.$group.'.php';
                 $output = [];
 
                 foreach ($groupTranslations as $translation) {
@@ -59,8 +60,8 @@ class SyncFromDb extends Command
                     }
                 }
 
-                if (!empty($output)) {
-                    $content = '<?php' . PHP_EOL . PHP_EOL . 'return ' . var_export($output, true) . ';' . PHP_EOL;
+                if ($output !== []) {
+                    $content = '<?php'.PHP_EOL.PHP_EOL.'return '.var_export($output, true).';'.PHP_EOL;
                     File::put($filePath, $content);
                 }
             }
@@ -72,15 +73,16 @@ class SyncFromDb extends Command
     protected function getLocales($translations)
     {
         $locales = collect();
-        $translations->each(function ($translation) use ($locales) {
+        $translations->each(function ($translation) use ($locales): void {
             if (is_array($translation->text)) {
                 foreach (array_keys($translation->text) as $locale) {
-                    if (!$locales->contains($locale)) {
+                    if ($locales->doesntContain($locale)) {
                         $locales->push($locale);
                     }
                 }
             }
         });
+
         return $locales;
     }
 }

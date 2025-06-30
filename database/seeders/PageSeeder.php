@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Facades\Settings;
 use App\Models\Page;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
@@ -34,7 +33,7 @@ class PageSeeder extends Seeder
                 'subheading' => [
                     'en' => 'This is a starting point for your new project.',
                     'fr' => 'Ceci est un point de départ pour votre nouveau projet.',
-                ]
+                ],
             ],
         ]);
 

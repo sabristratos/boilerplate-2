@@ -20,12 +20,12 @@ abstract class Block
 
     public function getAdminView(): string
     {
-        return 'livewire.admin.block-forms._' . Str::kebab($this->getType());
+        return 'livewire.admin.block-forms._'.Str::kebab($this->getType());
     }
 
     public function getFrontendView(): string
     {
-        return 'frontend.blocks._' . Str::kebab($this->getType());
+        return 'frontend.blocks._'.Str::kebab($this->getType());
     }
 
     public function getDefaultData(): array
@@ -42,4 +42,4 @@ abstract class Block
     {
         return [];
     }
-} 
+}

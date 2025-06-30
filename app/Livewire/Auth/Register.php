@@ -15,6 +15,7 @@ use Livewire\Component;
 class Register extends Component
 {
     use WithToastNotifications;
+
     public string $name = '';
 
     public string $email = '';
@@ -23,7 +24,7 @@ class Register extends Component
 
     public string $password_confirmation = '';
 
-    public function mount()
+    public function mount(): void
     {
         if (! setting('security.enable_registration')) {
             abort(404);

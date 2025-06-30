@@ -6,7 +6,6 @@ use App\Services\BlockManager;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Spatie\EloquentSortable\Sortable;
 use Spatie\EloquentSortable\SortableTrait;
@@ -14,15 +13,15 @@ use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Translatable\HasTranslations;
 
-class ContentBlock extends Model implements Sortable, HasMedia
+class ContentBlock extends Model implements HasMedia, Sortable
 {
-    use SortableTrait;
-    use InteractsWithMedia;
     use HasTranslations;
+    use InteractsWithMedia;
+    use SortableTrait;
 
     protected static function booted()
     {
-        static::creating(function ($block) {
+        static::creating(function ($block): void {
             Log::info('Creating content block', [
                 'user_id' => auth()->id(),
                 'type' => $block->type,
@@ -30,7 +29,7 @@ class ContentBlock extends Model implements Sortable, HasMedia
             ]);
         });
 
-        static::updating(function ($block) {
+        static::updating(function ($block): void {
             Log::info('Updating content block', [
                 'user_id' => auth()->id(),
                 'block_id' => $block->id,
@@ -38,7 +37,7 @@ class ContentBlock extends Model implements Sortable, HasMedia
             ]);
         });
 
-        static::deleting(function ($block) {
+        static::deleting(function ($block): void {
             Log::info('Deleting content block', [
                 'user_id' => auth()->id(),
                 'block_id' => $block->id,
@@ -55,12 +54,6 @@ class ContentBlock extends Model implements Sortable, HasMedia
         'order',
     ];
 
-    protected $casts = [
-        'status' => \App\Enums\ContentBlockStatus::class,
-        'data' => 'array',
-        'settings' => 'array',
-    ];
-
     public array $translatable = ['data'];
 
     public array $sortable = [
@@ -75,7 +68,7 @@ class ContentBlock extends Model implements Sortable, HasMedia
         );
     }
 
-    public function buildSortQuery()
+    public function buildSortQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return static::query()->where('page_id', $this->page_id);
     }
@@ -83,5 +76,14 @@ class ContentBlock extends Model implements Sortable, HasMedia
     public function page(): BelongsTo
     {
         return $this->belongsTo(Page::class);
+    }
+
+    protected function casts(): array
+    {
+        return [
+            'status' => \App\Enums\ContentBlockStatus::class,
+            'data' => 'array',
+            'settings' => 'array',
+        ];
     }
 }

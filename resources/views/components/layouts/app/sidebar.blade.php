@@ -18,7 +18,6 @@
                     <flux:navlist.item icon="photo" :href="route('media.index')" :current="request()->routeIs('media.*')" wire:navigate>{{ __('navigation.media_library') }}</flux:navlist.item>
                     <flux:navlist.item icon="language" :href="route('admin.translations.index')" :current="request()->routeIs('admin.translations.*')" wire:navigate>{{ __('navigation.translations') }}</flux:navlist.item>
                     <flux:navlist.item icon="document-text" :href="route('admin.pages.index')" :current="request()->routeIs('admin.pages.*')" wire:navigate>{{ __('navigation.pages') }}</flux:navlist.item>
-                    <flux:navlist.item icon="rectangle-group" :href="route('admin.forms.index')" :current="request()->routeIs('admin.forms.*')" wire:navigate>{{ __('navigation.forms') }}</flux:navlist.item>
                 </flux:navlist.group>
 
 

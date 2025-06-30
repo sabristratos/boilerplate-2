@@ -2,38 +2,26 @@
 
 namespace Database\Factories;
 
-use App\Models\Form;
-use App\Models\FormField;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Form>
+ */
 class FormFactory extends Factory
 {
-    protected $model = Form::class;
-
+    /**
+     * Define the model's default state.
+     *
+     * @return array<string, mixed>
+     */
     public function definition(): array
     {
         return [
+            'user_id' => User::factory(),
             'name' => $this->faker->words(3, true),
-            'title' => [
-                'en' => $this->faker->sentence,
-            ],
-            'description' => [
-                'en' => $this->faker->paragraph,
-            ],
-            'success_message' => [
-                'en' => 'Your submission was successful.',
-            ],
-            'recipient_email' => $this->faker->safeEmail,
-            'send_notification' => true,
+            'settings' => null,
+            'elements' => null,
         ];
     }
-
-    public function hasFields(int $count = 1, array $attributes = []): static
-    {
-        return $this->afterCreating(function (Form $form) use ($count, $attributes) {
-            FormField::factory()->count($count)->create(
-                array_merge(['form_id' => $form->id], $attributes)
-            );
-        });
-    }
-} 
+}

@@ -25,7 +25,7 @@ class HeroSectionBlock extends Block
                     'text' => 'Click me',
                     'url' => '#',
                     'variant' => 'primary',
-                ]
+                ],
             ],
         ];
     }

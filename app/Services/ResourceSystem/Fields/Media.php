@@ -13,4 +13,4 @@ class Media extends Field
     {
         return 'media';
     }
-} 
+}

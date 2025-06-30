@@ -9,9 +9,10 @@ use Livewire\Component;
 class LocaleSwitcher extends Component
 {
     public array $locales = [];
+
     public string $currentLocale;
 
-    public function mount()
+    public function mount(): void
     {
         $this->locales = Settings::get('general.available_locales', []);
         $this->currentLocale = app()->getLocale();
@@ -28,6 +29,8 @@ class LocaleSwitcher extends Component
 
             return redirect(request()->header('Referer'));
         }
+
+        return null;
     }
 
     public function render()

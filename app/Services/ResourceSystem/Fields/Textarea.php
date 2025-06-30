@@ -14,7 +14,6 @@ class Textarea extends Field
     /**
      * Set the number of rows for the textarea.
      *
-     * @param  int  $rows
      * @return $this
      */
     public function rows(int $rows): static
@@ -26,8 +25,6 @@ class Textarea extends Field
 
     /**
      * Get the number of rows for the textarea.
-     *
-     * @return int
      */
     public function getRows(): int
     {
@@ -36,8 +33,6 @@ class Textarea extends Field
 
     /**
      * Get the component name for the field.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -46,8 +41,6 @@ class Textarea extends Field
 
     /**
      * Get the field's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

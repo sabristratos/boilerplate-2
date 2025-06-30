@@ -23,7 +23,7 @@ class PermissionMiddleware
             throw UnauthorizedException::notLoggedIn();
         }
 
-        $permissions = is_array($permission) ? $permission : explode('|', $permission);
+        $permissions = is_array($permission) ? $permission : explode('|', (string) $permission);
 
         foreach ($permissions as $permission) {
             if (Auth::guard($guard)->user()->can($permission)) {

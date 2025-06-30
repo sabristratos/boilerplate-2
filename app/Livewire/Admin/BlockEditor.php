@@ -7,27 +7,32 @@ use App\Enums\ContentBlockStatus;
 use App\Facades\Settings;
 use App\Models\ContentBlock;
 use App\Services\BlockManager;
-use App\Traits\WithToastNotifications;
 use App\Traits\WithConfirmationModal;
+use App\Traits\WithToastNotifications;
 use Livewire\Component;
 use Livewire\WithFileUploads;
-use Livewire\Attributes\Reactive;
 
 class BlockEditor extends Component
 {
-    use WithFileUploads, WithToastNotifications, WithConfirmationModal;
+    use WithConfirmationModal, WithFileUploads, WithToastNotifications;
 
     public ?ContentBlock $editingBlock = null;
 
     public array $state = [];
+
     public $imageUpload;
+
     public string $formTitle = '';
+
     public ContentBlockStatus $blockStatus = ContentBlockStatus::DRAFT;
+
     public bool $isPublished = false;
+
     public string $activeLocale;
 
     protected BlockManager $blockManager;
-    protected $lastAutosaveTime = null;
+
+    protected $lastAutosaveTime;
 
     protected $listeners = [
         'editBlock' => 'startEditing',
@@ -37,12 +42,12 @@ class BlockEditor extends Component
         'changeBlockStatus' => 'onStatusConfirmed',
     ];
 
-    public function boot(BlockManager $blockManager)
+    public function boot(BlockManager $blockManager): void
     {
         $this->blockManager = $blockManager;
     }
 
-    public function mount(string $activeLocale)
+    public function mount(string $activeLocale): void
     {
         $this->activeLocale = $activeLocale;
     }
@@ -51,7 +56,7 @@ class BlockEditor extends Component
     {
         if ($name === 'activeLocale') {
             $this->activeLocale = $value;
-            if ($this->editingBlock) {
+            if ($this->editingBlock instanceof \App\Models\ContentBlock) {
                 $this->cancelEdit();
             }
         }
@@ -60,7 +65,7 @@ class BlockEditor extends Component
     public function localeSwitched(string $locale): void
     {
         $this->activeLocale = $locale;
-        if ($this->editingBlock) {
+        if ($this->editingBlock instanceof \App\Models\ContentBlock) {
             $this->cancelEdit();
         }
     }
@@ -69,7 +74,7 @@ class BlockEditor extends Component
     {
         $this->editingBlock = ContentBlock::find($blockId);
 
-        if (! $this->editingBlock) {
+        if (! $this->editingBlock instanceof \App\Models\ContentBlock) {
             $this->showWarningToast(
                 __('messages.block_editor.block_not_found_text'),
                 __('messages.block_editor.block_not_found_title')
@@ -80,9 +85,9 @@ class BlockEditor extends Component
         }
 
         $blockClass = $this->blockManager->find($this->editingBlock->type);
-        $this->formTitle = 'Editing: ' . ($blockClass ? $blockClass->getName() : 'Block');
+        $this->formTitle = 'Editing: '.($blockClass instanceof \App\Blocks\Block ? $blockClass->getName() : 'Block');
 
-        $defaultData = $blockClass ? $blockClass->getDefaultData() : [];
+        $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
         $this->state = array_merge($defaultData, $this->editingBlock->data ?? [], $this->editingBlock->settings ?? []);
 
         $this->blockStatus = $this->editingBlock->status;
@@ -101,18 +106,18 @@ class BlockEditor extends Component
         }
     }
 
-    public function saveBlock(UpdateContentBlockAction $updateAction)
+    public function saveBlock(UpdateContentBlockAction $updateAction): void
     {
-        if (! $this->editingBlock) {
+        if (! $this->editingBlock instanceof \App\Models\ContentBlock) {
             return;
         }
 
         $this->authorize('update', $this->editingBlock);
 
         $blockClass = $this->blockManager->find($this->editingBlock->type);
-        if ($blockClass) {
+        if ($blockClass instanceof \App\Blocks\Block) {
             $rules = collect($blockClass->validationRules())
-                ->mapWithKeys(fn ($rule, $key) => ['state.' . $key => $rule])
+                ->mapWithKeys(fn ($rule, $key) => ['state.'.$key => $rule])
                 ->all();
 
             $this->validate($rules);
@@ -136,15 +141,15 @@ class BlockEditor extends Component
         $this->dispatch('block-was-updated');
     }
 
-    public function cancelEdit()
+    public function cancelEdit(): void
     {
         $this->finishEditing();
         $this->dispatch('blockEditCancelled');
     }
 
-    public function autosave()
+    public function autosave(): void
     {
-        if (! $this->editingBlock) {
+        if (! $this->editingBlock instanceof \App\Models\ContentBlock) {
             return;
         }
 
@@ -160,7 +165,7 @@ class BlockEditor extends Component
 
     public function updatedIsPublished(bool $value): void
     {
-        $this->isPublished = !$value;
+        $this->isPublished = ! $value;
 
         $title = $value ? __('messages.block_editor.publish_confirmation_title') : __('messages.block_editor.unpublish_confirmation_title');
         $message = $value ? __('messages.block_editor.publish_confirmation_text') : __('messages.block_editor.unpublish_confirmation_text');
@@ -173,9 +178,9 @@ class BlockEditor extends Component
         );
     }
 
-    public function onStatusConfirmed(array $data)
+    public function onStatusConfirmed(array $data): void
     {
-        if (! $this->editingBlock) {
+        if (! $this->editingBlock instanceof \App\Models\ContentBlock) {
             return;
         }
 
@@ -206,7 +211,7 @@ class BlockEditor extends Component
         $this->dispatch('stopAutosaveTimer');
     }
 
-    public function updatedState()
+    public function updatedState(): void
     {
         $this->dispatch('block-state-updated', id: $this->editingBlock->id, state: $this->state);
     }

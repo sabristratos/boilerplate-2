@@ -8,10 +8,8 @@ class BelongsToMany extends Select
 {
     /**
      * The related model class.
-     *
-     * @var string|null
      */
-    protected $relatedModel;
+    protected string $relatedModel;
 
     /**
      * The display attribute for the related model.
@@ -22,15 +20,12 @@ class BelongsToMany extends Select
 
     /**
      * The relationship name.
-     *
-     * @var string
      */
-    protected $relationship;
+    protected string $relationship;
 
     /**
      * Create a new field.
      *
-     * @param  string  $name
      * @return void
      */
     public function __construct(string $name)
@@ -47,7 +42,6 @@ class BelongsToMany extends Select
     /**
      * Set the related model class.
      *
-     * @param  string  $relatedModel
      * @return $this
      */
     public function relatedModel(string $relatedModel): static
@@ -60,7 +54,6 @@ class BelongsToMany extends Select
     /**
      * Set the display attribute for the related model.
      *
-     * @param  string  $displayAttribute
      * @return $this
      */
     public function displayAttribute(string $displayAttribute): static
@@ -73,7 +66,6 @@ class BelongsToMany extends Select
     /**
      * Set the relationship name.
      *
-     * @param  string  $relationship
      * @return $this
      */
     public function relationship(string $relationship): static
@@ -85,18 +77,14 @@ class BelongsToMany extends Select
 
     /**
      * Get the relationship name.
-     *
-     * @return string
      */
     public function getRelationshipName(): string
     {
         return $this->relationship;
     }
-    
+
     /**
      * Get the options for the select field.
-     *
-     * @return array
      */
     public function getOptions(): array
     {
@@ -110,12 +98,10 @@ class BelongsToMany extends Select
 
         $modelClass = $this->relatedModel;
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             return [];
         }
 
-        return $modelClass::all()->mapWithKeys(function ($model) {
-            return [$model->getKey() => $model->{$this->displayAttribute}];
-        })->toArray();
+        return $modelClass::all()->mapWithKeys(fn ($model) => [$model->getKey() => $model->{$this->displayAttribute}])->toArray();
     }
-} 
+}

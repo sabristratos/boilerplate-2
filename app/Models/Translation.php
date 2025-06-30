@@ -17,7 +17,10 @@ class Translation extends Model
         'text',
     ];
 
-    protected $casts = [
-        'text' => 'translatable',
-    ];
-} 
+    protected function casts(): array
+    {
+        return [
+            'text' => 'translatable',
+        ];
+    }
+}

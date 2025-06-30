@@ -2,9 +2,9 @@
 
 namespace App\Livewire;
 
+use Flux\Flux;
 use Livewire\Component;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
-use Flux\Flux;
 
 class MediaDetail extends Component
 {
@@ -16,7 +16,7 @@ class MediaDetail extends Component
     /**
      * Mount the component.
      */
-    public function mount($id)
+    public function mount($id): void
     {
         $this->mediaId = $id;
     }
@@ -34,8 +34,10 @@ class MediaDetail extends Component
 
             return redirect()->route('media.index');
         } catch (\Exception $e) {
-            Flux::toast('Failed to delete media: ' . $e->getMessage(), variant: 'danger');
+            Flux::toast('Failed to delete media: '.$e->getMessage(), variant: 'danger');
         }
+
+        return null;
     }
 
     /**
@@ -51,7 +53,7 @@ class MediaDetail extends Component
 
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, 2) . ' ' . $units[$pow];
+        return round($bytes, 2).' '.$units[$pow];
     }
 
     /**

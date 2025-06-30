@@ -11,6 +11,7 @@ use Livewire\Component;
 class ForgotPassword extends Component
 {
     use WithToastNotifications;
+
     public string $email = '';
 
     /**

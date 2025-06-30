@@ -7,13 +7,6 @@ use Illuminate\Support\Str;
 class Column
 {
     /**
-     * The column's name.
-     *
-     * @var string
-     */
-    protected $name;
-
-    /**
      * The column's label.
      *
      * @var string
@@ -51,20 +44,15 @@ class Column
     /**
      * Create a new column.
      *
-     * @param  string  $name
      * @return void
      */
-    public function __construct(string $name)
+    public function __construct(protected string $name)
     {
-        $this->name = $name;
-        $this->label = Str::title(Str::replace('_', ' ', $name));
+        $this->label = Str::title(Str::replace('_', ' ', $this->name));
     }
 
     /**
      * Create a new column instance.
-     *
-     * @param  string  $name
-     * @return static
      */
     public static function make(string $name): static
     {
@@ -74,7 +62,6 @@ class Column
     /**
      * Set the column's label.
      *
-     * @param  string  $label
      * @return $this
      */
     public function label(string $label): static
@@ -87,7 +74,6 @@ class Column
     /**
      * Make the column sortable.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function sortable(bool $value = true): static
@@ -100,7 +86,6 @@ class Column
     /**
      * Make the column searchable.
      *
-     * @param  bool  $value
      * @return $this
      */
     public function searchable(bool $value = true): static
@@ -113,7 +98,6 @@ class Column
     /**
      * Set the column's alignment.
      *
-     * @param  string  $alignment
      * @return $this
      */
     public function alignment(string $alignment): static
@@ -126,7 +110,6 @@ class Column
     /**
      * Set the callback to format the value.
      *
-     * @param  \Closure  $callback
      * @return $this
      */
     public function setFormatValueCallback(\Closure $callback): static
@@ -168,8 +151,6 @@ class Column
 
     /**
      * Get the column's name.
-     *
-     * @return string
      */
     public function getName(): string
     {
@@ -178,8 +159,6 @@ class Column
 
     /**
      * Get the column's label.
-     *
-     * @return string
      */
     public function getLabel(): string
     {
@@ -188,8 +167,6 @@ class Column
 
     /**
      * Determine if the column is sortable.
-     *
-     * @return bool
      */
     public function isSortable(): bool
     {
@@ -198,8 +175,6 @@ class Column
 
     /**
      * Determine if the column is searchable.
-     *
-     * @return bool
      */
     public function isSearchable(): bool
     {
@@ -208,8 +183,6 @@ class Column
 
     /**
      * Get the column's alignment.
-     *
-     * @return string
      */
     public function getAlignment(): string
     {
@@ -218,8 +191,6 @@ class Column
 
     /**
      * Get the component name for the column.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -228,8 +199,6 @@ class Column
 
     /**
      * Get the column's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

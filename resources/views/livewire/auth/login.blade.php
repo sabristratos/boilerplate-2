@@ -32,6 +32,8 @@
 
             <flux:link
                 href="{{ route('password.request') }}"
+                variant="subtle"
+                class="text-xs"
             >
                 {{ __('auth.forgot_password_title') }}?
             </flux:link>

@@ -30,4 +30,4 @@ class FaqSectionBlock extends Block
             'faqs.*.answer' => 'required|string',
         ];
     }
-} 
+}

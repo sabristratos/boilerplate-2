@@ -13,7 +13,9 @@ use Symfony\Component\Console\Input\InputOption;
 class ScaffoldResourceCommand extends GeneratorCommand
 {
     protected $name = 'make:resource';
+
     protected $description = 'Create a new resource class';
+
     protected $type = 'Resource';
 
     protected function getStub()
@@ -21,7 +23,7 @@ class ScaffoldResourceCommand extends GeneratorCommand
         return $this->resolveStubPath('/stubs/resource.stub');
     }
 
-    protected function resolveStubPath($stub)
+    protected function resolveStubPath(string $stub)
     {
         return file_exists($customPath = $this->laravel->basePath(trim($stub, '/')))
             ? $customPath
@@ -38,10 +40,11 @@ class ScaffoldResourceCommand extends GeneratorCommand
         $stub = parent::buildClass($name);
 
         $model = $this->argument('model');
-        $modelClass = 'App\\Models\\' . $model;
+        $modelClass = 'App\\Models\\'.$model;
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             $this->error("Model {$modelClass} does not exist.");
+
             return false;
         }
 
@@ -56,12 +59,11 @@ class ScaffoldResourceCommand extends GeneratorCommand
 
         $stub = str_replace('{{ imports }}', implode("\n", array_unique($imports)), $stub);
         $stub = str_replace('{{ fields }}', implode(",\n            ", $fields['code']), $stub);
-        $stub = str_replace('{{ columns }}', implode(",\n            ", $columns['code']), $stub);
 
-        return $stub;
+        return str_replace('{{ columns }}', implode(",\n            ", $columns['code']), $stub);
     }
 
-    protected function generateFields($modelClass)
+    protected function generateFields($modelClass): array
     {
         $model = new $modelClass;
         $table = $model->getTable();
@@ -77,7 +79,8 @@ class ScaffoldResourceCommand extends GeneratorCommand
             if (Str::endsWith($column, '_id')) {
                 $imports[] = 'use App\Services\ResourceSystem\Fields\BelongsTo;';
                 $relationName = Str::beforeLast($column, '_id');
-                $fields[] = "BelongsTo::make('". Str::title($relationName) ."')";
+                $fields[] = "BelongsTo::make('".Str::title($relationName)."')";
+
                 continue;
             }
 
@@ -85,6 +88,7 @@ class ScaffoldResourceCommand extends GeneratorCommand
 
             switch ($type) {
                 case 'string':
+                default:
                     $imports[] = 'use App\Services\ResourceSystem\Fields\Text;';
                     $fields[] = "Text::make('{$column}')";
                     break;
@@ -102,17 +106,13 @@ class ScaffoldResourceCommand extends GeneratorCommand
                     $imports[] = 'use App\Services\ResourceSystem\Fields\DatePicker;';
                     $fields[] = "DatePicker::make('{$column}')";
                     break;
-                default:
-                    $imports[] = 'use App\Services\ResourceSystem\Fields\Text;';
-                    $fields[] = "Text::make('{$column}')";
-                    break;
             }
         }
 
         return ['imports' => $imports, 'code' => $fields];
     }
 
-    protected function generateColumns($modelClass)
+    protected function generateColumns($modelClass): array
     {
         $model = new $modelClass;
         $table = $model->getTable();
@@ -121,19 +121,21 @@ class ScaffoldResourceCommand extends GeneratorCommand
         $cols = [];
 
         foreach ($columns as $column) {
-             if (in_array($column, ['id', 'created_at', 'updated_at', 'deleted_at', 'password', 'remember_token'])) {
+            if (in_array($column, ['id', 'created_at', 'updated_at', 'deleted_at', 'password', 'remember_token'])) {
                 continue;
             }
 
             if ($column === 'id') {
-                 $imports[] = 'use App\Services\ResourceSystem\Columns\Column;';
-                 $cols[] = "Column::make('ID')->sortable()";
-                 continue;
+                $imports[] = 'use App\Services\ResourceSystem\Columns\Column;';
+                $cols[] = "Column::make('ID')->sortable()";
+
+                continue;
             }
 
             if ($column === 'status') {
                 $imports[] = 'use App\Services\ResourceSystem\Columns\BadgeColumn;';
                 $cols[] = "BadgeColumn::make('Status')->colors([\n                'published' => 'success',\n                'draft' => 'zinc',\n            ])";
+
                 continue;
             }
 
@@ -143,6 +145,7 @@ class ScaffoldResourceCommand extends GeneratorCommand
             if (Str::contains($column, 'color')) {
                 $imports[] = 'use App\Services\ResourceSystem\Columns\ColorColumn;';
                 $cols[] = "ColorColumn::make('{$column}')";
+
                 continue;
             }
 
@@ -166,7 +169,8 @@ class ScaffoldResourceCommand extends GeneratorCommand
                     break;
             }
         }
-         return ['imports' => $imports, 'code' => $cols];
+
+        return ['imports' => $imports, 'code' => $cols];
     }
 
     protected function getArguments()
@@ -183,4 +187,4 @@ class ScaffoldResourceCommand extends GeneratorCommand
             ['force', 'f', InputOption::VALUE_NONE, __('commands.make_resource.force_option_description')],
         ];
     }
-} 
+}

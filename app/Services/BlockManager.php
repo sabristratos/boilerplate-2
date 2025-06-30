@@ -13,24 +13,25 @@ class BlockManager
 
     public function getAvailableBlocks(): Collection
     {
-        if ($this->blocks) {
+        if ($this->blocks instanceof \Illuminate\Support\Collection) {
             return $this->blocks;
         }
 
         $this->blocks = collect(File::allFiles(app_path('Blocks')))
             ->map(function ($file) {
-                $class = 'App\\Blocks\\' . $file->getBasename('.php');
-                if (!class_exists($class)) {
+                $class = 'App\\Blocks\\'.$file->getBasename('.php');
+                if (! class_exists($class)) {
                     return null;
                 }
                 $reflection = new ReflectionClass($class);
-                if ($reflection->isAbstract() || !$reflection->isSubclassOf(Block::class)) {
+                if ($reflection->isAbstract() || ! $reflection->isSubclassOf(Block::class)) {
                     return null;
                 }
+
                 return app($class);
             })
             ->filter()
-            ->keyBy(fn (Block $block) => $block->getType());
+            ->keyBy(fn (Block $block): string => $block->getType());
 
         return $this->blocks;
     }
@@ -39,4 +40,4 @@ class BlockManager
     {
         return $this->getAvailableBlocks()->get($type);
     }
-} 
+}

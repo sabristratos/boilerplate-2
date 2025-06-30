@@ -28,13 +28,13 @@ class UpdatePageDetailsAction
             $page->setTranslation('title', $locale, $value);
         }
 
-        if (!empty($validatedData['meta_title'])) {
+        if (! empty($validatedData['meta_title'])) {
             foreach ($validatedData['meta_title'] as $locale => $value) {
                 $page->setTranslation('meta_title', $locale, $value);
             }
         }
 
-        if (!empty($validatedData['meta_description'])) {
+        if (! empty($validatedData['meta_description'])) {
             foreach ($validatedData['meta_description'] as $locale => $value) {
                 $page->setTranslation('meta_description', $locale, $value);
             }
@@ -47,4 +47,4 @@ class UpdatePageDetailsAction
 
         return $page->refresh();
     }
-} 
+}

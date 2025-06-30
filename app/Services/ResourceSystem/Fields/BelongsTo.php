@@ -9,10 +9,8 @@ class BelongsTo extends Field
 {
     /**
      * The related model class.
-     *
-     * @var string|null
      */
-    protected $relatedModel;
+    protected string $relatedModel;
 
     /**
      * The display attribute for the related model.
@@ -23,10 +21,8 @@ class BelongsTo extends Field
 
     /**
      * The foreign key for the relationship.
-     *
-     * @var string|null
      */
-    protected $foreignKey;
+    protected string $foreignKey;
 
     /**
      * The options for the select field.
@@ -38,7 +34,6 @@ class BelongsTo extends Field
     /**
      * Create a new field.
      *
-     * @param  string  $name
      * @return void
      */
     public function __construct(string $name)
@@ -56,7 +51,6 @@ class BelongsTo extends Field
     /**
      * Set the related model class.
      *
-     * @param  string  $relatedModel
      * @return $this
      */
     public function relatedModel(string $relatedModel): static
@@ -69,7 +63,6 @@ class BelongsTo extends Field
     /**
      * Set the display attribute for the related model.
      *
-     * @param  string  $displayAttribute
      * @return $this
      */
     public function displayAttribute(string $displayAttribute): static
@@ -82,7 +75,6 @@ class BelongsTo extends Field
     /**
      * Set the foreign key for the relationship.
      *
-     * @param  string  $foreignKey
      * @return $this
      */
     public function foreignKey(string $foreignKey): static
@@ -95,7 +87,6 @@ class BelongsTo extends Field
     /**
      * Set the options for the select field.
      *
-     * @param  array  $options
      * @return $this
      */
     public function options(array $options): static
@@ -107,8 +98,6 @@ class BelongsTo extends Field
 
     /**
      * Get the related model class.
-     *
-     * @return string|null
      */
     public function getRelatedModel(): ?string
     {
@@ -117,8 +106,6 @@ class BelongsTo extends Field
 
     /**
      * Get the display attribute for the related model.
-     *
-     * @return string
      */
     public function getDisplayAttribute(): string
     {
@@ -127,8 +114,6 @@ class BelongsTo extends Field
 
     /**
      * Get the foreign key for the relationship.
-     *
-     * @return string|null
      */
     public function getForeignKey(): ?string
     {
@@ -137,8 +122,6 @@ class BelongsTo extends Field
 
     /**
      * Get the options for the select field.
-     *
-     * @return array
      */
     public function getOptions(): array
     {
@@ -152,19 +135,15 @@ class BelongsTo extends Field
 
         $modelClass = $this->relatedModel;
 
-        if (!class_exists($modelClass)) {
+        if (! class_exists($modelClass)) {
             return [];
         }
 
-        return $modelClass::all()->mapWithKeys(function ($model) {
-            return [$model->getKey() => $model->{$this->displayAttribute}];
-        })->toArray();
+        return $modelClass::all()->mapWithKeys(fn ($model) => [$model->getKey() => $model->{$this->displayAttribute}])->toArray();
     }
 
     /**
      * Get the component name for the field.
-     *
-     * @return string
      */
     public function component(): string
     {
@@ -173,8 +152,6 @@ class BelongsTo extends Field
 
     /**
      * Get the field's attributes.
-     *
-     * @return array
      */
     public function getAttributes(): array
     {

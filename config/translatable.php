@@ -5,4 +5,4 @@ return [
         'en' => 'English',
         'fr' => 'Français',
     ],
-]; 
+];

@@ -13,4 +13,4 @@ class Rating extends Field
     {
         return 'rating';
     }
-} 
+}

@@ -6,7 +6,6 @@ use App\Traits\WithToastNotifications;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
@@ -17,6 +16,7 @@ use Livewire\Component;
 class ResetPassword extends Component
 {
     use WithToastNotifications;
+
     #[Locked]
     public string $token = '';
 
@@ -52,7 +52,7 @@ class ResetPassword extends Component
         // database. Otherwise we will parse the error and return the response.
         $status = Password::reset(
             $this->only('email', 'password', 'password_confirmation', 'token'),
-            function ($user) {
+            function ($user): void {
                 $user->forceFill([
                     'password' => Hash::make($this->password),
                     'remember_token' => Str::random(60),

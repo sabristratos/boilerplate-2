@@ -3,15 +3,15 @@
 namespace App\Http\Resources\Admin;
 
 use App\Models\Testimonial;
-use App\Services\ResourceSystem\Resource;
-use App\Services\ResourceSystem\Fields\Text;
-use App\Services\ResourceSystem\Fields\Textarea;
-use App\Services\ResourceSystem\Fields\Media;
-use App\Services\ResourceSystem\Fields\Rating;
 use App\Services\ResourceSystem\Columns\Column;
 use App\Services\ResourceSystem\Columns\ImageColumn;
 use App\Services\ResourceSystem\Columns\RatingColumn;
+use App\Services\ResourceSystem\Fields\Media;
+use App\Services\ResourceSystem\Fields\Rating;
+use App\Services\ResourceSystem\Fields\Text;
+use App\Services\ResourceSystem\Fields\Textarea;
 use App\Services\ResourceSystem\Filters\SelectFilter;
+use App\Services\ResourceSystem\Resource;
 
 class TestimonialResource extends Resource
 {
@@ -23,6 +23,13 @@ class TestimonialResource extends Resource
     public static $model = Testimonial::class;
 
     /**
+     * The relationships to eager load.
+     *
+     * @var array
+     */
+    public static $with = ['media'];
+
+    /**
      * The icon to be used in the navigation.
      *
      * @var string
@@ -31,8 +38,6 @@ class TestimonialResource extends Resource
 
     /**
      * Get the URI key for the resource.
-     *
-     * @return string
      */
     public static function uriKey(): string
     {
@@ -41,8 +46,6 @@ class TestimonialResource extends Resource
 
     /**
      * Get the singular label for the resource.
-     *
-     * @return string
      */
     public static function singularLabel(): string
     {
@@ -51,8 +54,6 @@ class TestimonialResource extends Resource
 
     /**
      * Get the plural label for the resource.
-     *
-     * @return string
      */
     public static function pluralLabel(): string
     {
@@ -61,8 +62,6 @@ class TestimonialResource extends Resource
 
     /**
      * Get the fields displayed by the resource.
-     *
-     * @return array
      */
     public function fields(): array
     {
@@ -95,8 +94,6 @@ class TestimonialResource extends Resource
 
     /**
      * Get the columns displayed by the resource's table.
-     *
-     * @return array
      */
     public function columns(): array
     {
@@ -127,8 +124,6 @@ class TestimonialResource extends Resource
 
     /**
      * Get the filters available for the resource.
-     *
-     * @return array
      */
     public function filters(): array
     {
@@ -144,4 +139,4 @@ class TestimonialResource extends Resource
                 ]),
         ];
     }
-} 
+}

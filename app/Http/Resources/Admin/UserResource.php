@@ -3,16 +3,16 @@
 namespace App\Http\Resources\Admin;
 
 use App\Models\User;
-use App\Services\ResourceSystem\Resource;
-use App\Services\ResourceSystem\Fields\Text;
+use App\Services\ResourceSystem\Columns\BadgeColumn;
+use App\Services\ResourceSystem\Columns\Column;
+use App\Services\ResourceSystem\Columns\ImageColumn;
 use App\Services\ResourceSystem\Fields\Media;
 use App\Services\ResourceSystem\Fields\Select;
-use App\Services\ResourceSystem\Columns\Column;
-use App\Services\ResourceSystem\Columns\BadgeColumn;
-use App\Services\ResourceSystem\Columns\ImageColumn;
+use App\Services\ResourceSystem\Fields\Text;
 use App\Services\ResourceSystem\Filters\SelectFilter;
-use Spatie\Permission\Models\Role;
+use App\Services\ResourceSystem\Resource;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class UserResource extends Resource
 {
@@ -43,12 +43,10 @@ class UserResource extends Resource
      *
      * @var array
      */
-    public static $with = ['roles'];
+    public static $with = ['roles', 'media'];
 
     /**
      * Get the URI key for the resource.
-     *
-     * @return string
      */
     public static function uriKey(): string
     {
@@ -57,8 +55,6 @@ class UserResource extends Resource
 
     /**
      * Get the singular label for the resource.
-     *
-     * @return string
      */
     public static function singularLabel(): string
     {
@@ -67,8 +63,6 @@ class UserResource extends Resource
 
     /**
      * Get the plural label for the resource.
-     *
-     * @return string
      */
     public static function pluralLabel(): string
     {
@@ -77,8 +71,6 @@ class UserResource extends Resource
 
     /**
      * Get the fields displayed by the resource.
-     *
-     * @return array
      */
     public function fields(): array
     {
@@ -104,9 +96,7 @@ class UserResource extends Resource
             Select::make('roles')
                 ->label(__('labels.roles'))
                 ->options(
-                    Role::all()->mapWithKeys(function ($role) {
-                        return [$role->name => Str::title(str_replace(['-', '_'], ' ', $role->name))];
-                    })->toArray()
+                    Role::all()->mapWithKeys(fn ($role) => [$role->name => Str::title(str_replace(['-', '_'], ' ', $role->name))])->toArray()
                 )
                 ->rules(['sometimes', 'array'])
                 ->multiple()
@@ -117,8 +107,6 @@ class UserResource extends Resource
 
     /**
      * Get the columns displayed by the resource's table.
-     *
-     * @return array
      */
     public function columns(): array
     {
@@ -144,9 +132,7 @@ class UserResource extends Resource
 
             Column::make('roles')
                 ->label(__('labels.roles'))
-                ->setFormatValueCallback(function ($value, $resource) {
-                    return $resource->roles->pluck('name')->map(fn ($name) => Str::title(str_replace('-', ' ', $name)))->implode(', ');
-                }),
+                ->setFormatValueCallback(fn ($value, $resource) => $resource->roles->pluck('name')->map(fn ($name) => Str::title(str_replace('-', ' ', $name)))->implode(', ')),
 
             BadgeColumn::make('email_verified_at')
                 ->label(__('labels.verified'))
@@ -154,9 +140,7 @@ class UserResource extends Resource
                     'verified' => 'success',
                     'unverified' => 'danger',
                 ])
-                ->setFormatValueCallback(function ($value, $resource) {
-                    return $value ? 'verified' : 'unverified';
-                }),
+                ->setFormatValueCallback(fn ($value, $resource): string => $value ? 'verified' : 'unverified'),
 
             Column::make('created_at')
                 ->sortable()
@@ -166,8 +150,6 @@ class UserResource extends Resource
 
     /**
      * Get the filters available for the resource's table.
-     *
-     * @return array
      */
     public function filters(): array
     {
@@ -184,6 +166,7 @@ class UserResource extends Resource
                     } elseif ($value === 'unverified') {
                         return $query->whereNull('email_verified_at');
                     }
+
                     return $query;
                 }),
         ];

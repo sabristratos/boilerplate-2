@@ -6,7 +6,6 @@ return [
     'media_library' => 'Médiathèque',
     'translations' => 'Traductions',
     'pages' => 'Pages',
-    'forms' => 'Formulaires',
     'resources' => 'Ressources',
     'settings' => 'Paramètres',
     'content_group_heading' => 'Contenu',
