@@ -1,0 +1,23 @@
+@props(['selectedElement', 'selectedElementIndex'])
+<div class="space-y-4">
+    <flux:heading size="sm" class="flex items-center gap-2">
+        <flux:icon name="sparkles" class="size-4" />
+        Input Actions
+    </flux:heading>
+    <div class="space-y-3">
+        <flux:field variant="inline">
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.clearable" />
+            <flux:label>Clearable</flux:label>
+        </flux:field>
+        <flux:field variant="inline">
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.copyable" />
+            <flux:label>Copyable</flux:label>
+        </flux:field>
+        @if($selectedElement['type'] === 'password')
+            <flux:field variant="inline">
+                <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.viewable" />
+                <flux:label>Show/Hide Toggle</flux:label>
+            </flux:field>
+        @endif
+    </div>
+</div> 

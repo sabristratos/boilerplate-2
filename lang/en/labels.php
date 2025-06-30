@@ -35,4 +35,10 @@ return [
     'verified' => 'Verified',
     'unverified' => 'Unverified',
     'slug' => 'Slug',
+    'locale' => 'Locale',
+    'all_locales' => 'All Locales',
+    'language' => 'Language',
+    'elements' => 'Elements',
+    'submissions' => 'Submissions',
+    'draft' => 'Draft',
 ];

@@ -56,9 +56,9 @@ class ResourceTable extends Component
     public $perPage = 10;
 
     /**
-     * Whether to show the filter modal.
+     * Whether to show the filter popover.
      */
-    public bool $showFiltersModal = false;
+    public bool $showFiltersPopover = false;
 
     /**
      * Whether to show the delete confirmation modal.
@@ -143,7 +143,7 @@ class ResourceTable extends Component
     public function resetFilters(): void
     {
         $this->filters = [];
-        $this->showFiltersModal = false;
+        $this->showFiltersPopover = false;
     }
 
     /**

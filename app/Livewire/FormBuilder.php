@@ -35,7 +35,15 @@ class FormBuilder extends Component
 
     public string $tab = 'toolbox';
 
+    public string $propertiesTab = 'basic';
+
     public bool $isPreviewMode = false;
+
+    protected $queryString = [
+        'tab' => ['except' => 'toolbox'],
+        'propertiesTab' => ['except' => 'basic'],
+        'activeBreakpoint' => ['except' => 'desktop'],
+    ];
 
     public array $previewFormData = [];
 
@@ -141,7 +149,42 @@ class FormBuilder extends Component
 
     public function updatedElements($value, $key)
     {
-        // Handle any additional logic for element updates if needed
+        // Handle validation rule activation based on input values
+        if (str_contains($key, 'validation.values.')) {
+            $parts = explode('.', $key);
+            if (count($parts) >= 4) {
+                $elementIndex = $parts[0];
+                $ruleKey = $parts[3];
+                
+                // Ensure the validation structure exists
+                if (!isset($this->elements[$elementIndex]['validation'])) {
+                    $this->elements[$elementIndex]['validation'] = config('forms.elements.default_validation');
+                }
+                if (!isset($this->elements[$elementIndex]['validation']['rules'])) {
+                    $this->elements[$elementIndex]['validation']['rules'] = [];
+                }
+
+                $rules = $this->elements[$elementIndex]['validation']['rules'];
+                $inputValue = $this->elements[$elementIndex]['validation']['values'][$ruleKey] ?? '';
+
+                // If input has a value, add the rule; if empty, remove the rule
+                if (!empty($inputValue)) {
+                    if (!in_array($ruleKey, $rules)) {
+                        $rules[] = $ruleKey;
+                    }
+                } else {
+                    // Remove the rule if input is empty
+                    $rules = array_values(array_filter($rules, fn($rule) => $rule !== $ruleKey));
+                    
+                    // Also remove any associated messages
+                    if (isset($this->elements[$elementIndex]['validation']['messages'][$ruleKey])) {
+                        unset($this->elements[$elementIndex]['validation']['messages'][$ruleKey]);
+                    }
+                }
+
+                $this->elements[$elementIndex]['validation']['rules'] = $rules;
+            }
+        }
     }
 
     public function updateElementWidth(string $elementId, string $breakpoint, string $width): void
@@ -162,6 +205,55 @@ class FormBuilder extends Component
     public function updateValidationRuleValue(string $elementId, string $rule, string $value): void
     {
         $this->validationService->updateValidationRuleValue($this->elements, $elementId, $rule, $value);
+    }
+
+    public function toggleValidationRule(string $elementIndex, string $ruleKey): void
+    {
+        // Ensure the validation structure exists
+        if (!isset($this->elements[$elementIndex]['validation'])) {
+            $this->elements[$elementIndex]['validation'] = config('forms.elements.default_validation');
+        }
+
+        if (!isset($this->elements[$elementIndex]['validation']['rules'])) {
+            $this->elements[$elementIndex]['validation']['rules'] = [];
+        }
+
+        $rules = $this->elements[$elementIndex]['validation']['rules'];
+
+        // Toggle the rule
+        if (in_array($ruleKey, $rules)) {
+            // Remove the rule
+            $rules = array_values(array_filter($rules, fn($rule) => $rule !== $ruleKey));
+            
+            // Also remove any associated values and messages
+            if (isset($this->elements[$elementIndex]['validation']['values'][$ruleKey])) {
+                unset($this->elements[$elementIndex]['validation']['values'][$ruleKey]);
+            }
+            if (isset($this->elements[$elementIndex]['validation']['messages'][$ruleKey])) {
+                unset($this->elements[$elementIndex]['validation']['messages'][$ruleKey]);
+            }
+        } else {
+            // Add the rule
+            $rules[] = $ruleKey;
+        }
+
+        $this->elements[$elementIndex]['validation']['rules'] = $rules;
+    }
+
+    public function getValidationPlaceholder(string $ruleKey): string
+    {
+        return match ($ruleKey) {
+            'min' => 'e.g., 3 (minimum characters)',
+            'max' => 'e.g., 50 (maximum characters)',
+            'min_value' => 'e.g., 0 (minimum value)',
+            'max_value' => 'e.g., 100 (maximum value)',
+            'date_after' => 'e.g., 2024-01-01 (date after)',
+            'date_before' => 'e.g., 2024-12-31 (date before)',
+            'regex' => 'e.g., ^[A-Za-z]+$ (letters only)',
+            'mimes' => 'e.g., jpg,png,pdf (file types)',
+            'max_file_size' => 'e.g., 2048 (kilobytes)',
+            default => 'Enter value...',
+        };
     }
 
     #[Computed]
@@ -203,7 +295,11 @@ class FormBuilder extends Component
     #[Computed]
     public function availableValidationRules(): array
     {
-        return $this->validationService->getAvailableRules();
+        if (!$this->selectedElement) {
+            return [];
+        }
+
+        return $this->validationService->getRelevantRules($this->selectedElement['type']);
     }
 
     #[Computed]

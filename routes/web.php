@@ -33,6 +33,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function ():
     Route::get('forms', FormIndex::class)->name('forms.index');
     Route::get('forms/{form}/edit', \App\Livewire\FormBuilder::class)->name('forms.edit');
     Route::get('forms/{form}/submissions', \App\Livewire\Admin\Forms\Submissions::class)->name('forms.submissions');
+    Route::get('forms/{form}/submissions/{submission}', \App\Livewire\Admin\Forms\SubmissionDetails::class)->name('forms.submissions.show');
 
     // Translations management
     Route::get('translations', ManageTranslations::class)->name('translations.index');

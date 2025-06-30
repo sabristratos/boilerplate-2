@@ -16,6 +16,7 @@ return [
     'delete_confirm_title' => 'Are you sure?',
     'delete_confirm_text' => 'Are you sure you want to delete this? This action cannot be undone.',
     'no_resources_found' => 'No resources found.',
+    'no_pages_found' => 'No pages found.',
     'Saved.' => 'Saved.',
     'confirm_save' => [
         'title' => 'Please confirm',
@@ -143,6 +144,10 @@ return [
         'form_index' => [
             'new_form' => 'New Form',
         ],
+        'list_description' => 'A list of all the forms in your account.',
+        'no_submissions_yet' => 'No Submissions Yet',
+        'no_submissions_description' => 'This form hasn\'t received any submissions yet. Once users start submitting the form, their responses will appear here.',
+        'no_forms_found' => 'No forms found.',
         'field_type_manager' => [
             'invalid_field_type_class' => 'Class :class must extend :fieldTypeClass',
         ],

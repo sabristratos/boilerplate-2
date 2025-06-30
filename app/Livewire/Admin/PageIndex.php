@@ -23,7 +23,7 @@ class PageIndex extends Component
 
     public array $filters = [];
 
-    public bool $showFiltersModal = false;
+    public bool $showFiltersPopover = false;
 
     public $showDeleteModal = false;
 
@@ -35,7 +35,7 @@ class PageIndex extends Component
             ->when($this->search, function ($query, $search): void {
                 $locale = $this->filters['locale'] ?? app()->getLocale();
                 $query->where(fn ($q) => $q->where('slug', 'like', '%'.$search.'%')
-                    ->orWhereTranslation('title', 'like', '%'.$search.'%', $locale)
+                    ->orWhereRaw("JSON_EXTRACT(title, '$.\"{$locale}\"') LIKE ?", ["%{$search}%"])
                 );
             })
             ->orderBy($this->sortBy, $this->sortDirection)
@@ -87,6 +87,7 @@ class PageIndex extends Component
     public function resetFilters(): void
     {
         $this->filters = [];
+        $this->showFiltersPopover = false;
     }
 
     public function confirmDelete(int $id): void

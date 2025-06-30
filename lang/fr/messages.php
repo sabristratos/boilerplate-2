@@ -16,6 +16,7 @@ return [
     'delete_confirm_title' => 'Êtes-vous sûr ?',
     'delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer ceci ? Cette action est irréversible.',
     'no_resources_found' => 'Aucune ressource trouvée.',
+    'no_pages_found' => 'Aucune page trouvée.',
     'saved' => 'Sauvé.',
     'confirm_save' => [
         'title' => 'Veuillez confirmer',
@@ -142,6 +143,10 @@ return [
         'form_index' => [
             'new_form' => 'Nouveau formulaire',
         ],
+        'list_description' => 'Une liste de tous les formulaires de votre compte.',
+        'no_submissions_yet' => 'Aucune soumission pour le moment',
+        'no_submissions_description' => 'Ce formulaire n\'a pas encore reçu de soumissions. Une fois que les utilisateurs commenceront à soumettre le formulaire, leurs réponses apparaîtront ici.',
+        'no_forms_found' => 'Aucun formulaire trouvé.',
         'field_type_manager' => [
             'invalid_field_type_class' => 'La classe :class doit étendre :fieldTypeClass',
         ],

@@ -36,4 +36,9 @@ return [
     'select_existing' => 'Sélectionner existant',
     'select' => 'Sélectionner',
     'save_and_create_another' => 'Enregistrer et créer un autre',
+    'view_submissions' => 'Voir les soumissions',
+    'view_details' => 'Voir les détails',
+    'back_to_form' => 'Retour au formulaire',
+    'back_to_submissions' => 'Retour aux soumissions',
+    'edit_form' => 'Modifier le formulaire',
 ];

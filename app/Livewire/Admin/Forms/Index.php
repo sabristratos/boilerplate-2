@@ -21,6 +21,20 @@ class Index extends Component
 
     public ?string $selectedPrebuiltForm = null;
 
+    public string $search = '';
+
+    public int $perPage = 10;
+
+    /**
+     * The querystring properties.
+     *
+     * @var array
+     */
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'perPage' => ['except' => 10],
+    ];
+
     public function openCreateModal(): void
     {
         $this->reset('newFormName');
@@ -69,11 +83,27 @@ class Index extends Component
         return PrebuiltFormRegistry::all();
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $forms = Form::where('user_id', auth()->id())
+            ->when($this->search, function ($query, $search) {
+                $locale = app()->getLocale();
+                $query->where(function ($q) use ($search, $locale) {
+                    $q->whereRaw("JSON_EXTRACT(name, '$.\"{$locale}\"') LIKE ?", ["%{$search}%"]);
+                });
+            })
             ->latest()
-            ->paginate(10);
+            ->paginate($this->perPage);
 
         return view('livewire.admin.forms.index', [
             'forms' => $forms,

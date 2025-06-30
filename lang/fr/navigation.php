@@ -6,6 +6,7 @@ return [
     'media_library' => 'Médiathèque',
     'translations' => 'Traductions',
     'pages' => 'Pages',
+    'forms' => 'Formulaires',
     'resources' => 'Ressources',
     'settings' => 'Paramètres',
     'content_group_heading' => 'Contenu',
@@ -16,4 +17,9 @@ return [
     'search' => 'Recherche',
     'repository' => 'Référentiel',
     'settings_description' => 'Gérez votre profil et les paramètres de votre compte',
+    'analytics' => 'Analytiques',
+    'reports' => 'Rapports',
+    'help' => 'Aide',
+    'profile' => 'Profil',
+    'logout' => 'Déconnexion',
 ];

@@ -15,19 +15,66 @@ class Submissions extends Component
 
     public Form $form;
 
+    public string $search = '';
+
+    public int $perPage = 10;
+
+    public string $sortBy = 'created_at';
+
+    public string $sortDirection = 'desc';
+
+    /**
+     * The querystring properties.
+     *
+     * @var array
+     */
+    protected $queryString = [
+        'search' => ['except' => ''],
+        'perPage' => ['except' => 10],
+        'sortBy' => ['except' => 'created_at'],
+        'sortDirection' => ['except' => 'desc'],
+    ];
+
     public function mount(Form $form)
     {
         $this->form = $form;
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    public function sort(string $column): void
+    {
+        if ($this->sortBy === $column) {
+            $this->sortDirection = $this->sortDirection === 'asc' ? 'desc' : 'asc';
+        } else {
+            $this->sortBy = $column;
+            $this->sortDirection = 'asc';
+        }
+    }
+
     public function render()
     {
         $submissions = $this->form->submissions()
-            ->latest()
-            ->paginate(20);
+            ->when($this->search, function ($query, $search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('ip_address', 'like', '%' . $search . '%')
+                        ->orWhere('user_agent', 'like', '%' . $search . '%')
+                        ->orWhereRaw("JSON_EXTRACT(data, '$.*') LIKE ?", ["%{$search}%"]);
+                });
+            })
+            ->orderBy($this->sortBy, $this->sortDirection)
+            ->paginate($this->perPage);
 
         return view('livewire.admin.forms.submissions', [
             'submissions' => $submissions,
-        ])->title('Form Submissions - ' . $this->form->getTranslation('name', 'en'));
+        ])->title(__('forms.submissions_for', ['name' => $this->form->getTranslation('name', app()->getLocale())]));
     }
 } 

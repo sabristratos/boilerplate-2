@@ -1,12 +1,43 @@
 <div>
+    <div class="mb-6">
+        <flux:heading size="xl" class="mb-2">{{ $this->getResourceInstance()::pluralLabel() }}</flux:heading>
+        
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item href="{{ route('dashboard') }}" icon="home" />
+            <flux:breadcrumbs.item>{{ __('navigation.resources') }}</flux:breadcrumbs.item>
+            <flux:breadcrumbs.item>{{ $this->getResourceInstance()::pluralLabel() }}</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
+    </div>
+
     <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="w-full md:w-1/3">
-            <flux:input
+            <flux:autocomplete
                 wire:model.live.debounce.300ms="search"
                 :placeholder="__('labels.search_placeholder')"
                 icon="magnifying-glass"
                 clearable
-            />
+            >
+                @if($search && $resources->count() > 0)
+                    @foreach($resources->take(5) as $resource)
+                        @php
+                            $searchableColumns = collect($columns)->filter(fn($column) => $column->isSearchable())->map(fn($column) => $column->getName())->toArray();
+                            $displayValue = '';
+                            foreach($searchableColumns as $column) {
+                                $value = data_get($resource, $column);
+                                if (!empty($value)) {
+                                    $displayValue = $value;
+                                    break;
+                                }
+                            }
+                        @endphp
+                        @if($displayValue)
+                            <flux:autocomplete.item value="{{ $displayValue }}">
+                                {{ $displayValue }}
+                            </flux:autocomplete.item>
+                        @endif
+                    @endforeach
+                @endif
+            </flux:autocomplete>
         </div>
 
         <div class="flex items-center gap-2">
@@ -21,16 +52,60 @@
             </flux:select>
 
             @if (count($availableFilters) > 0)
-                <flux:button
-                    variant="outline"
-                    x-on:click="$wire.set('showFiltersModal', true)"
-                >
-                    {{ __('buttons.filters') }}
-                    @if (count($this->filters) > 0)
-                        <flux:badge color="blue" size="sm">{{ count($this->filters) }}</flux:badge>
-                    @endif
-                </flux:button>
+                <flux:dropdown wire:model.live="showFiltersPopover">
+                    <flux:button
+                        variant="outline"
+                        icon="funnel"
+                        icon:variant="micro"
+                        icon:class="text-zinc-400"
+                    >
+                        {{ __('buttons.filters') }}
+                        @if (count($this->filters) > 0)
+                            <flux:badge color="blue" size="sm">{{ count($this->filters) }}</flux:badge>
+                        @endif
+                    </flux:button>
+                    <flux:popover class="w-80 space-y-4">
+                        <flux:heading size="lg">{{ __('buttons.filters') }}</flux:heading>
+
+                        <div class="space-y-4">
+                            @foreach ($availableFilters as $filter)
+                                @if ($filter instanceof \App\Services\ResourceSystem\Filters\SelectFilter)
+                                    <flux:select
+                                        id="filter-{{ $filter->getName() }}"
+                                        wire:model.live="filters.{{ $filter->getName() }}"
+                                        label="{{ $filter->getLabel() }}"
+                                    >
+                                        @foreach ($filter->getOptions() as $value => $label)
+                                            <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
+                                        @endforeach
+                                    </flux:select>
+                                @endif
+                            @endforeach
+                        </div>
+
+                        <flux:separator variant="subtle" />
+
+                        <div class="flex justify-end">
+                            <flux:button
+                                wire:click="resetFilters"
+                                variant="subtle"
+                                size="sm"
+                                class="justify-start -m-2 px-2!"
+                            >
+                                {{ __('buttons.reset_filters') }}
+                            </flux:button>
+                        </div>
+                    </flux:popover>
+                </flux:dropdown>
             @endif
+
+            <flux:button
+                href="{{ route('admin.resources.' . $this->resource::uriKey() . '.create') }}"
+                variant="primary"
+                icon="plus"
+            >
+                {{ __('buttons.create_item', ['item' => $this->getResourceInstance()::singularLabel()]) }}
+            </flux:button>
         </div>
     </div>
 
@@ -144,41 +219,6 @@
     @endif
 
     {{-- Modals --}}
-    @if (count($availableFilters) > 0)
-        <flux:modal
-            wire:model.live.self="showFiltersModal"
-            variant="flyout"
-        >
-            <div class="space-y-6">
-                <flux:heading size="lg">{{ __('buttons.filters') }}</flux:heading>
-
-                <div class="space-y-4">
-                    @foreach ($availableFilters as $filter)
-                        @if ($filter instanceof \App\Services\ResourceSystem\Filters\SelectFilter)
-                            <flux:select
-                                id="filter-{{ $filter->getName() }}"
-                                wire:model.live="filters.{{ $filter->getName() }}"
-                                label="{{ $filter->getLabel() }}"
-                            >
-                                @foreach ($filter->getOptions() as $value => $label)
-                                    <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
-                                @endforeach
-                            </flux:select>
-                        @endif
-                    @endforeach
-                </div>
-
-                <div class="flex justify-end gap-2">
-                    <flux:button
-                        wire:click="resetFilters"
-                        variant="outline"
-                    >
-                        {{ __('buttons.reset_filters') }}
-                    </flux:button>
-                </div>
-            </div>
-        </flux:modal>
-    @endif
 
     <flux:modal wire:model.live.self="showDeleteModal">
         <div class="space-y-6">

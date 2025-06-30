@@ -36,4 +36,9 @@ return [
     'select_existing' => 'Select Existing',
     'select' => 'Select',
     'save_and_create_another' => 'Save & Create Another',
+    'view_submissions' => 'View Submissions',
+    'view_details' => 'View Details',
+    'back_to_form' => 'Back to Form',
+    'back_to_submissions' => 'Back to Submissions',
+    'edit_form' => 'Edit Form',
 ];

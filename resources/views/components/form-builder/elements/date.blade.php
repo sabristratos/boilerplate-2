@@ -29,14 +29,8 @@
     label="{{ $properties['label'] }}" 
     placeholder="{{ $properties['placeholder'] }}"
     mode="{{ $mode }}"
-    min-range="{{ $minRange ?: '' }}"
-    max-range="{{ $maxRange ?: '' }}"
-    min="{{ $min ?: '' }}"
-    max="{{ $max ?: '' }}"
     :months="$months"
-    description="{{ $description ?: '' }}"
     :description:trailing="$descriptionTrailing"
-    badge="{{ $badge ?: '' }}"
     size="{{ $size }}"
     :week-numbers="$weekNumbers"
     :selectable-header="$selectableHeader"
@@ -44,11 +38,9 @@
     :with-inputs="$withInputs"
     :with-confirmation="$withConfirmation"
     :with-presets="$withPresets"
-    presets="{{ $presets }}"
     :clearable="$clearable"
     :disabled="$disabled"
     :invalid="$invalid"
-    locale="{{ $locale ?: '' }}"
 >
     <x-slot name="trigger">
         <flux:date-picker.input />

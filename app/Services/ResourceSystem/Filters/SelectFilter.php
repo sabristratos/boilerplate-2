@@ -76,7 +76,7 @@ class SelectFilter extends Filter
         $options = $this->options;
 
         if ($this->includeEmptyOption) {
-            $options = ['' => $this->emptyOptionLabel] + $options;
+            $options = ['' => __($this->emptyOptionLabel)] + $options;
         }
 
         return $options;

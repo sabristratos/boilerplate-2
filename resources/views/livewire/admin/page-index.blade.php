@@ -1,32 +1,81 @@
 <div>
+    <div class="mb-6">
+        <flux:heading size="xl" class="mb-2">{{ __('navigation.pages') }}</flux:heading>
+        
+        <flux:breadcrumbs>
+            <flux:breadcrumbs.item href="{{ route('dashboard') }}" icon="home" />
+            <flux:breadcrumbs.item>{{ __('navigation.pages') }}</flux:breadcrumbs.item>
+        </flux:breadcrumbs>
+    </div>
+
     <div class="mb-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div class="w-full md:w-1/3">
-            <flux:input
+            <flux:autocomplete
                 wire:model.live.debounce.300ms="search"
                 :placeholder="__('labels.search_placeholder')"
                 icon="magnifying-glass"
                 clearable
-            />
+            >
+                @if($search && $this->pages->count() > 0)
+                    @foreach($this->pages->take(5) as $page)
+                        <flux:autocomplete.item value="{{ $page->getTranslation('title', app()->getLocale()) }}">
+                            {{ $page->getTranslation('title', app()->getLocale()) }}
+                        </flux:autocomplete.item>
+                    @endforeach
+                @endif
+            </flux:autocomplete>
         </div>
 
         <div class="flex items-center gap-2">
-            <flux:button
-                variant="outline"
-                x-on:click="$wire.set('showFiltersModal', true)"
-                :tooltip="__('buttons.filters')"
-            >
-                {{ __('buttons.filters') }}
-                @if (count(array_filter($this->filters)) > 0)
-                    <flux:badge color="blue" size="sm">{{ count(array_filter($this->filters)) }}</flux:badge>
-                @endif
-            </flux:button>
+            <flux:dropdown wire:model.live="showFiltersPopover">
+                <flux:button
+                    variant="outline"
+                    icon="funnel"
+                    icon:variant="micro"
+                    icon:class="text-zinc-400"
+                >
+                    {{ __('buttons.filters') }}
+                    @if (count(array_filter($this->filters)) > 0)
+                        <flux:badge color="blue" size="sm">{{ count(array_filter($this->filters)) }}</flux:badge>
+                    @endif
+                </flux:button>
+                <flux:popover class="w-80 space-y-4">
+                    <flux:heading size="lg">{{ __('buttons.filters') }}</flux:heading>
+
+                    <div class="space-y-4">
+                        <flux:select
+                            id="filter-locale"
+                            wire:model.live="filters.locale"
+                            label="{{ __('labels.locale') }}"
+                        >
+                            <flux:select.option value="">{{ __('labels.all_locales') }}</flux:select.option>
+                            @foreach($this->locales as $key => $localeName)
+                                <flux:select.option value="{{ $key }}">{{ $localeName }}</flux:select.option>
+                            @endforeach
+                        </flux:select>
+                    </div>
+
+                    <flux:separator variant="subtle" />
+
+                    <div class="flex justify-end">
+                        <flux:button
+                            wire:click="resetFilters"
+                            variant="subtle"
+                            size="sm"
+                            class="justify-start -m-2 px-2!"
+                        >
+                            {{ __('buttons.reset_filters') }}
+                        </flux:button>
+                    </div>
+                </flux:popover>
+            </flux:dropdown>
             <flux:select wire:model.live="perPage">
                 <flux:select.option value="10">{{ __('labels.per_page', ['count' => 10]) }}</flux:select.option>
                 <flux:select.option value="25">{{ __('labels.per_page', ['count' => 25]) }}</flux:select.option>
                 <flux:select.option value="50">{{ __('labels.per_page', ['count' => 50]) }}</flux:select.option>
                 <flux:select.option value="100">{{ __('labels.per_page', ['count' => 100]) }}</flux:select.option>
             </flux:select>
-            <flux:button wire:click="createPage" :tooltip="__('buttons.create_item', ['item' => __('Pages')])">{{ __('buttons.create_item', ['item' => __('Pages')]) }}</flux:button>
+            <flux:button wire:click="createPage" :tooltip="__('buttons.create_item', ['item' => __('navigation.pages')])">{{ __('buttons.create_item', ['item' => __('navigation.pages')]) }}</flux:button>
         </div>
     </div>
     <div class="rounded-lg overflow-hidden py-2">
@@ -66,16 +115,16 @@
                                 size="xs"
                                 icon="eye"
                                 square
-                                tooltip="View"
+                                tooltip="{{ __('buttons.view') }}"
                             />
-                            <flux:button href="{{ route('admin.pages.editor', ['page' => $page->id, 'locale' => $filters['locale'] ?? app()->getLocale()]) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="Edit" />
-                            <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('general.delete') }}" />
+                            <flux:button href="{{ route('admin.pages.editor', ['page' => $page->id, 'locale' => $filters['locale'] ?? app()->getLocale()]) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="{{ __('buttons.edit') }}" />
+                            <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('buttons.delete') }}" />
                         </td>
                     </tr>
                 @empty
                     <tr>
                         <td colspan="3" class="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-500">
-                            No pages found.
+                            {{ __('messages.no_pages_found') }}
                         </td>
                     </tr>
                 @endforelse
@@ -89,33 +138,7 @@
         </div>
     @endif
 
-    <flux:modal wire:model.live.self="showFiltersModal" variant="flyout">
-        <div class="space-y-6">
-            <flux:heading size="lg">{{ __('buttons.filters') }}</flux:heading>
 
-            <div class="space-y-4">
-                <flux:select
-                    id="filter-locale"
-                    wire:model.live="filters.locale"
-                    label="Locale"
-                >
-                    <flux:select.option value="">All Locales</flux:select.option>
-                    @foreach($this->locales as $key => $localeName)
-                        <flux:select.option value="{{ $key }}">{{ $localeName }}</flux:select.option>
-                    @endforeach
-                </flux:select>
-            </div>
-
-            <div class="flex justify-end gap-2">
-                <flux:button
-                    wire:click="resetFilters"
-                    variant="outline"
-                >
-                    {{ __('buttons.reset_filters') }}
-                </flux:button>
-            </div>
-        </div>
-    </flux:modal>
 
     <flux:modal wire:model.live.self="showDeleteModal">
         <div class="space-y-6">

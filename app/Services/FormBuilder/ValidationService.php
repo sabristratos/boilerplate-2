@@ -8,8 +8,11 @@ class ValidationService
 
     private array $defaultMessages;
 
-    public function __construct()
+    private FieldValidationService $fieldValidationService;
+
+    public function __construct(FieldValidationService $fieldValidationService)
     {
+        $this->fieldValidationService = $fieldValidationService;
         $this->availableRules = config('forms.validation.rules');
         $this->defaultMessages = config('forms.validation.default_messages');
     }
@@ -76,6 +79,30 @@ class ValidationService
     public function getAvailableRules(): array
     {
         return $this->availableRules;
+    }
+
+    /**
+     * Get relevant validation rules for a specific field type
+     */
+    public function getRelevantRules(string $fieldType): array
+    {
+        return $this->fieldValidationService->getRelevantRules($fieldType);
+    }
+
+    /**
+     * Get relevant validation rules grouped by category for a field type
+     */
+    public function getRelevantRulesByCategory(string $fieldType): array
+    {
+        return $this->fieldValidationService->getRelevantRulesByCategory($fieldType);
+    }
+
+    /**
+     * Get available categories for a field type
+     */
+    public function getAvailableCategories(string $fieldType): array
+    {
+        return $this->fieldValidationService->getAvailableCategories($fieldType);
     }
 
     /**

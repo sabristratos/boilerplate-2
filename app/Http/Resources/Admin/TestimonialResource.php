@@ -135,7 +135,7 @@ class TestimonialResource extends Resource
                     '4' => __('labels.4_stars'),
                     '3' => __('labels.3_stars'),
                     '2' => __('labels.2_stars'),
-                    '1' => __('resources.labels.1_star'),
+                    '1' => __('labels.1_star'),
                 ]),
         ];
     }
