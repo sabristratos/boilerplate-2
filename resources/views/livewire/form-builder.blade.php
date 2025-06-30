@@ -18,8 +18,22 @@
                 </svg>
                 <span class="text-sm font-medium">{{ __('navigation.forms') }}</span>
             </a>
-            <flux:heading size="lg">{{ $form->getTranslation('name', 'en') }}</flux:heading>
-            <flux:text variant="subtle">ID: {{ $form->id }}</flux:text>
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <flux:heading size="lg">{{ $form->getTranslation('name', 'en') }}</flux:heading>
+                    <flux:text variant="subtle">ID: {{ $form->id }}</flux:text>
+                </div>
+                <flux:button 
+                    href="{{ route('admin.forms.submissions', $form) }}" 
+                    wire:navigate
+                    size="sm"
+                    variant="ghost"
+                    icon="document-text"
+                    tooltip="View form submissions"
+                >
+                    Submissions ({{ $form->submissions()->count() }})
+                </flux:button>
+            </div>
         </div>
         <div class="flex-1 overflow-y-auto p-4">
             <flux:tab.group wire:model.live="tab">
@@ -30,6 +44,14 @@
                 <flux:tab.panel name="toolbox" class="!p-0">
                     <div class="p-4">
                         <flux:heading size="lg" class="mb-4">Toolbox</flux:heading>
+                        <div class="mb-4">
+                            <flux:select label="Load Prebuilt Form" wire:change="loadPrebuiltForm($event.target.value)">
+                                <option value="">-- Select a prebuilt form --</option>
+                                @foreach($this->availablePrebuiltForms as $prebuilt)
+                                    <option value="{{ get_class($prebuilt) }}">{{ $prebuilt->getName() }}</option>
+                                @endforeach
+                            </flux:select>
+                        </div>
                         <div class="space-y-2">
                             @foreach($elementTypes as $elementType)
                             <div
@@ -80,93 +102,150 @@
                 <flux:button 
                     variant="ghost" 
                     icon="eye"
-                    tooltip="Preview the form as users will see it"
+                    wire:click="togglePreview"
+                    :variant="$isPreviewMode ? 'primary' : 'ghost'"
+                    tooltip="{{ $isPreviewMode ? 'Exit Preview Mode' : 'Preview the form as users will see it' }}"
                 >
-                    Preview
+                    {{ $isPreviewMode ? 'Exit Preview' : 'Preview' }}
                 </flux:button>
             </div>
         </div>
         <div class="flex-1 p-8 overflow-y-auto" @drop.prevent="handleDrop($event)" @dragover.prevent>
-            <div
-                class="mx-auto shadow-lg transition-all duration-300"
-                :style="{ backgroundColor: $wire.settings.backgroundColor, fontFamily: $wire.settings.defaultFont }"
-                :class="{
-                    'max-w-full': $wire.activeBreakpoint === 'desktop',
-                    'max-w-3xl': $wire.activeBreakpoint === 'tablet',
-                    'max-w-sm': $wire.activeBreakpoint === 'mobile',
-                }"
-            >
+            @if($isPreviewMode)
+                <!-- Preview Mode -->
                 <div
-                    class="responsive-grid-container"
-                    x-sort="
-                        const items = Array.from($el.children).map(child => parseInt(child.getAttribute('x-sort:item')));
-                        $wire.handleReorder(items);
-                    "
-                    x-sort:config="{ animation: 150, ghostClass: 'sortable-ghost' }"
+                    class="mx-auto shadow-lg transition-all duration-300"
+                    :style="{ backgroundColor: $wire.settings.backgroundColor, fontFamily: $wire.settings.defaultFont }"
+                    :class="{
+                        'max-w-full': $wire.activeBreakpoint === 'desktop',
+                        'max-w-3xl': $wire.activeBreakpoint === 'tablet',
+                        'max-w-sm': $wire.activeBreakpoint === 'mobile',
+                    }"
                 >
-                    @forelse($elements as $index => $element)
-                        @php
-                            // Use the active breakpoint to determine which width to apply
-                            $activeWidth = $element['styles'][$activeBreakpoint]['width'] ?? 'full';
-                            
-                            // Convert width to column span based on active breakpoint
-                            $columnSpan = match($activeWidth) {
-                                'full' => 12,
-                                '1/2' => 6,
-                                '1/3' => 4,
-                                '2/3' => 8,
-                                '1/4' => 3,
-                                '3/4' => 9,
-                                default => 12
-                            };
-                            
-                            // Force full width on mobile for better UX
-                            if ($activeBreakpoint === 'mobile') {
-                                $columnSpan = 12;
-                            }
-                        @endphp
-                        <div
-                            wire:key="element-{{ $element['id'] }}"
-                            x-sort:item="{{ $element['order'] }}"
-                            @click="$wire.set('selectedElementId', '{{ $element['id'] }}')"
-                            class="relative cursor-pointer group [body:not(.sorting)_&]:hover:bg-zinc-50 dark:[body:not(.sorting)_&]:hover:bg-zinc-800/50 rounded-md responsive-grid-item"
-                            :class="{ 'ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-100 dark:ring-offset-zinc-900': $wire.selectedElementId === '{{ $element['id'] }}' }"
-                            style="grid-column: span {{ $columnSpan }};"
-                        >
-                            <div class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
-                                <flux:button 
-                                    icon="arrows-pointing-out" 
-                                    size="xs" 
-                                    variant="ghost" 
-                                    x-sort:handle 
-                                    tooltip="Drag to reorder this element"
-                                />
-                                <flux:button 
-                                    wire:click="confirmDelete('{{ $element['id'] }}', 'deleteElement')" 
-                                    icon="trash" 
-                                    size="xs" 
-                                    variant="danger" 
-                                    tooltip="Delete this element"
-                                />
+                    <form wire:submit.prevent="submitPreview" class="p-6 space-y-6">
+                        <flux:heading size="lg">{{ $form->getTranslation('name', 'en') }}</flux:heading>
+                        
+                        @if($elements)
+                            <div class="responsive-grid-container">
+                                @foreach($elements as $index => $element)
+                                    @php
+                                        $activeWidth = $element['styles'][$activeBreakpoint]['width'] ?? 'full';
+                                        $columnSpan = match($activeWidth) {
+                                            'full' => 12,
+                                            '1/2' => 6,
+                                            '1/3' => 4,
+                                            '2/3' => 8,
+                                            '1/4' => 3,
+                                            '3/4' => 9,
+                                            default => 12
+                                        };
+                                        if ($activeBreakpoint === 'mobile') {
+                                            $columnSpan = 12;
+                                        }
+                                    @endphp
+                                    <div class="responsive-grid-item" style="grid-column: span {{ $columnSpan }};">
+                                        {!! $previewElements[$index] ?? '' !!}
+                                    </div>
+                                @endforeach
                             </div>
-                            <div class="p-4">
-                                {!! $renderedElements[$index] ?? '' !!}
-                            </div>
-                        </div>
-                    @empty
-                        <div class="text-center border-2 border-dashed border-zinc-300 dark:border-zinc-700 col-span-full p-12 rounded-lg">
-                            <flux:heading>Drop elements here</flux:heading>
-                            <flux:text variant="subtle">Drag and drop from the toolbox to get started.</flux:text>
-                            <flux:callout variant="secondary" icon="information-circle" class="mt-4 max-w-md mx-auto">
+                        @else
+                            <flux:callout variant="secondary" icon="information-circle">
                                 <flux:callout.text>
-                                    <p>Drag form elements from the toolbox on the left and drop them here to build your form.</p>
-                                    <p>You can reorder elements by dragging them within the canvas.</p>
+                                    This form has no elements configured yet.
                                 </flux:callout.text>
                             </flux:callout>
+                        @endif
+                        
+                        <div class="flex justify-end">
+                            <flux:button type="submit" icon="paper-airplane">
+                                Submit Form
+                            </flux:button>
                         </div>
-                    @endforelse
+                    </form>
                 </div>
-            </div>
+            @else
+                <!-- Builder Mode -->
+                <div
+                    class="mx-auto shadow-lg transition-all duration-300"
+                    :style="{ backgroundColor: $wire.settings.backgroundColor, fontFamily: $wire.settings.defaultFont }"
+                    :class="{
+                        'max-w-full': $wire.activeBreakpoint === 'desktop',
+                        'max-w-3xl': $wire.activeBreakpoint === 'tablet',
+                        'max-w-sm': $wire.activeBreakpoint === 'mobile',
+                    }"
+                >
+                    <div
+                        class="responsive-grid-container"
+                        x-sort="
+                            const items = Array.from($el.children).map(child => parseInt(child.getAttribute('x-sort:item')));
+                            $wire.handleReorder(items);
+                        "
+                        x-sort:config="{ animation: 150, ghostClass: 'sortable-ghost' }"
+                    >
+                        @forelse($elements as $index => $element)
+                            @php
+                                // Use the active breakpoint to determine which width to apply
+                                $activeWidth = $element['styles'][$activeBreakpoint]['width'] ?? 'full';
+                                
+                                // Convert width to column span based on active breakpoint
+                                $columnSpan = match($activeWidth) {
+                                    'full' => 12,
+                                    '1/2' => 6,
+                                    '1/3' => 4,
+                                    '2/3' => 8,
+                                    '1/4' => 3,
+                                    '3/4' => 9,
+                                    default => 12
+                                };
+                                
+                                // Force full width on mobile for better UX
+                                if ($activeBreakpoint === 'mobile') {
+                                    $columnSpan = 12;
+                                }
+                            @endphp
+                            <div
+                                wire:key="element-{{ $element['id'] }}"
+                                x-sort:item="{{ $element['order'] }}"
+                                @click="$wire.set('selectedElementId', '{{ $element['id'] }}')"
+                                class="relative cursor-pointer group [body:not(.sorting)_&]:hover:bg-zinc-50 dark:[body:not(.sorting)_&]:hover:bg-zinc-800/50 rounded-md responsive-grid-item"
+                                :class="{ 'ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-100 dark:ring-offset-zinc-900': $wire.selectedElementId === '{{ $element['id'] }}' }"
+                                style="grid-column: span {{ $columnSpan }};"
+                            >
+                                <div class="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
+                                    <flux:button 
+                                        icon="arrows-pointing-out" 
+                                        size="xs" 
+                                        variant="ghost" 
+                                        x-sort:handle 
+                                        tooltip="Drag to reorder this element"
+                                    />
+                                    <flux:button 
+                                        wire:click="confirmDelete('{{ $element['id'] }}', 'deleteElement')" 
+                                        icon="trash" 
+                                        size="xs" 
+                                        variant="danger" 
+                                        tooltip="Delete this element"
+                                    />
+                                </div>
+                                <div class="p-4">
+                                    {!! $renderedElements[$index] ?? '' !!}
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center border-2 border-dashed border-zinc-300 dark:border-zinc-700 col-span-full p-12 rounded-lg">
+                                <flux:heading>Drop elements here</flux:heading>
+                                <flux:text variant="subtle">Drag and drop from the toolbox to get started.</flux:text>
+                                <flux:callout variant="secondary" icon="information-circle" class="mt-4 max-w-md mx-auto">
+                                    <flux:callout.text>
+                                        <p>Drag form elements from the toolbox on the left and drop them here to build your form.</p>
+                                        <p>You can reorder elements by dragging them within the canvas.</p>
+                                    </flux:callout.text>
+                                </flux:callout>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
@@ -294,35 +373,154 @@
                             @endif
 
                             @if($this->selectedElement['type'] === 'date')
-                                <flux:heading size="sm">Date Picker Options</flux:heading>
-                                <div class="space-y-3">
-                                    <flux:select 
-                                        wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.mode" 
-                                        label="Mode"
-                                    >
-                                        <flux:select.option value="single">Single Date</flux:select.option>
-                                        <flux:select.option value="range">Date Range</flux:select.option>
-                                    </flux:select>
-                                    <flux:field variant="inline">
-                                        <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.withPresets" />
-                                        <flux:label>Show Presets</flux:label>
-                                    </flux:field>
-                                    <flux:field variant="inline">
-                                        <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.clearable" />
-                                        <flux:label>Clearable</flux:label>
-                                    </flux:field>
-                                    <flux:input 
-                                        wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.min" 
-                                        label="Minimum Date" 
-                                        placeholder="e.g. 2024-01-01 or today"
-                                        help="Leave empty for no minimum date"
-                                    />
-                                    <flux:input 
-                                        wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.max" 
-                                        label="Maximum Date" 
-                                        placeholder="e.g. 2030-12-31 or today"
-                                        help="Leave empty for no maximum date"
-                                    />
+                                <flux:heading size="sm">Date Picker Configuration</flux:heading>
+                                <div class="space-y-4">
+                                    <!-- Basic Settings -->
+                                    <div class="space-y-3">
+                                        <flux:heading size="xs">Basic Settings</flux:heading>
+                                        <flux:select 
+                                            wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.mode" 
+                                            label="Mode"
+                                        >
+                                            <flux:select.option value="single">Single Date</flux:select.option>
+                                            <flux:select.option value="range">Date Range</flux:select.option>
+                                        </flux:select>
+                                        <flux:input 
+                                            wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.months" 
+                                            type="number"
+                                            label="Months to Display" 
+                                            placeholder="1"
+                                            help="Number of months to show (1-12)"
+                                        />
+                                        <flux:select 
+                                            wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.size" 
+                                            label="Calendar Size"
+                                        >
+                                            <flux:select.option value="sm">Small</flux:select.option>
+                                            <flux:select.option value="default">Default</flux:select.option>
+                                            <flux:select.option value="lg">Large</flux:select.option>
+                                            <flux:select.option value="xl">Extra Large</flux:select.option>
+                                            <flux:select.option value="2xl">2XL</flux:select.option>
+                                        </flux:select>
+                                    </div>
+
+                                    <!-- Date Constraints -->
+                                    <div class="space-y-3">
+                                        <flux:heading size="xs">Date Constraints</flux:heading>
+                                        <flux:input 
+                                            wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.min" 
+                                            label="Minimum Date" 
+                                            placeholder="e.g. 2024-01-01 or today"
+                                            help="Earliest selectable date"
+                                        />
+                                        <flux:input 
+                                            wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.max" 
+                                            label="Maximum Date" 
+                                            placeholder="e.g. 2030-12-31 or today"
+                                            help="Latest selectable date"
+                                        />
+                                        @if($this->selectedElement['properties']['mode'] === 'range')
+                                            <flux:input 
+                                                wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.minRange" 
+                                                type="number"
+                                                label="Minimum Range (days)" 
+                                                placeholder="e.g. 3"
+                                                help="Minimum number of days in range"
+                                            />
+                                            <flux:input 
+                                                wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.maxRange" 
+                                                type="number"
+                                                label="Maximum Range (days)" 
+                                                placeholder="e.g. 30"
+                                                help="Maximum number of days in range"
+                                            />
+                                        @endif
+                                    </div>
+
+                                    <!-- Display Options -->
+                                    <div class="space-y-3">
+                                        <flux:heading size="xs">Display Options</flux:heading>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.weekNumbers" />
+                                            <flux:label>Show Week Numbers</flux:label>
+                                        </flux:field>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.selectableHeader" />
+                                            <flux:label>Selectable Header</flux:label>
+                                        </flux:field>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.withToday" />
+                                            <flux:label>Today Shortcut</flux:label>
+                                        </flux:field>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.withInputs" />
+                                            <flux:label>Show Date Inputs</flux:label>
+                                        </flux:field>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.withConfirmation" />
+                                            <flux:label>Require Confirmation</flux:label>
+                                        </flux:field>
+                                    </div>
+
+                                    <!-- Presets -->
+                                    <div class="space-y-3">
+                                        <flux:heading size="xs">Presets</flux:heading>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.withPresets" />
+                                            <flux:label>Enable Presets</flux:label>
+                                        </flux:field>
+                                        @if($this->selectedElement['properties']['withPresets'])
+                                            <flux:textarea 
+                                                wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.presets" 
+                                                label="Available Presets" 
+                                                placeholder="today yesterday thisWeek last7Days thisMonth yearToDate allTime"
+                                                help="Space-separated list of preset options"
+                                                rows="3"
+                                            />
+                                        @endif
+                                    </div>
+
+                                    <!-- Behavior -->
+                                    <div class="space-y-3">
+                                        <flux:heading size="xs">Behavior</flux:heading>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.clearable" />
+                                            <flux:label>Clearable</flux:label>
+                                        </flux:field>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.disabled" />
+                                            <flux:label>Disabled</flux:label>
+                                        </flux:field>
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.invalid" />
+                                            <flux:label>Invalid State</flux:label>
+                                        </flux:field>
+                                    </div>
+
+                                    <!-- Additional Properties -->
+                                    <div class="space-y-3">
+                                        <flux:heading size="xs">Additional Properties</flux:heading>
+                                        <flux:input 
+                                            wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.description" 
+                                            label="Description" 
+                                            placeholder="Help text for users"
+                                        />
+                                        <flux:field variant="inline">
+                                            <flux:switch wire:model.live="elements.{{ $this->selectedElementIndex }}.properties.descriptionTrailing" />
+                                            <flux:label>Description Below</flux:label>
+                                        </flux:field>
+                                        <flux:input 
+                                            wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.badge" 
+                                            label="Badge" 
+                                            placeholder="e.g. Required, New"
+                                        />
+                                        <flux:input 
+                                            wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.properties.locale" 
+                                            label="Locale" 
+                                            placeholder="e.g. fr, en-US, ja-JP"
+                                            help="Leave empty for browser default"
+                                        />
+                                    </div>
                                 </div>
                             @endif
 
@@ -535,14 +733,14 @@
                                 label="Validation Rules" 
                                 variant="pills"
                             >
-                                @php
-                                    // Build validation rule checkboxes HTML
-                                    $validationCheckboxes = '';
-                                    foreach ($this->availableValidationRules as $ruleKey => $rule) {
-                                        $validationCheckboxes .= '<flux:checkbox value="' . htmlspecialchars($ruleKey) . '" label="' . htmlspecialchars($rule['label']) . '" description="' . htmlspecialchars($rule['description']) . '" icon="' . htmlspecialchars($rule['icon']) . '" />';
-                                    }
-                                @endphp
-                                {!! $validationCheckboxes !!}
+                                @foreach ($this->availableValidationRules as $ruleKey => $rule)
+                                    <flux:checkbox 
+                                        value="{{ $ruleKey }}" 
+                                        label="{{ $rule['label'] }}" 
+                                        description="{{ $rule['description'] }}" 
+                                        icon="{{ $rule['icon'] }}" 
+                                    />
+                                @endforeach
                             </flux:checkbox.group>
                             @php
                                 $selectedRules = $this->selectedElement['validation']['rules'] ?? [];
@@ -556,17 +754,19 @@
                                     </flux:callout.text>
                                 </flux:callout>
                                 <div class="space-y-3">
-                                    @php
-                                        // Build validation value inputs HTML
-                                        $validationValueInputs = '';
-                                        foreach ($selectedRules as $ruleKey) {
-                                            if (isset($this->availableValidationRules[$ruleKey]) && ($this->availableValidationRules[$ruleKey]['has_value'] ?? false)) {
+                                    @foreach ($selectedRules as $ruleKey)
+                                        @if (isset($this->availableValidationRules[$ruleKey]) && ($this->availableValidationRules[$ruleKey]['has_value'] ?? false))
+                                            @php
                                                 $rule = $this->availableValidationRules[$ruleKey];
-                                                $validationValueInputs .= '<flux:input wire:model.live.debounce="elements.' . $this->selectedElementIndex . '.validation.values.' . htmlspecialchars($ruleKey) . '" label="' . htmlspecialchars($rule['label']) . ' Value" placeholder="Enter value for ' . htmlspecialchars(strtolower($rule['label'])) . '..." help="Required value for ' . htmlspecialchars(strtolower($rule['label'])) . ' validation" />';
-                                            }
-                                        }
-                                    @endphp
-                                    {!! $validationValueInputs !!}
+                                            @endphp
+                                            <flux:input 
+                                                wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
+                                                label="{{ $rule['label'] }} Value" 
+                                                placeholder="Enter value for {{ strtolower($rule['label']) }}..." 
+                                                help="Required value for {{ strtolower($rule['label']) }} validation" 
+                                            />
+                                        @endif
+                                    @endforeach
                                 </div>
                                 <flux:separator text="Custom Messages" class="my-4" />
                                 <flux:callout variant="secondary" icon="chat-bubble-left-right">
@@ -575,17 +775,19 @@
                                     </flux:callout.text>
                                 </flux:callout>
                                 <div class="space-y-3">
-                                    @php
-                                        // Build validation message inputs HTML
-                                        $validationMessageInputs = '';
-                                        foreach ($selectedRules as $ruleKey) {
-                                            if (isset($this->availableValidationRules[$ruleKey])) {
+                                    @foreach ($selectedRules as $ruleKey)
+                                        @if (isset($this->availableValidationRules[$ruleKey]))
+                                            @php
                                                 $rule = $this->availableValidationRules[$ruleKey];
-                                                $validationMessageInputs .= '<flux:input wire:model.live.debounce="elements.' . $this->selectedElementIndex . '.validation.messages.' . htmlspecialchars($ruleKey) . '" label="' . htmlspecialchars($rule['label']) . ' Error Message" placeholder="Custom error message for ' . htmlspecialchars(strtolower($rule['label'])) . '..." help="Leave empty to use default message" />';
-                                            }
-                                        }
-                                    @endphp
-                                    {!! $validationMessageInputs !!}
+                                            @endphp
+                                            <flux:input 
+                                                wire:model.live.debounce="elements.{{ $this->selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                                                label="{{ $rule['label'] }} Error Message" 
+                                                placeholder="Custom error message for {{ strtolower($rule['label']) }}..." 
+                                                help="Leave empty to use default message" 
+                                            />
+                                        @endif
+                                    @endforeach
                                 </div>
                             @endif
                         </div>

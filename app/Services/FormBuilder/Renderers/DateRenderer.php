@@ -30,12 +30,28 @@ class DateRenderer extends BaseElementRenderer
     {
         $properties = parent::getDefaultProperties();
 
-        // Add date-specific properties
+        // Add comprehensive date-picker properties based on Flux documentation
         $properties['mode'] = 'single';
-        $properties['withPresets'] = false;
-        $properties['clearable'] = true;
+        $properties['minRange'] = '';
+        $properties['maxRange'] = '';
         $properties['min'] = '';
         $properties['max'] = '';
+        $properties['months'] = 1;
+        $properties['description'] = '';
+        $properties['descriptionTrailing'] = false;
+        $properties['badge'] = '';
+        $properties['size'] = 'default';
+        $properties['weekNumbers'] = false;
+        $properties['selectableHeader'] = false;
+        $properties['withToday'] = false;
+        $properties['withInputs'] = false;
+        $properties['withConfirmation'] = false;
+        $properties['withPresets'] = false;
+        $properties['presets'] = 'today yesterday thisWeek last7Days thisMonth yearToDate allTime';
+        $properties['clearable'] = true;
+        $properties['disabled'] = false;
+        $properties['invalid'] = false;
+        $properties['locale'] = '';
 
         return $properties;
     }

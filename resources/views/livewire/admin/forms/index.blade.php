@@ -80,17 +80,23 @@
     </div>
 
     <flux:modal name="create-form">
-        <flux:card>
-            <form wire:submit.prevent="create">
-                <flux:heading>Create a new form</flux:heading>
-                <div class="mt-4">
-                    <flux:input wire:model="newFormName" label="Form Name" placeholder="e.g. Contact Us" />
-                </div>
-                <div class="mt-6 flex justify-end gap-3">
-                    <flux:button variant="ghost" @click="$flux.modal('create-form').close()">Cancel</flux:button>
-                    <flux:button type="submit" variant="primary">Create</flux:button>
-                </div>
-            </form>
-        </flux:card>
+        <form wire:submit.prevent="create">
+            <flux:heading>Create a new form</flux:heading>
+            <div class="mt-4">
+                <flux:select wire:model="selectedPrebuiltForm" label="Prebuilt Form (optional)" placeholder="Choose a prebuilt form...">
+                    <flux:select.option value="">-- None --</flux:select.option>
+                    @foreach($this->availablePrebuiltForms as $prebuilt)
+                        <flux:select.option value="{{ get_class($prebuilt) }}">{{ $prebuilt->getName() }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+            <div class="mt-4">
+                <flux:input wire:model="newFormName" label="Form Name" placeholder="e.g. Contact Us" />
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <flux:button variant="ghost" @click="$flux.modal('create-form').close()">Cancel</flux:button>
+                <flux:button type="submit" variant="primary">Create</flux:button>
+            </div>
+        </form>
     </flux:modal>
 </div>
