@@ -74,7 +74,7 @@
                     <flux:menu.separator />
 
                     <flux:menu.radio.group>
-                        <flux:menu.item :href="route('settings.group', ['group' => 'general'])" icon="cog" wire:navigate>{{ __('navigation.settings') }}</flux:menu.item>
+                        <flux:menu.item :href="route('admin.settings.group', ['group' => 'general'])" icon="cog" wire:navigate>{{ __('navigation.settings') }}</flux:menu.item>
                     </flux:menu.radio.group>
 
                     <flux:menu.separator />

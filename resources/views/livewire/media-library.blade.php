@@ -57,7 +57,7 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             @foreach($media as $item)
                                 <div class="group relative">
-                                    <a href="{{ route('media.show', $item->id) }}" class="block">
+                                    <a href="{{ route('admin.media.show', $item->id) }}" class="block">
                                         <div class="aspect-square overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
                                             @if(str_contains($item->mime_type, 'image'))
                                                 <img
@@ -82,7 +82,7 @@
                                         <flux:dropdown align="end">
                                             <flux:button variant="ghost" size="xs" icon="ellipsis-vertical" />
                                             <flux:menu>
-                                                <flux:menu.item icon="eye" href="{{ route('media.show', $item->id) }}">
+                                                <flux:menu.item icon="eye" href="{{ route('admin.media.show', $item->id) }}">
                                                     {{ __('media.view_details') }}
                                                 </flux:menu.item>
                                                 <flux:menu.item

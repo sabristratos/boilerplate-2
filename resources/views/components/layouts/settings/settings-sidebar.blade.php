@@ -3,7 +3,7 @@
         <flux:navlist>
             @foreach($groups as $navGroup)
                 <flux:navlist.item
-                    :href="route('settings.group', ['group' => $navGroup->key])"
+                    :href="route('admin.settings.group', ['group' => $navGroup->key])"
                     :current="$navGroup->key === $currentGroup->key"
                     wire:navigate
                     icon="{{ $navGroup->icon }}"

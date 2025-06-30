@@ -3,7 +3,7 @@
         <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center">
                 <div class="flex items-center space-x-2">
-                    <flux:button href="{{ route('media.index') }}" variant="ghost" icon="arrow-left" size="sm">
+                    <flux:button href="{{ route('admin.media.index') }}" variant="ghost" icon="arrow-left" size="sm">
                         {{ __('media.back_to_library') }}
                     </flux:button>
                     <flux:heading>{{ __('media.details') }}</flux:heading>

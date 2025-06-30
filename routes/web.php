@@ -11,36 +11,52 @@ use App\Livewire\Translations\ManageTranslations;
 use App\Models\Page;
 use Illuminate\Support\Facades\Route;
 
+// Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('dashboard', Dashboard::class)
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+// Authenticated routes
+Route::middleware(['auth', 'verified'])->group(function (): void {
+    Route::get('dashboard', Dashboard::class)->name('dashboard');
+});
 
-Route::middleware(['auth'])->group(function (): void {
+// Admin routes
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function (): void {
+    // Settings routes
     Route::redirect('settings', 'settings/general');
-
-    // Dynamic routes for settings groups
-    Route::get('settings/{group}', \App\Livewire\SettingsPage::class)
-        ->name('settings.group');
+    Route::get('settings/{group}', \App\Livewire\SettingsPage::class)->name('settings.group');
 
     // Media Library routes
     Route::get('media', MediaLibrary::class)->name('media.index');
     Route::get('media/{id}', MediaDetail::class)->name('media.show');
 
-    Route::get('/forms', FormIndex::class)->name('admin.forms.index');
-    Route::get('/forms/{form}/edit', \App\Livewire\FormBuilder::class)->name('admin.forms.edit');
-    Route::get('/forms/{form}/submissions', \App\Livewire\Admin\Forms\Submissions::class)->name('admin.forms.submissions');
+    // Forms management
+    Route::get('forms', FormIndex::class)->name('forms.index');
+    Route::get('forms/{form}/edit', \App\Livewire\FormBuilder::class)->name('forms.edit');
+    Route::get('forms/{form}/submissions', \App\Livewire\Admin\Forms\Submissions::class)->name('forms.submissions');
 
     // Translations management
-    Route::get('translations', ManageTranslations::class)->name('admin.translations.index');
+    Route::get('translations', ManageTranslations::class)->name('translations.index');
 
-    // Page Editor
-    Route::get('admin/pages', \App\Livewire\Admin\PageIndex::class)->name('admin.pages.index');
-    Route::get('admin/pages/{page:id}/editor', \App\Livewire\Admin\PageManager::class)->name('admin.pages.editor');
+    // Page management
+    Route::get('pages', \App\Livewire\Admin\PageIndex::class)->name('pages.index');
+    Route::get('pages/{page:id}/editor', \App\Livewire\Admin\PageManager::class)->name('pages.editor');
+
+    // Analytics & Reports (placeholder routes for future implementation)
+    Route::get('analytics', function () {
+        return view('admin.analytics.index');
+    })->name('analytics.index');
+
+    Route::get('reports', function () {
+        return view('admin.reports.index');
+    })->name('reports.index');
+
+    // Help & Documentation
+    Route::get('help', function () {
+        return view('admin.help.index');
+    })->name('help.index');
 });
 
 require __DIR__.'/auth.php';
 
-Route::get('/{page:slug}', [PageController::class, 'show'])
-    ->name('pages.show');
+// Dynamic page routes (must be last)
+Route::get('/{page:slug}', [PageController::class, 'show'])->name('pages.show');

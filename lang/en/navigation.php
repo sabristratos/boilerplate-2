@@ -17,4 +17,9 @@ return [
     'search' => 'Search',
     'repository' => 'Repository',
     'settings_description' => 'Manage your profile and account settings',
+    'analytics' => 'Analytics',
+    'reports' => 'Reports',
+    'help' => 'Help',
+    'profile' => 'Profile',
+    'logout' => 'Logout',
 ];

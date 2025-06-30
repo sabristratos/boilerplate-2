@@ -66,7 +66,7 @@ class SettingsPage extends Component
             // If the group doesn't exist or user doesn't have access, redirect to the first available group
             $firstGroup = $authorizedGroups->first();
             if ($firstGroup) {
-                $this->redirect(route('settings.group', ['group' => $firstGroup->key]));
+                $this->redirect(route('admin.settings.group', ['group' => $firstGroup->key]));
             } else {
                 abort(403, 'You do not have access to any settings groups.');
             }

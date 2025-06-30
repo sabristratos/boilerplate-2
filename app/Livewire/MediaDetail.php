@@ -32,7 +32,7 @@ class MediaDetail extends Component
 
             Flux::toast('Media deleted successfully.', variant: 'success');
 
-            return redirect()->route('media.index');
+            return redirect()->route('admin.media.index');
         } catch (\Exception $e) {
             Flux::toast('Failed to delete media: '.$e->getMessage(), variant: 'danger');
         }
