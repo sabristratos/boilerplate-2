@@ -121,6 +121,7 @@ return [
                 'rule' => 'required',
                 'icon' => 'exclamation-triangle',
                 'has_value' => false,
+                'category' => 'Basic',
             ],
             'email' => [
                 'label' => 'Email',
@@ -128,6 +129,7 @@ return [
                 'rule' => 'email',
                 'icon' => 'envelope',
                 'has_value' => false,
+                'category' => 'Format',
             ],
             'numeric' => [
                 'label' => 'Numeric',
@@ -135,6 +137,7 @@ return [
                 'rule' => 'numeric',
                 'icon' => 'calculator',
                 'has_value' => false,
+                'category' => 'Format',
             ],
             'min' => [
                 'label' => 'Minimum Length',
@@ -142,6 +145,7 @@ return [
                 'rule' => 'min',
                 'icon' => 'arrow-down',
                 'has_value' => true,
+                'category' => 'Length',
             ],
             'max' => [
                 'label' => 'Maximum Length',
@@ -149,6 +153,7 @@ return [
                 'rule' => 'max',
                 'icon' => 'arrow-up',
                 'has_value' => true,
+                'category' => 'Length',
             ],
             'min_value' => [
                 'label' => 'Minimum Value',
@@ -156,6 +161,7 @@ return [
                 'rule' => 'min',
                 'icon' => 'arrow-down',
                 'has_value' => true,
+                'category' => 'Range',
             ],
             'max_value' => [
                 'label' => 'Maximum Value',
@@ -163,6 +169,7 @@ return [
                 'rule' => 'max',
                 'icon' => 'arrow-up',
                 'has_value' => true,
+                'category' => 'Range',
             ],
             'date' => [
                 'label' => 'Valid Date',
@@ -170,6 +177,7 @@ return [
                 'rule' => 'date',
                 'icon' => 'calendar',
                 'has_value' => false,
+                'category' => 'Format',
             ],
             'date_after' => [
                 'label' => 'Date After',
@@ -177,6 +185,7 @@ return [
                 'rule' => 'date_after',
                 'icon' => 'calendar-days',
                 'has_value' => true,
+                'category' => 'Date Range',
             ],
             'date_before' => [
                 'label' => 'Date Before',
@@ -184,6 +193,7 @@ return [
                 'rule' => 'date_before',
                 'icon' => 'calendar-days',
                 'has_value' => true,
+                'category' => 'Date Range',
             ],
             'url' => [
                 'label' => 'URL',
@@ -191,6 +201,7 @@ return [
                 'rule' => 'url',
                 'icon' => 'link',
                 'has_value' => false,
+                'category' => 'Format',
             ],
             'alpha' => [
                 'label' => 'Letters Only',
@@ -198,6 +209,7 @@ return [
                 'rule' => 'alpha',
                 'icon' => 'document-text',
                 'has_value' => false,
+                'category' => 'Format',
             ],
             'alpha_num' => [
                 'label' => 'Letters & Numbers',
@@ -205,6 +217,7 @@ return [
                 'rule' => 'alpha_num',
                 'icon' => 'hashtag',
                 'has_value' => false,
+                'category' => 'Format',
             ],
             'regex' => [
                 'label' => 'Custom Pattern',
@@ -212,6 +225,7 @@ return [
                 'rule' => 'regex',
                 'icon' => 'code-bracket',
                 'has_value' => true,
+                'category' => 'Advanced',
             ],
             'file' => [
                 'label' => 'Valid File',
@@ -219,6 +233,7 @@ return [
                 'rule' => 'file',
                 'icon' => 'document',
                 'has_value' => false,
+                'category' => 'File',
             ],
             'image' => [
                 'label' => 'Image File',
@@ -226,6 +241,7 @@ return [
                 'rule' => 'image',
                 'icon' => 'photo',
                 'has_value' => false,
+                'category' => 'File',
             ],
             'mimes' => [
                 'label' => 'File Type',
@@ -233,6 +249,7 @@ return [
                 'rule' => 'mimes',
                 'icon' => 'document-text',
                 'has_value' => true,
+                'category' => 'File',
             ],
             'max_file_size' => [
                 'label' => 'Maximum File Size',
@@ -240,6 +257,7 @@ return [
                 'rule' => 'max',
                 'icon' => 'arrow-up',
                 'has_value' => true,
+                'category' => 'File',
             ],
             'confirmed' => [
                 'label' => 'Password Confirmation',
@@ -247,6 +265,7 @@ return [
                 'rule' => 'confirmed',
                 'icon' => 'check-circle',
                 'has_value' => false,
+                'category' => 'Security',
             ],
         ],
         'default_messages' => [
@@ -386,6 +405,20 @@ return [
             'messages' => [],
             'values' => [],
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Rate Limiting Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Rate limiting settings for form submissions.
+    |
+    */
+    'rate_limiting' => [
+        'max_submissions_per_hour' => 10,
+        'max_submissions_per_day' => 50,
+        'enable_rate_limiting' => true,
     ],
 
     /*

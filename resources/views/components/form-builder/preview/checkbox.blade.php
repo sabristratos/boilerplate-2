@@ -1,10 +1,9 @@
 <flux:checkbox.group 
     wire:model="previewFormData.{{ $fieldName }}" 
     label="{{ $label }}"
-    required="{{ $required ? 'true' : '' }}"
 >
     @foreach($options as $option)
-        <flux:checkbox value="{{ $option }}" label="{{ $option }}" />
+        <flux:checkbox value="{{ $option['value'] }}" label="{{ $option['label'] }}" />
     @endforeach
 </flux:checkbox.group>
 @error("previewFormData.{$fieldName}")

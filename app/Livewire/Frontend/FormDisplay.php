@@ -23,9 +23,9 @@ class FormDisplay extends Component
         $this->elementFactory = $elementFactory;
     }
 
-    public function mount($formId)
+    public function mount($form)
     {
-        $this->form = Form::findOrFail($formId);
+        $this->form = $form;
         $this->initializeFormData();
     }
 
@@ -43,62 +43,35 @@ class FormDisplay extends Component
 
     private function generateFieldName($element): string
     {
-        $label = $element['properties']['label'] ?? 'field';
-        return 'field_' . $element['id'];
+        $fieldNameGenerator = app(\App\Services\FormBuilder\FieldNameGeneratorService::class);
+        return $fieldNameGenerator->generateFieldName($element);
     }
 
     public function submit()
     {
-        // Generate validation rules from form elements
-        $rules = $this->generateValidationRules();
+        $errorHandler = app(\App\Services\FormBuilder\FormSubmissionErrorHandler::class);
+        $result = $errorHandler->handleSubmission($this->form, $this->formData);
         
-        // Validate the form data
-        $this->validate($rules);
-        
-        // Save the form submission
-        $this->form->submissions()->create([
-            'data' => $this->formData,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
-        
-        $this->submitted = true;
-        $this->successMessage = 'Form submitted successfully!';
-        
-        // Reset form data
-        $this->initializeFormData();
-    }
-
-    private function generateValidationRules(): array
-    {
-        $rules = [];
-        
-        if ($this->form->elements) {
-            foreach ($this->form->elements as $element) {
-                $fieldName = $this->generateFieldName($element);
-                $elementRules = [];
-                
-                // Add validation rules based on element configuration
-                if (isset($element['validation']['rules'])) {
-                    foreach ($element['validation']['rules'] as $ruleKey) {
-                        $rule = $element['validation']['values'][$ruleKey] ?? null;
-                        
-                        if ($rule) {
-                            $elementRules[] = $rule;
-                        } else {
-                            $elementRules[] = $ruleKey;
-                        }
+        if ($result['success']) {
+            $this->submitted = true;
+            $this->successMessage = $result['message'];
+            $this->initializeFormData();
+        } else {
+            // Handle validation errors
+            if (!empty($result['errors'])) {
+                foreach ($result['errors'] as $field => $messages) {
+                    foreach ($messages as $message) {
+                        $this->addError($field, $message);
                     }
                 }
-                
-                if (!empty($elementRules)) {
-                    $rules[$fieldName] = $elementRules;
-                }
             }
+            
+            // Show error message
+            $this->addError('general', $result['message']);
         }
-        
-        return $rules;
     }
+
+
 
     public function render()
     {

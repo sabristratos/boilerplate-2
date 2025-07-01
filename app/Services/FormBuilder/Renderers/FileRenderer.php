@@ -26,6 +26,14 @@ class FileRenderer extends BaseElementRenderer
         return 'components.form-builder.elements.file';
     }
 
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['file'];
+    }
+
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();

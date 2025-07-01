@@ -2,6 +2,8 @@
 
 namespace App\Services\FormBuilder;
 
+use App\Services\FormBuilder\ElementFactory;
+
 class ElementManager
 {
     private ElementFactory $factory;

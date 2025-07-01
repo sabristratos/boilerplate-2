@@ -7,6 +7,7 @@ use App\Services\SettingsManager;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Services\FormBuilder\FormSubmissionErrorHandler;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,6 +21,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         $this->app->singleton('settings', fn (): \App\Services\SettingsManager => new SettingsManager);
+        $this->app->bind(FormSubmissionErrorHandler::class, function ($app) {
+            return new FormSubmissionErrorHandler();
+        });
     }
 
     /**

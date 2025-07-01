@@ -98,27 +98,31 @@ class ElementFactory
         $types = [];
 
         foreach ($this->renderers as $renderer) {
-            // This is a simplified approach - in a real implementation,
-            // you might want to store supported types in the renderer
-            if ($renderer instanceof InputRenderer) {
-                $types[] = 'text';
-                $types[] = 'email';
-            } elseif ($renderer instanceof TextareaRenderer) {
-                $types[] = 'textarea';
-            } elseif ($renderer instanceof SelectRenderer) {
-                $types[] = 'select';
-            } elseif ($renderer instanceof CheckboxRenderer) {
-                $types[] = 'checkbox';
-            } elseif ($renderer instanceof RadioRenderer) {
-                $types[] = 'radio';
-            } elseif ($renderer instanceof DateRenderer) {
-                $types[] = 'date';
-            } elseif ($renderer instanceof NumberRenderer) {
-                $types[] = 'number';
-            } elseif ($renderer instanceof PasswordRenderer) {
-                $types[] = 'password';
-            } elseif ($renderer instanceof FileRenderer) {
-                $types[] = 'file';
+            // Use the renderer's supports method to determine supported types
+            if (method_exists($renderer, 'getSupportedTypes')) {
+                $types = array_merge($types, $renderer->getSupportedTypes());
+            } else {
+                // Fallback: check common types that each renderer supports
+                if ($renderer instanceof InputRenderer) {
+                    $types[] = 'text';
+                    $types[] = 'email';
+                } elseif ($renderer instanceof TextareaRenderer) {
+                    $types[] = 'textarea';
+                } elseif ($renderer instanceof SelectRenderer) {
+                    $types[] = 'select';
+                } elseif ($renderer instanceof CheckboxRenderer) {
+                    $types[] = 'checkbox';
+                } elseif ($renderer instanceof RadioRenderer) {
+                    $types[] = 'radio';
+                } elseif ($renderer instanceof DateRenderer) {
+                    $types[] = 'date';
+                } elseif ($renderer instanceof NumberRenderer) {
+                    $types[] = 'number';
+                } elseif ($renderer instanceof PasswordRenderer) {
+                    $types[] = 'password';
+                } elseif ($renderer instanceof FileRenderer) {
+                    $types[] = 'file';
+                }
             }
         }
 

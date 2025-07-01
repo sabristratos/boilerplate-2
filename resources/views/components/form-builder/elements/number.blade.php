@@ -23,8 +23,8 @@
 @if($hasIcon && $hasIconTrailing)
     <flux:input 
         type="number"
-        label="{{ $properties['label'] }}" 
-        placeholder="{{ $properties['placeholder'] }}"
+        label="{{ $properties['label'] ?? '' }}" 
+        placeholder="{{ $properties['placeholder'] ?? '' }}"
         step="{{ $step }}"
         :clearable="$clearable"
         :copyable="$copyable"
@@ -38,8 +38,8 @@
 @elseif($hasIcon)
     <flux:input 
         type="number"
-        label="{{ $properties['label'] }}" 
-        placeholder="{{ $properties['placeholder'] }}"
+        label="{{ $properties['label'] ?? '' }}" 
+        placeholder="{{ $properties['placeholder'] ?? '' }}"
         step="{{ $step }}"
         :clearable="$clearable"
         :copyable="$copyable"
@@ -49,8 +49,8 @@
 @elseif($hasIconTrailing)
     <flux:input 
         type="number"
-        label="{{ $properties['label'] }}" 
-        placeholder="{{ $properties['placeholder'] }}"
+        label="{{ $properties['label'] ?? '' }}" 
+        placeholder="{{ $properties['placeholder'] ?? '' }}"
         step="{{ $step }}"
         :clearable="$clearable"
         :copyable="$copyable"
@@ -63,8 +63,8 @@
 @else
     <flux:input 
         type="number"
-        label="{{ $properties['label'] }}" 
-        placeholder="{{ $properties['placeholder'] }}"
+        label="{{ $properties['label'] ?? '' }}" 
+        placeholder="{{ $properties['placeholder'] ?? '' }}"
         step="{{ $step }}"
         :clearable="$clearable"
         :copyable="$copyable"

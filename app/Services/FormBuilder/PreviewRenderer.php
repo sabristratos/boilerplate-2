@@ -142,13 +142,8 @@ class PreviewRenderer
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $options = $properties['options'] ?? '';
         
-        // Parse options (one per line)
-        $optionArray = [];
-        if (is_string($options)) {
-            $optionArray = array_filter(explode(PHP_EOL, $options));
-        } elseif (is_array($options)) {
-            $optionArray = $options;
-        }
+        // Parse options with value|label format
+        $optionArray = $this->parseOptions($options);
         
         return view('components.form-builder.preview.select', [
             'fieldName' => $fieldName,
@@ -166,13 +161,8 @@ class PreviewRenderer
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $options = $properties['options'] ?? '';
         
-        // Parse options (one per line)
-        $optionArray = [];
-        if (is_string($options)) {
-            $optionArray = array_filter(explode(PHP_EOL, $options));
-        } elseif (is_array($options)) {
-            $optionArray = $options;
-        }
+        // Parse options with value|label format
+        $optionArray = $this->parseOptions($options);
         
         return view('components.form-builder.preview.checkbox', [
             'fieldName' => $fieldName,
@@ -189,13 +179,8 @@ class PreviewRenderer
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $options = $properties['options'] ?? '';
         
-        // Parse options (one per line)
-        $optionArray = [];
-        if (is_string($options)) {
-            $optionArray = array_filter(explode(PHP_EOL, $options));
-        } elseif (is_array($options)) {
-            $optionArray = $options;
-        }
+        // Parse options with value|label format
+        $optionArray = $this->parseOptions($options);
         
         return view('components.form-builder.preview.radio', [
             'fieldName' => $fieldName,
@@ -270,5 +255,20 @@ class PreviewRenderer
             'multiple' => $multiple,
             'properties' => $properties,
         ])->render();
+    }
+
+    /**
+     * Parse options string into array format
+     */
+    private function parseOptions($options): array
+    {
+        // If options is already an array, return it directly
+        if (is_array($options)) {
+            return $options;
+        }
+        
+        // If options is a string, parse it using the OptionParserService
+        $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
+        return $optionParser->parseOptions($options);
     }
 } 

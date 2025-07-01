@@ -26,6 +26,14 @@ class NumberRenderer extends BaseElementRenderer
         return 'components.form-builder.elements.number';
     }
 
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['number'];
+    }
+
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();

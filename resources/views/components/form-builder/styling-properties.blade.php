@@ -87,7 +87,7 @@
                         '3/4' => $i <= 9,
                         default => $i <= 12
                     };
-                    $gridClass = $isActive ? 'bg-blue-500' : 'bg-zinc-200 dark:bg-zinc-700';
+                    $gridClass = $isActive ? 'bg-primary-500' : 'bg-zinc-200 dark:bg-zinc-700';
                     $gridCells .= '<div class="h-full rounded-sm ' . $gridClass . '"></div>';
                 }
             @endphp

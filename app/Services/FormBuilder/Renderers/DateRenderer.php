@@ -26,6 +26,14 @@ class DateRenderer extends BaseElementRenderer
         return 'components.form-builder.elements.date';
     }
 
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['date'];
+    }
+
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();

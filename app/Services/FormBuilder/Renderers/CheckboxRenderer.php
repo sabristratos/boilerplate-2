@@ -25,4 +25,12 @@ class CheckboxRenderer extends BaseElementRenderer
     {
         return 'components.form-builder.elements.checkbox';
     }
+
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['checkbox'];
+    }
 }

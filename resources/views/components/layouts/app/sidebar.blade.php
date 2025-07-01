@@ -132,12 +132,14 @@
 
             <!-- User Menu -->
             <flux:dropdown class="hidden lg:block" position="top" align="start">
+                @if(auth()->check())
                 <flux:profile
                     :name="auth()->user()->name"
                     :initials="auth()->user()->initials()"
                     icon:trailing="chevrons-up-down"
                 />
                 <x-layouts.app.user-menu />
+                @endif
             </flux:dropdown>
         </flux:sidebar>
 
@@ -147,6 +149,7 @@
 
             <flux:spacer />
 
+            @if(auth()->check())
             <flux:dropdown position="top" align="end">
                 <flux:profile
                     :initials="auth()->user()->initials()"
@@ -154,6 +157,7 @@
                 />
                 <x-layouts.app.user-menu />
             </flux:dropdown>
+            @endif
         </flux:header>
 
         {{ $slot }}

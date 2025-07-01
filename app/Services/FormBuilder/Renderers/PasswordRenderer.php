@@ -26,6 +26,14 @@ class PasswordRenderer extends BaseElementRenderer
         return 'components.form-builder.elements.password';
     }
 
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['password'];
+    }
+
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();

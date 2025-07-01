@@ -2,19 +2,17 @@
 
 namespace App\Services\FormBuilder;
 
+use App\Services\FormBuilder\ElementManager;
+
 class ValidationService
 {
-    private array $availableRules;
+    private ValidationRuleService $validationRuleService;
+    private ElementManager $elementManager;
 
-    private array $defaultMessages;
-
-    private FieldValidationService $fieldValidationService;
-
-    public function __construct(FieldValidationService $fieldValidationService)
+    public function __construct(ValidationRuleService $validationRuleService, ElementManager $elementManager)
     {
-        $this->fieldValidationService = $fieldValidationService;
-        $this->availableRules = config('forms.validation.rules');
-        $this->defaultMessages = config('forms.validation.default_messages');
+        $this->validationRuleService = $validationRuleService;
+        $this->elementManager = $elementManager;
     }
 
     /**
@@ -22,26 +20,7 @@ class ValidationService
      */
     public function generateRules(array $element): array
     {
-        $rules = [];
-        $validation = $element['validation'] ?? [];
-        $selectedRules = $validation['rules'] ?? [];
-        $ruleValues = $validation['values'] ?? [];
-
-        foreach ($selectedRules as $ruleKey) {
-            if (isset($this->availableRules[$ruleKey])) {
-                $rule = $this->availableRules[$ruleKey];
-                $ruleString = $rule['rule'];
-
-                // Add value if the rule requires it
-                if (($rule['has_value'] ?? false) && isset($ruleValues[$ruleKey])) {
-                    $ruleString .= ':'.$ruleValues[$ruleKey];
-                }
-
-                $rules[] = $ruleString;
-            }
-        }
-
-        return $rules;
+        return $this->validationRuleService->generateRules($element);
     }
 
     /**
@@ -49,28 +28,7 @@ class ValidationService
      */
     public function generateMessages(array $element): array
     {
-        $messages = [];
-        $validation = $element['validation'] ?? [];
-        $selectedRules = $validation['rules'] ?? [];
-        $customMessages = $validation['messages'] ?? [];
-        $ruleValues = $validation['values'] ?? [];
-
-        foreach ($selectedRules as $ruleKey) {
-            if (isset($this->availableRules[$ruleKey])) {
-                $rule = $this->availableRules[$ruleKey];
-                $fieldName = $element['properties']['label'] ?? 'field';
-
-                // Use custom message if provided, otherwise generate default
-                if (isset($customMessages[$ruleKey]) && ! empty($customMessages[$ruleKey])) {
-                    $messages[$ruleKey] = $customMessages[$ruleKey];
-                } else {
-                    // Generate default message
-                    $messages[$ruleKey] = $this->generateDefaultMessage($rule, $fieldName, $ruleValues[$ruleKey] ?? null);
-                }
-            }
-        }
-
-        return $messages;
+        return $this->validationRuleService->generateMessages($element);
     }
 
     /**
@@ -78,7 +36,7 @@ class ValidationService
      */
     public function getAvailableRules(): array
     {
-        return $this->availableRules;
+        return $this->validationRuleService->getAllRules();
     }
 
     /**
@@ -86,7 +44,7 @@ class ValidationService
      */
     public function getRelevantRules(string $fieldType): array
     {
-        return $this->fieldValidationService->getRelevantRules($fieldType);
+        return $this->validationRuleService->getRelevantRules($fieldType);
     }
 
     /**
@@ -94,7 +52,7 @@ class ValidationService
      */
     public function getRelevantRulesByCategory(string $fieldType): array
     {
-        return $this->fieldValidationService->getRelevantRulesByCategory($fieldType);
+        return $this->validationRuleService->getRelevantRulesByCategory($fieldType);
     }
 
     /**
@@ -102,7 +60,7 @@ class ValidationService
      */
     public function getAvailableCategories(string $fieldType): array
     {
-        return $this->fieldValidationService->getAvailableCategories($fieldType);
+        return $this->validationRuleService->getAvailableCategories($fieldType);
     }
 
     /**
@@ -110,8 +68,7 @@ class ValidationService
      */
     public function updateValidationRules(array &$elements, string $elementId, array $rules): void
     {
-        $elementManager = new ElementManager;
-        $index = $elementManager->findElementIndex($elements, $elementId);
+        $index = $this->elementManager->findElementIndex($elements, $elementId);
 
         if ($index !== null) {
             // Ensure the validation structure exists
@@ -128,8 +85,7 @@ class ValidationService
      */
     public function updateValidationMessage(array &$elements, string $elementId, string $rule, string $message): void
     {
-        $elementManager = new ElementManager;
-        $index = $elementManager->findElementIndex($elements, $elementId);
+        $index = $this->elementManager->findElementIndex($elements, $elementId);
 
         if ($index !== null) {
             // Ensure the validation structure exists
@@ -146,8 +102,7 @@ class ValidationService
      */
     public function updateValidationRuleValue(array &$elements, string $elementId, string $rule, string $value): void
     {
-        $elementManager = new ElementManager;
-        $index = $elementManager->findElementIndex($elements, $elementId);
+        $index = $this->elementManager->findElementIndex($elements, $elementId);
 
         if ($index !== null) {
             // Ensure the validation structure exists
@@ -163,14 +118,5 @@ class ValidationService
         }
     }
 
-    /**
-     * Generate default validation message for a rule
-     */
-    private function generateDefaultMessage(array $rule, string $fieldName, ?string $value = null): string
-    {
-        $fieldName = strtolower($fieldName);
-        $message = $this->defaultMessages[$rule['rule']] ?? 'The :field field is invalid.';
 
-        return str_replace([':field', ':value'], [$fieldName, $value], $message);
-    }
 }

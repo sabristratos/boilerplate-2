@@ -35,4 +35,12 @@ class InputRenderer extends BaseElementRenderer
 
         return $properties;
     }
+
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['text', 'email'];
+    }
 }

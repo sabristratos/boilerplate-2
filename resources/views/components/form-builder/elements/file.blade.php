@@ -48,8 +48,8 @@
     
     <flux:input 
         type="file"
-        label="{{ $properties['label'] }}" 
-        placeholder="{{ $properties['placeholder'] }}"
+        label="{{ $properties['label'] ?? '' }}" 
+        placeholder="{{ $properties['placeholder'] ?? '' }}"
         :multiple="$multiple"
         {!! $attributesString !!}
         @change="handleFileSelect($event)"

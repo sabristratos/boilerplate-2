@@ -26,6 +26,14 @@ class SelectRenderer extends BaseElementRenderer
         return 'components.form-builder.elements.select';
     }
 
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['select'];
+    }
+
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();

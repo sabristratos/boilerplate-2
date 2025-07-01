@@ -116,3 +116,53 @@ it('can delete an element', function () {
         ->call('deleteElement', 'element-1')
         ->assertCount('elements', 0);
 });
+
+it('can handle string options in select elements', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'elements' => [
+            [
+                'id' => 'element-1',
+                'type' => 'select',
+                'properties' => [
+                    'label' => 'Test Select',
+                    'options' => "option1|Option 1\noption2|Option 2"
+                ],
+                'styles' => ['desktop' => [], 'tablet' => [], 'mobile' => []],
+            ],
+        ],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(FormBuilder::class, ['form' => $form])
+        ->assertSet('elements.0.properties.options', "option1|Option 1\noption2|Option 2");
+});
+
+it('can handle array options in select elements', function () {
+    $user = User::factory()->create();
+    $form = Form::factory()->create([
+        'user_id' => $user->id,
+        'elements' => [
+            [
+                'id' => 'element-1',
+                'type' => 'select',
+                'properties' => [
+                    'label' => 'Test Select',
+                    'options' => [
+                        ['value' => 'option1', 'label' => 'Option 1'],
+                        ['value' => 'option2', 'label' => 'Option 2'],
+                    ]
+                ],
+                'styles' => ['desktop' => [], 'tablet' => [], 'mobile' => []],
+            ],
+        ],
+    ]);
+
+    Livewire::actingAs($user)
+        ->test(FormBuilder::class, ['form' => $form])
+        ->assertSet('elements.0.properties.options', [
+            ['value' => 'option1', 'label' => 'Option 1'],
+            ['value' => 'option2', 'label' => 'Option 2'],
+        ]);
+});

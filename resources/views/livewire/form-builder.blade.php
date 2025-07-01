@@ -14,7 +14,6 @@
         <x-form-builder.header :form="$form" />
         <x-form-builder.toolbox 
             :elementTypes="$elementTypes" 
-            :availablePrebuiltForms="$this->availablePrebuiltForms" 
             :settings="$settings" 
             :tab="$tab" 
         />
@@ -32,7 +31,6 @@
             :isPreviewMode="$isPreviewMode" 
             :form="$form" 
             :renderedElements="$renderedElements" 
-            :previewElements="$previewElements" 
             :selectedElementId="$selectedElementId"
         />
     </div>
@@ -47,10 +45,69 @@
         :availableIcons="$this->availableIcons" 
     />
     <style>
+/* Sortable styles */
 .sortable-ghost {
     opacity: 0.5 !important;
-    background-color: rgb(59 130 246 / 0.1) !important;
-    border: 2px dashed rgb(59 130 246) !important;
+    background-color: rgb(255 130 16 / 0.1) !important;
+    border: 2px dashed rgb(255 130 16) !important;
+}
+
+/* Drag and drop visual feedback */
+.dragging {
+    opacity: 0.5 !important;
+    transform: rotate(2deg) scale(0.95) !important;
+    transition: all 0.2s ease !important;
+}
+
+.drag-over {
+    background-color: rgb(255 130 16 / 0.05) !important;
+    border-color: rgb(255 130 16) !important;
+    border-style: dashed !important;
+}
+
+/* Element card hover effects */
+.element-card {
+    transition: all 0.2s ease;
+}
+
+.element-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.element-card:active {
+    transform: translateY(0) scale(0.98);
+}
+
+/* Responsive grid system */
+.responsive-grid-container {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1rem;
+    width: 100%;
+}
+
+.responsive-grid-item {
+    min-height: 60px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+    .responsive-grid-container {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
+    .responsive-grid-item {
+        grid-column: span 1 !important;
+    }
+}
+
+/* Tablet responsive adjustments */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .responsive-grid-container {
+        gap: 0.875rem;
+    }
 }
 </style>
 </div>

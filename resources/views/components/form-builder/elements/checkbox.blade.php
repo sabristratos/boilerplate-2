@@ -1,8 +1,33 @@
 @props(['element', 'properties', 'fluxProps'])
 
-<flux:field variant="inline">
-    <flux:checkbox 
-        variant="{{ $fluxProps['variant'] ?? 'default' }}"
-    />
-    <flux:label>{{ $properties['label'] }}</flux:label>
-</flux:field>
+@php
+    $options = $properties['options'] ?? [];
+    $parsedOptions = [];
+    
+    // Handle both string and array options
+    if (is_array($options)) {
+        foreach ($options as $option) {
+            if (is_array($option) && isset($option['value']) && isset($option['label'])) {
+                $parsedOptions[] = $option;
+            } elseif (is_string($option)) {
+                $option = trim($option);
+                if ($option === '') continue;
+                if (str_contains($option, '|')) {
+                    [$value, $label] = explode('|', $option, 2);
+                    $parsedOptions[] = ['value' => trim($value), 'label' => trim($label)];
+                } else {
+                    $parsedOptions[] = ['value' => $option, 'label' => $option];
+                }
+            }
+        }
+    }
+@endphp
+
+<flux:checkbox.group 
+    label="{{ $properties['label'] ?? '' }}"
+    variant="{{ $fluxProps['variant'] ?? 'default' }}"
+>
+    @foreach($parsedOptions as $option)
+        <flux:checkbox value="{{ $option['value'] }}" label="{{ $option['label'] }}" />
+    @endforeach
+</flux:checkbox.group>

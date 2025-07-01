@@ -135,9 +135,6 @@ class PageManager extends Component
 
     public function updatedSwitchLocale(string $locale): void
     {
-        // Add debugging toast to verify method is called
-        $this->showSuccessToast('Switching locale to: '.$locale);
-
         if (array_key_exists($locale, $this->availableLocales)) {
             $this->redirect(route('admin.pages.editor', ['page' => $this->page, 'locale' => $locale]));
         }

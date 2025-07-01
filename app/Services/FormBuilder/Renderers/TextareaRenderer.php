@@ -25,4 +25,12 @@ class TextareaRenderer extends BaseElementRenderer
     {
         return 'components.form-builder.elements.textarea';
     }
+
+    /**
+     * Get supported element types for this renderer
+     */
+    public function getSupportedTypes(): array
+    {
+        return ['textarea'];
+    }
 }

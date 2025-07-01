@@ -59,5 +59,8 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function ():
 
 require __DIR__.'/auth.php';
 
+// Form display route
+Route::get('/form/{form:id}', \App\Livewire\Frontend\FormDisplay::class)->name('forms.display');
+
 // Dynamic page routes (must be last)
 Route::get('/{page:slug}', [PageController::class, 'show'])->name('pages.show');

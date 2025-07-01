@@ -47,7 +47,7 @@ class FormBuilder extends Component
 
     public array $previewFormData = [];
 
-    private ElementManager $elementManager;
+        private ElementManager $elementManager;
 
     private ValidationService $validationService;
 
@@ -128,6 +128,17 @@ class FormBuilder extends Component
         $this->elementManager->deleteElement($this->elements, $elementId);
         $this->selectedElementId = null;
         $this->showSuccessToast('Element deleted.');
+    }
+
+    #[On('options-updated')]
+    public function handleOptionsUpdated(array $data): void
+    {
+        $elementIndex = $data['elementIndex'];
+        $propertyPath = $data['propertyPath'];
+        $optionsString = $data['optionsString'];
+
+        // Update the options string in the element
+        data_set($this->elements, "{$elementIndex}.properties.{$propertyPath}", $optionsString);
     }
 
     public function handleReorder($orderedOrders)
@@ -292,6 +303,43 @@ class FormBuilder extends Component
         return array_filter(explode(PHP_EOL, $options));
     }
 
+    public function getElementOptionsArray(string $elementIndex): array
+    {
+        $element = $this->elements[$elementIndex] ?? null;
+        if (!$element) {
+            return [
+                [
+                    'value' => '',
+                    'label' => '',
+                ]
+            ];
+        }
+
+        $options = $element['properties']['options'] ?? '';
+        
+        // If options is already an array, return it directly
+        if (is_array($options)) {
+            return $options;
+        }
+        
+        // If options is a string, parse it using the OptionParserService
+        $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
+        
+        return $optionParser->parseOptions($options);
+    }
+
+    public function parseOptionsForPreview($options): array
+    {
+        // If options is already an array, return it directly
+        if (is_array($options)) {
+            return $options;
+        }
+        
+        // If options is a string, parse it using the OptionParserService
+        $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
+        return $optionParser->parseOptionsForPreview($options);
+    }
+
     #[Computed]
     public function availableValidationRules(): array
     {
@@ -375,75 +423,42 @@ class FormBuilder extends Component
 
     private function generateFieldName($element): string
     {
-        $label = $element['properties']['label'] ?? 'field';
-        // Create a more readable field name based on the label
-        $fieldName = Str::slug($label, '_');
-        return $fieldName ?: 'field_' . $element['id'];
+        $fieldNameGenerator = app(\App\Services\FormBuilder\FieldNameGeneratorService::class);
+        return $fieldNameGenerator->generateFieldName($element);
     }
 
     public function submitPreview(): void
     {
-        // Generate validation rules from form elements
-        $rules = $this->generatePreviewValidationRules();
+        $errorHandler = app(\App\Services\FormBuilder\FormSubmissionErrorHandler::class);
+        $result = $errorHandler->handleSubmission($this->form, $this->previewFormData);
         
-        // Create a validator instance to validate the preview form data
-        $validator = \Validator::make($this->previewFormData, $rules);
-        
-        if ($validator->fails()) {
-            // Add validation errors to the component
-            foreach ($validator->errors()->getMessages() as $field => $messages) {
-                foreach ($messages as $message) {
-                    $this->addError("previewFormData.{$field}", $message);
+        if ($result['success']) {
+            $this->showSuccessToast('Form submitted successfully! (Preview Mode)');
+            $this->initializePreviewFormData();
+        } else {
+            // Handle validation errors
+            if (!empty($result['errors'])) {
+                foreach ($result['errors'] as $field => $messages) {
+                    foreach ($messages as $message) {
+                        $this->addError("previewFormData.{$field}", $message);
+                    }
                 }
             }
-            return;
+            
+            // Show error message
+            $this->addError('previewFormData.general', $result['message']);
         }
-        
-        // Save the form submission to the database
-        $this->form->submissions()->create([
-            'data' => $this->previewFormData,
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
-        
-        // Show success message
-        $this->showSuccessToast('Form submitted successfully! (Preview Mode)');
-        
-        // Reset form data
-        $this->initializePreviewFormData();
     }
 
-    private function generatePreviewValidationRules(): array
-    {
-        $rules = [];
-        
-        foreach ($this->elements as $element) {
-            $fieldName = $this->generateFieldName($element);
-            
-            // Use the ValidationService to generate proper rules
-            $elementRules = $this->validationService->generateRules($element);
-            
-            if (!empty($elementRules)) {
-                $rules[$fieldName] = $elementRules;
-            }
-        }
-        
-        return $rules;
-    }
+
 
     public function render()
     {
         $renderedElements = collect($this->elements)->map(fn ($element) => $this->elementFactory->renderElement($element));
-        
-        $previewElements = collect($this->elements)->map(function ($element) {
-            $fieldName = $this->generateFieldName($element);
-            return $this->previewRenderer->renderPreviewElement($element, $fieldName);
-        });
 
         return view('livewire.form-builder', [
             'elementTypes' => FormElementType::cases(),
             'renderedElements' => $renderedElements,
-            'previewElements' => $previewElements,
         ]);
     }
 }
