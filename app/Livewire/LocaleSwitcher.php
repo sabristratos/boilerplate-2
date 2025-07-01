@@ -15,7 +15,7 @@ class LocaleSwitcher extends Component
     public function mount(): void
     {
         $this->locales = Settings::get('general.available_locales', []);
-        $this->currentLocale = app()->getLocale();
+        $this->currentLocale = app()->getLocale() ?? 'en';
     }
 
     public function updatedCurrentLocale($locale)

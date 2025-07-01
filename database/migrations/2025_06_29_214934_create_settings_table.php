@@ -26,12 +26,14 @@ return new class extends Migration
             $table->json('options')->nullable();
             $table->json('subfields')->nullable();
             $table->json('callout')->nullable();
-            $table->text('default')->nullable();
+            $table->json('default')->nullable();
             $table->string('warning')->nullable();
             $table->integer('order')->default(0);
             $table->timestamps();
 
             $table->unique(['setting_group_id', 'key']);
+            $table->index('key');
+            $table->index('setting_group_id');
         });
     }
 

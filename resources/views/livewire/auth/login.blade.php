@@ -48,6 +48,23 @@
         </flux:button>
     </form>
 
+    @if(count($this->enabledProviders) > 0)
+        <flux:separator text="{{ __('auth.or') }}" />
+        
+        <div class="space-y-3">
+            @foreach($this->enabledProviders as $provider)
+                <flux:button
+                    wire:click="socialLogin('{{ $provider }}')"
+                    variant="outline"
+                    class="w-full"
+                    icon="{{ $provider }}"
+                >
+                    {{ __('auth.login_with', ['provider' => ucfirst($provider)]) }}
+                </flux:button>
+            @endforeach
+        </div>
+    @endif
+
     @if(setting('security.enable_registration'))
         <div class="text-center">
             <flux:text size="sm">

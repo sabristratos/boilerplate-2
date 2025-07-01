@@ -56,6 +56,7 @@ return [
     'close' => 'Fermer',
     'block_form_label' => 'Formulaire',
     'block_form_placeholder' => 'Sélectionnez un formulaire',
+    'select_form_placeholder' => 'Choisissez un formulaire à inclure',
     'toast_form_saved' => 'Formulaire enregistré avec succès.',
     'toast_field_added' => 'Champ ajouté avec succès.',
     'toast_field_removed' => 'Champ supprimé avec succès.',

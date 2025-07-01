@@ -100,6 +100,14 @@
             @endif
 
             <flux:button
+                href="{{ route('admin.import-export.index') }}?tab=export&type=resources&resource={{ $this->resource }}"
+                variant="outline"
+                icon="arrow-down-tray"
+            >
+                {{ __('buttons.export') }}
+            </flux:button>
+
+            <flux:button
                 href="{{ route('admin.resources.' . $this->resource::uriKey() . '.create') }}"
                 variant="primary"
                 icon="plus"

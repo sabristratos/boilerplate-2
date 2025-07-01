@@ -2,25 +2,37 @@
 
 namespace App\Services\FormBuilder\Renderers;
 
+/**
+ * Renderer for password form elements.
+ */
 class PasswordRenderer extends BaseElementRenderer
 {
-    public function render(array $element): string
-    {
-        $data = $this->prepareViewData($element);
-
-        return view('components.form-builder.elements.password', $data)->render();
-    }
-
+    /**
+     * Check if this renderer supports the given element type.
+     *
+     * @param string $type
+     * @return bool
+     */
     public function supports(string $type): bool
     {
         return $type === 'password';
     }
 
+    /**
+     * Get the default label for this element type.
+     *
+     * @return string
+     */
     protected function getDefaultLabel(): string
     {
-        return 'New Password Input';
+        return 'New Password';
     }
 
+    /**
+     * Get the view name for this element type.
+     *
+     * @return string
+     */
     protected function getViewName(): string
     {
         return 'components.form-builder.elements.password';

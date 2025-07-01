@@ -24,8 +24,8 @@ class UpdateContentBlockAction
         $blockClass = $blockManager->find($contentBlock->type);
         $translatableFields = $blockClass instanceof \App\Blocks\Block ? $blockClass->getTranslatableFields() : [];
 
-        $currentData = $contentBlock->getTranslation('data', $locale) ?? [];
-        $settings = $contentBlock->settings ?? [];
+        $currentData = $contentBlock->getTranslatedData($locale);
+        $settings = $contentBlock->getSettingsArray();
 
         foreach ($data as $key => $value) {
             $isTranslatable = in_array($key, $translatableFields);

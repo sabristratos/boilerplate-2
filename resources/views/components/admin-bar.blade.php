@@ -19,7 +19,7 @@
 
             <!-- Desktop Links -->
             <div class="hidden md:flex items-center gap-x-1">
-                @can('edit pages')
+                @can('pages.edit')
                     <flux:button
                         href="{{ route('admin.pages.index') }}"
                         icon="document-text"
@@ -28,7 +28,7 @@
                         {{ __('navigation.pages') }}
                     </flux:button>
                 @endcan
-                @can('edit content')
+                @can('media.view')
                     <flux:button
                         href="{{ route('admin.media.index') }}"
                         icon="photo"
@@ -93,10 +93,10 @@
                         <flux:menu>
                             <flux:menu.item href="{{ route('dashboard') }}" icon="layout-grid">{{ __('navigation.dashboard') }}</flux:menu.item>
                             <flux:menu.group heading="{{ __('navigation.content_group_heading') }}">
-                                @can('edit pages')
+                                @can('pages.edit')
                                     <flux:menu.item href="{{ route('admin.pages.index') }}" icon="document-text">{{ __('navigation.pages') }}</flux:menu.item>
                                 @endcan
-                                @can('edit content')
+                                @can('media.view')
                                     <flux:menu.item href="{{ route('admin.media.index') }}" icon="photo">{{ __('navigation.media_library') }}</flux:menu.item>
                                 @endcan
                             </flux:menu.group>

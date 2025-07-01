@@ -8,6 +8,36 @@ abstract class Block
 {
     abstract public function getName(): string;
 
+    public function getDescription(): string
+    {
+        return 'A content block for building pages.';
+    }
+
+    public function getCategory(): string
+    {
+        return 'content';
+    }
+
+    public function getTags(): array
+    {
+        return [];
+    }
+
+    public function getComplexity(): string
+    {
+        return 'basic';
+    }
+
+    public function getSettings(): array
+    {
+        return [];
+    }
+
+    public function getSettingsValidationRules(): array
+    {
+        return [];
+    }
+
     public function getType(): string
     {
         return Str::kebab(str_replace('Block', '', class_basename(static::class)));

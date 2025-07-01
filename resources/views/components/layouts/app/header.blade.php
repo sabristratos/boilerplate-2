@@ -21,9 +21,15 @@
             <flux:spacer />
 
             <flux:navbar class="me-1.5 space-x-0.5 rtl:space-x-reverse py-0!">
-                <flux:tooltip :content="__('navigation.search')" position="bottom">
-                    <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" href="#" :label="__('navigation.search')" />
-                </flux:tooltip>
+                <flux:dropdown position="bottom" align="end">
+                    <flux:tooltip :content="__('navigation.search')" position="bottom">
+                        <flux:navbar.item class="!h-10 [&>div>svg]:size-5" icon="magnifying-glass" :label="__('navigation.search')" />
+                    </flux:tooltip>
+                    
+                    <div class="w-80 p-4">
+                        @livewire('sidebar-search')
+                    </div>
+                </flux:dropdown>
                 <flux:tooltip :content="__('navigation.repository')" position="bottom">
                     <flux:navbar.item
                         class="h-10 max-lg:hidden [&>div>svg]:size-5"
@@ -97,6 +103,11 @@
                 <x-app-logo />
             </a>
 
+            <!-- Mobile Search -->
+            <div class="px-4 py-2">
+                @livewire('sidebar-search')
+            </div>
+
             <flux:navlist variant="outline">
                 <flux:navlist.group :heading="__('navigation.platform')">
                     <flux:navlist.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
@@ -119,6 +130,20 @@
         </flux:sidebar>
 
         {{ $slot }}
+
+        <!-- Global Search Shortcut -->
+        <script>
+        document.addEventListener('keydown', function(event) {
+            // Ctrl+K or Cmd+K to focus search
+            if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+                event.preventDefault();
+                const searchInput = document.querySelector('[wire\\:model*="search"]');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+        });
+        </script>
 
         @fluxScripts
     </body>

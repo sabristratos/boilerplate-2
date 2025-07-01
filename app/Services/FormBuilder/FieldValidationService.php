@@ -4,10 +4,16 @@ namespace App\Services\FormBuilder;
 
 use App\Enums\FormElementType;
 
+/**
+ * Service for providing field-specific validation rules and categories.
+ */
 class FieldValidationService
 {
     /**
-     * Get relevant validation rules for a specific field type
+     * Get relevant validation rules for a specific field type.
+     *
+     * @param string $fieldType
+     * @return array
      */
     public function getRelevantRules(string $fieldType): array
     {
@@ -27,7 +33,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for text input fields
+     * Get validation rules for text input fields.
+     *
+     * @return array
      */
     private function getTextRules(): array
     {
@@ -100,7 +108,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for textarea fields
+     * Get validation rules for textarea fields.
+     *
+     * @return array
      */
     private function getTextareaRules(): array
     {
@@ -133,7 +143,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for email fields
+     * Get validation rules for email fields.
+     *
+     * @return array
      */
     private function getEmailRules(): array
     {
@@ -166,7 +178,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for select fields
+     * Get validation rules for select fields.
+     *
+     * @return array
      */
     private function getSelectRules(): array
     {
@@ -183,7 +197,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for checkbox fields
+     * Get validation rules for checkbox fields.
+     *
+     * @return array
      */
     private function getCheckboxRules(): array
     {
@@ -200,7 +216,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for radio fields
+     * Get validation rules for radio fields.
+     *
+     * @return array
      */
     private function getRadioRules(): array
     {
@@ -217,7 +235,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for date fields
+     * Get validation rules for date fields.
+     *
+     * @return array
      */
     private function getDateRules(): array
     {
@@ -244,7 +264,7 @@ class FieldValidationService
                 'rule' => 'date_after',
                 'icon' => 'calendar-days',
                 'has_value' => true,
-                'category' => 'Date Range',
+                'category' => 'Range',
             ],
             'date_before' => [
                 'label' => 'Date Before',
@@ -252,13 +272,31 @@ class FieldValidationService
                 'rule' => 'date_before',
                 'icon' => 'calendar-days',
                 'has_value' => true,
-                'category' => 'Date Range',
+                'category' => 'Range',
+            ],
+            'date_after_today' => [
+                'label' => 'Future Date',
+                'description' => 'Must be a future date',
+                'rule' => 'date_after:today',
+                'icon' => 'calendar-days',
+                'has_value' => false,
+                'category' => 'Range',
+            ],
+            'date_before_today' => [
+                'label' => 'Past Date',
+                'description' => 'Must be a past date',
+                'rule' => 'date_before:today',
+                'icon' => 'calendar-days',
+                'has_value' => false,
+                'category' => 'Range',
             ],
         ];
     }
 
     /**
-     * Get validation rules for number fields
+     * Get validation rules for number fields.
+     *
+     * @return array
      */
     private function getNumberRules(): array
     {
@@ -323,7 +361,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for password fields
+     * Get validation rules for password fields.
+     *
+     * @return array
      */
     private function getPasswordRules(): array
     {
@@ -364,7 +404,9 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules for file fields
+     * Get validation rules for file fields.
+     *
+     * @return array
      */
     private function getFileRules(): array
     {
@@ -413,7 +455,9 @@ class FieldValidationService
     }
 
     /**
-     * Get default validation rules (fallback)
+     * Get default validation rules (fallback).
+     *
+     * @return array
      */
     private function getDefaultRules(): array
     {
@@ -430,7 +474,10 @@ class FieldValidationService
     }
 
     /**
-     * Get validation rules grouped by category for a field type
+     * Get validation rules grouped by category for a field type.
+     *
+     * @param string $fieldType
+     * @return array
      */
     public function getRelevantRulesByCategory(string $fieldType): array
     {
@@ -446,7 +493,10 @@ class FieldValidationService
     }
 
     /**
-     * Get available categories for a field type
+     * Get available categories for a field type.
+     *
+     * @param string $fieldType
+     * @return array
      */
     public function getAvailableCategories(string $fieldType): array
     {

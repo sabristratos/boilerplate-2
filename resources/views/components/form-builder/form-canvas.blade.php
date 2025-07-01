@@ -1,5 +1,13 @@
 @props(['form', 'elements', 'selectedElementId', 'activeBreakpoint', 'isPreviewMode', 'previewElements', 'renderedElements'])
-<div class="flex-1 p-8 overflow-y-auto" @drop.prevent="handleDrop($event)" @dragover.prevent>
+<div 
+    class="flex-1 p-8 overflow-y-auto" 
+    @drop.prevent="handleDrop($event)" 
+    @dragover.prevent
+    x-data="formCanvas()"
+    @element-updated.window="refreshPreview()"
+    @preview-element-updated.window="updatePreviewElement($event)"
+    @edit-element-updated.window="updateEditElement($event)"
+>
     @if($isPreviewMode)
         <!-- Preview Mode -->
         <div
@@ -32,7 +40,7 @@
                                     $columnSpan = 12;
                                 }
                             @endphp
-                            <div class="responsive-grid-item" style="grid-column: span {{ $columnSpan }};">
+                            <div class="responsive-grid-item" style="grid-column: span {{ $columnSpan }};" wire:key="preview-element-{{ $element['id'] }}" data-preview-element="{{ $element['id'] }}">
                                 {!! $previewElements[$index] ?? '' !!}
                             </div>
                         @endforeach
@@ -40,14 +48,14 @@
                 @else
                     <flux:callout variant="secondary" icon="information-circle">
                         <flux:callout.text>
-                            This form has no elements configured yet.
+                            {{ __('messages.forms.form_builder_interface.form_has_no_elements') }}
                         </flux:callout.text>
                     </flux:callout>
                 @endif
                 
                 <div class="flex justify-end">
                     <flux:button type="submit" icon="paper-airplane">
-                        Submit Form
+                        {{ __('messages.forms.form_builder_interface.submit_form') }}
                     </flux:button>
                 </div>
             </form>
@@ -106,14 +114,14 @@
                                 size="xs" 
                                 variant="ghost" 
                                 x-sort:handle 
-                                tooltip="Drag to reorder this element"
+                                :tooltip="__('messages.forms.form_builder_interface.drag_to_reorder')"
                             />
                             <flux:button 
                                 wire:click="confirmDelete('{{ $element['id'] }}', 'deleteElement')" 
                                 icon="trash" 
                                 size="xs" 
                                 variant="danger" 
-                                tooltip="Delete this element"
+                                :tooltip="__('messages.forms.form_builder_interface.delete_element')"
                             />
                         </div>
                         <div class="p-4">
@@ -122,12 +130,12 @@
                     </div>
                 @empty
                     <div class="text-center border-2 border-dashed border-zinc-300 dark:border-zinc-700 col-span-full p-12 rounded-lg">
-                        <flux:heading>Drop elements here</flux:heading>
-                        <flux:text variant="subtle">Drag and drop from the toolbox to get started.</flux:text>
+                        <flux:heading>{{ __('messages.forms.form_builder_interface.drop_elements_here') }}</flux:heading>
+                        <flux:text variant="subtle">{{ __('messages.forms.form_builder_interface.drag_drop_instructions') }}</flux:text>
                         <flux:callout variant="secondary" icon="information-circle" class="mt-4 max-w-md mx-auto">
                             <flux:callout.text>
-                                <p>Drag form elements from the toolbox on the left and drop them here to build your form.</p>
-                                <p>You can reorder elements by dragging them within the canvas.</p>
+                                <p>{{ __('messages.forms.form_builder_interface.drag_form_elements') }}</p>
+                                <p>{{ __('messages.forms.form_builder_interface.reorder_instructions') }}</p>
                             </flux:callout.text>
                         </flux:callout>
                     </div>

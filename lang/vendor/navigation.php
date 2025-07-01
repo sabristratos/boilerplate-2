@@ -1,0 +1,29 @@
+<?php
+
+return [
+    'database_backup' => 'navigation.database_backup',
+    'analytics' => 'navigation.analytics',
+    'help' => 'navigation.help',
+    'reports' => 'navigation.reports',
+    'pages' => 'navigation.pages',
+    'media_library' => 'navigation.media_library',
+    'settings_group_heading' => 'navigation.settings_group_heading',
+    'translations' => 'navigation.translations',
+    'settings' => 'navigation.settings',
+    'dashboard' => 'navigation.dashboard',
+    'content_group_heading' => 'navigation.content_group_heading',
+    'resources_group_heading' => 'navigation.resources_group_heading',
+    'forms' => 'navigation.forms',
+    'search' => [
+        'placeholder' => '[Placeholder]',
+    ],
+    'repository' => 'navigation.repository',
+    'documentation' => 'navigation.documentation',
+    'platform' => 'navigation.platform',
+    'import_export' => 'navigation.import_export',
+    'resources' => 'navigation.resources',
+    'settings_description' => 'navigation.settings_description',
+    'view_page' => '[View Page]',
+    'no_results_found_for' => '[No Results Found For]',
+    'try_searching_something_else' => '[Try Searching Something Else]',
+];

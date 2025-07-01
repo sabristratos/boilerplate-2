@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Setting;
+use App\Models\TemporaryMedia;
 use Flux\Flux;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
@@ -61,10 +62,52 @@ class MediaUploader extends Component
 
     public $perPage = 12;
 
+    /**
+     * Temporary media instance for unsaved models.
+     */
+    protected $temporaryMedia = null;
+
     public function mount(Model $model, string $collection = 'default'): void
     {
         $this->model = $model;
         $this->collection = $collection;
+        
+        // Initialize temporary media if model is not saved
+        if (!$this->model->exists) {
+            $this->initializeTemporaryMedia();
+        }
+    }
+
+    /**
+     * Initialize temporary media for unsaved models.
+     */
+    protected function initializeTemporaryMedia(): void
+    {
+        try {
+            $sessionId = session()->getId();
+            $fieldName = $this->collection;
+            $modelType = get_class($this->model);
+            
+            $this->temporaryMedia = TemporaryMedia::getForSession($sessionId, $fieldName);
+            
+            if (!$this->temporaryMedia) {
+                $this->temporaryMedia = TemporaryMedia::createForSession(
+                    $sessionId, 
+                    $fieldName, 
+                    $modelType, 
+                    $this->collection
+                );
+            }
+        } catch (\Exception $e) {
+            // Log the error but don't throw it
+            \Log::error('Failed to initialize temporary media', [
+                'error' => $e->getMessage(),
+                'session_id' => session()->getId(),
+                'field_name' => $this->collection,
+                'model_type' => get_class($this->model),
+            ]);
+            $this->temporaryMedia = null;
+        }
     }
 
     /**
@@ -92,24 +135,32 @@ class MediaUploader extends Component
         }
 
         try {
-            $this->model->clearMediaCollection($this->collection);
-            $media = null;
-
-            if ($this->file) {
-                $media = $this->model->addMedia($this->file->getRealPath())
-                    ->usingName($this->file->getClientOriginalName())
-                    ->toMediaCollection($this->collection);
-            } elseif ($this->url) {
-                $media = $this->model->addMediaFromUrl($this->url)
-                    ->toMediaCollection($this->collection);
-            } elseif ($this->selectedMediaId) {
-                $selectedMedia = Media::findOrFail($this->selectedMediaId);
-                $media = $selectedMedia->copy($this->model, $this->collection);
+            if ($this->model->exists) {
+                // Model is saved, add media directly
+                $this->model->clearMediaCollection($this->collection);
+                $media = $this->addMediaToModel($this->model);
+            } else {
+                // Model is not saved, use temporary media
+                if (!$this->temporaryMedia) {
+                    $this->initializeTemporaryMedia();
+                }
+                
+                if (!$this->temporaryMedia) {
+                    Flux::toast('Failed to initialize temporary media storage.', variant: 'danger');
+                    return;
+                }
+                
+                $this->temporaryMedia->clearMediaCollection('temp');
+                $media = $this->addMediaToModel($this->temporaryMedia, 'temp');
             }
 
             // The component now only needs to know about the model.
             // The parent component is responsible for handling what happens after.
-            $this->dispatch('media-updated', modelId: $this->model->id, collection: $this->collection);
+            $this->dispatch('media-updated', 
+                modelId: $this->model->exists ? $this->model->id : null, 
+                collection: $this->collection,
+                isTemporary: !$this->model->exists
+            );
 
             $this->reset(['file', 'url', 'selectedMediaId']);
             $this->showUploadModal = false;
@@ -120,6 +171,28 @@ class MediaUploader extends Component
         } catch (\Exception $e) {
             Flux::toast('Failed to save media: '.$e->getMessage(), variant: 'danger');
         }
+    }
+
+    /**
+     * Add media to a model (either actual model or temporary media).
+     */
+    protected function addMediaToModel($targetModel, string $collection = null): ?Media
+    {
+        $collection = $collection ?? $this->collection;
+        
+        if ($this->file) {
+            return $targetModel->addMedia($this->file->getRealPath())
+                ->usingName($this->file->getClientOriginalName())
+                ->toMediaCollection($collection);
+        } elseif ($this->url) {
+            return $targetModel->addMediaFromUrl($this->url)
+                ->toMediaCollection($collection);
+        } elseif ($this->selectedMediaId) {
+            $selectedMedia = Media::findOrFail($this->selectedMediaId);
+            return $selectedMedia->copy($targetModel, $collection);
+        }
+        
+        return null;
     }
 
     /**
@@ -178,8 +251,27 @@ class MediaUploader extends Component
     public function remove(): void
     {
         try {
-            $this->model->clearMediaCollection($this->collection);
-            $this->dispatch('media-updated', modelId: $this->model->id, collection: $this->collection);
+            if ($this->model->exists) {
+                $this->model->clearMediaCollection($this->collection);
+            } else {
+                // Ensure temporary media is initialized
+                if (!$this->temporaryMedia) {
+                    $this->initializeTemporaryMedia();
+                }
+                
+                if (!$this->temporaryMedia) {
+                    Flux::toast('Failed to initialize temporary media storage.', variant: 'danger');
+                    return;
+                }
+                
+                $this->temporaryMedia->clearMediaCollection('temp');
+            }
+            
+            $this->dispatch('media-updated', 
+                modelId: $this->model->exists ? $this->model->id : null, 
+                collection: $this->collection,
+                isTemporary: !$this->model->exists
+            );
             Flux::toast('Media removed successfully.', variant: 'success');
         } catch (\Exception $e) {
             Flux::toast(__('media.uploader.remove_failed', ['message' => $e->getMessage()]), variant: 'danger');
@@ -191,6 +283,11 @@ class MediaUploader extends Component
      */
     public function render()
     {
+        // Ensure temporary media is initialized for unsaved models
+        if (!$this->model->exists && !$this->temporaryMedia) {
+            $this->initializeTemporaryMedia();
+        }
+        
         $query = Media::query();
 
         if ($this->search) {
@@ -206,8 +303,35 @@ class MediaUploader extends Component
         $media = $query->orderBy('created_at', 'desc')
             ->paginate($this->perPage);
 
+        // Only try to get media URL if the model is saved
+        $mediaUrl = null;
+        if ($this->model->exists) {
+            try {
+                $mediaUrl = $this->model->getFirstMediaUrl($this->collection);
+            } catch (\Exception $e) {
+                // Handle the case where the model exists but media URL generation fails
+                $mediaUrl = null;
+            }
+        } elseif ($this->temporaryMedia) {
+            try {
+                $mediaUrl = $this->temporaryMedia->getFirstMediaUrl('temp');
+            } catch (\Exception $e) {
+                $mediaUrl = null;
+            }
+        } else {
+            // Try to initialize temporary media if it's null
+            try {
+                $this->initializeTemporaryMedia();
+                if ($this->temporaryMedia) {
+                    $mediaUrl = $this->temporaryMedia->getFirstMediaUrl('temp');
+                }
+            } catch (\Exception $e) {
+                $mediaUrl = null;
+            }
+        }
+
         return view('livewire.media-uploader', [
-            'mediaUrl' => $this->model->getFirstMediaUrl($this->collection),
+            'mediaUrl' => $mediaUrl,
             'existingMedia' => $media,
         ]);
     }

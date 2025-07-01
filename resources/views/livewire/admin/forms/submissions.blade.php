@@ -1,6 +1,6 @@
 <div>
     <div class="mb-6">
-        <flux:heading size="xl" class="mb-2">{{ __('forms.submissions_for', ['name' => $form->getTranslation('name', app()->getLocale())]) }}</flux:heading>
+        <flux:heading size="xl" class="mb-2">{{ __('messages.forms.submissions.submissions_for', ['name' => $form->getTranslation('name', app()->getLocale())]) }}</flux:heading>
         
         <flux:breadcrumbs>
             <flux:breadcrumbs.item href="{{ route('dashboard') }}" icon="home" />
@@ -51,7 +51,7 @@
                 <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer" wire:click="sort('created_at')">
                         <div class="flex items-center gap-2">
-                            {{ __('forms.table_submitted_at') }}
+                            {{ __('messages.forms.submissions.table_submitted_at') }}
                             @if($sortBy === 'created_at')
                                 <flux:icon name="{{ $sortDirection === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4" />
                             @endif
@@ -59,14 +59,14 @@
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider cursor-pointer" wire:click="sort('ip_address')">
                         <div class="flex items-center gap-2">
-                            {{ __('forms.table_ip_address') }}
+                            {{ __('messages.forms.submissions.table_ip_address') }}
                             @if($sortBy === 'ip_address')
                                 <flux:icon name="{{ $sortDirection === 'asc' ? 'chevron-up' : 'chevron-down' }}" class="w-4 h-4" />
                             @endif
                         </div>
                     </th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        {{ __('forms.table_data_preview') }}
+                        {{ __('messages.forms.submissions.table_data_preview') }}
                     </th>
                     <th scope="col" class="relative px-6 py-3">
                         <span class="sr-only">{{ __('labels.actions') }}</span>
@@ -93,10 +93,10 @@
                                         </div>
                                     @endforeach
                                     @if(count($submission->data) > 2)
-                                        <div class="text-xs text-zinc-500">+{{ count($submission->data) - 2 }} more fields</div>
+                                        <div class="text-xs text-zinc-500">{{ __('messages.forms.submissions.more_fields', ['count' => count($submission->data) - 2]) }}</div>
                                     @endif
                                 @else
-                                    <span class="text-zinc-500">{{ __('forms.no_data') }}</span>
+                                    <span class="text-zinc-500">{{ __('messages.forms.submissions.no_data') }}</span>
                                 @endif
                             </div>
                         </td>
@@ -107,7 +107,7 @@
                                 size="xs"
                                 icon="eye"
                                 square
-                                tooltip="{{ __('buttons.view_details') }}"
+                                :tooltip="__('buttons.view_details')"
                                 wire:navigate
                             />
                         </td>
@@ -116,7 +116,7 @@
                     <tr>
                         <td colspan="4" class="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-500">
                             @if($search)
-                                {{ __('forms.no_submissions_found') }}
+                                {{ __('messages.forms.submissions.no_submissions_found') }}
                             @else
                                 {{ __('messages.forms.no_submissions_yet') }}
                             @endif

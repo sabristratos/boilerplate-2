@@ -2,41 +2,53 @@
 
 namespace App\Services\FormBuilder\Renderers;
 
+/**
+ * Renderer for number form elements.
+ */
 class NumberRenderer extends BaseElementRenderer
 {
-    public function render(array $element): string
-    {
-        $data = $this->prepareViewData($element);
-
-        return view('components.form-builder.elements.number', $data)->render();
-    }
-
+    /**
+     * Check if this renderer supports the given element type.
+     *
+     * @param string $type
+     * @return bool
+     */
     public function supports(string $type): bool
     {
         return $type === 'number';
     }
 
+    /**
+     * Get the default label for this element type.
+     *
+     * @return string
+     */
     protected function getDefaultLabel(): string
     {
-        return 'New Number Input';
+        return 'New Number';
     }
 
+    /**
+     * Get the view name for this element type.
+     *
+     * @return string
+     */
     protected function getViewName(): string
     {
         return 'components.form-builder.elements.number';
     }
 
+    /**
+     * Get default properties for this element type.
+     *
+     * @return array
+     */
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();
-
-        // Add number-specific properties
         $properties['min'] = '';
         $properties['max'] = '';
-        $properties['step'] = '1';
-        $properties['clearable'] = true;
-        $properties['copyable'] = false;
-
+        $properties['step'] = '';
         return $properties;
     }
 } 

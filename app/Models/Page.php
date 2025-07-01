@@ -22,10 +22,37 @@ class Page extends Model implements HasMedia
         'status',
         'meta_title',
         'meta_description',
+        'meta_keywords',
+        'og_title',
+        'og_description',
+        'og_image',
+        'twitter_title',
+        'twitter_description',
+        'twitter_image',
+        'twitter_card_type',
+        'canonical_url',
+        'structured_data',
         'no_index',
+        'no_follow',
+        'no_archive',
+        'no_snippet',
     ];
 
-    public array $translatable = ['title', 'meta_title', 'meta_description'];
+    public array $translatable = [
+        'title', 
+        'meta_title', 
+        'meta_description',
+        'meta_keywords',
+        'og_title',
+        'og_description',
+        'og_image',
+        'twitter_title',
+        'twitter_description',
+        'twitter_image',
+        'twitter_card_type',
+        'canonical_url',
+        'structured_data',
+    ];
 
     public function contentBlocks(): HasMany
     {
@@ -52,6 +79,9 @@ class Page extends Model implements HasMedia
         return [
             'status' => PublishStatus::class,
             'no_index' => 'boolean',
+            'no_follow' => 'boolean',
+            'no_archive' => 'boolean',
+            'no_snippet' => 'boolean',
         ];
     }
 }

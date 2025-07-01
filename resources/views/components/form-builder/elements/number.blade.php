@@ -1,4 +1,4 @@
-@props(['element', 'properties', 'fluxProps'])
+@props(['element', 'properties', 'fluxProps', 'mode' => 'edit', 'fieldName' => null])
 
 @php
     $min = $properties['min'] ?? '';
@@ -8,6 +8,9 @@
     $copyable = $properties['copyable'] ?? false;
     $hasIcon = $fluxProps['icon'] ?? false;
     $hasIconTrailing = $fluxProps['iconTrailing'] ?? false;
+    $isPreview = $mode === 'preview';
+    $wireModel = $isPreview && $fieldName ? "previewFormData.{$fieldName}" : null;
+    $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
     
     // Build attributes string
     $attributes = [];
@@ -25,11 +28,15 @@
         type="number"
         label="{{ $properties['label'] }}" 
         placeholder="{{ $properties['placeholder'] }}"
-        step="{{ $step }}"
-        :clearable="$clearable"
-        :copyable="$copyable"
+        :clearable="$fluxProps['clearable'] ?? false"
+        :copyable="$fluxProps['copyable'] ?? false"
+        :viewable="$fluxProps['viewable'] ?? false"
         icon="{{ $fluxProps['icon'] }}"
-        {!! $attributesString !!}
+        :wire:model="$wireModel"
+        :required="$required"
+        :min="$properties['min'] !== '' ? $properties['min'] : null"
+        :max="$properties['max'] !== '' ? $properties['max'] : null"
+        :step="$properties['step'] !== '' ? $properties['step'] : null"
     >
         <x-slot name="icon:trailing">
             <flux:icon name="{{ $fluxProps['iconTrailing'] }}" />
@@ -40,21 +47,29 @@
         type="number"
         label="{{ $properties['label'] }}" 
         placeholder="{{ $properties['placeholder'] }}"
-        step="{{ $step }}"
-        :clearable="$clearable"
-        :copyable="$copyable"
+        :clearable="$fluxProps['clearable'] ?? false"
+        :copyable="$fluxProps['copyable'] ?? false"
+        :viewable="$fluxProps['viewable'] ?? false"
         icon="{{ $fluxProps['icon'] }}"
-        {!! $attributesString !!}
+        :wire:model="$wireModel"
+        :required="$required"
+        :min="$properties['min'] !== '' ? $properties['min'] : null"
+        :max="$properties['max'] !== '' ? $properties['max'] : null"
+        :step="$properties['step'] !== '' ? $properties['step'] : null"
     />
 @elseif($hasIconTrailing)
     <flux:input 
         type="number"
         label="{{ $properties['label'] }}" 
         placeholder="{{ $properties['placeholder'] }}"
-        step="{{ $step }}"
-        :clearable="$clearable"
-        :copyable="$copyable"
-        {!! $attributesString !!}
+        :clearable="$fluxProps['clearable'] ?? false"
+        :copyable="$fluxProps['copyable'] ?? false"
+        :viewable="$fluxProps['viewable'] ?? false"
+        :wire:model="$wireModel"
+        :required="$required"
+        :min="$properties['min'] !== '' ? $properties['min'] : null"
+        :max="$properties['max'] !== '' ? $properties['max'] : null"
+        :step="$properties['step'] !== '' ? $properties['step'] : null"
     >
         <x-slot name="icon:trailing">
             <flux:icon name="{{ $fluxProps['iconTrailing'] }}" />
@@ -65,9 +80,19 @@
         type="number"
         label="{{ $properties['label'] }}" 
         placeholder="{{ $properties['placeholder'] }}"
-        step="{{ $step }}"
-        :clearable="$clearable"
-        :copyable="$copyable"
-        {!! $attributesString !!}
+        :clearable="$fluxProps['clearable'] ?? false"
+        :copyable="$fluxProps['copyable'] ?? false"
+        :viewable="$fluxProps['viewable'] ?? false"
+        :wire:model="$wireModel"
+        :required="$required"
+        :min="$properties['min'] !== '' ? $properties['min'] : null"
+        :max="$properties['max'] !== '' ? $properties['max'] : null"
+        :step="$properties['step'] !== '' ? $properties['step'] : null"
     />
+@endif
+
+@if($isPreview && $fieldName)
+    @error("previewFormData.{$fieldName}")
+        <flux:error>{{ $message }}</flux:error>
+    @enderror
 @endif 

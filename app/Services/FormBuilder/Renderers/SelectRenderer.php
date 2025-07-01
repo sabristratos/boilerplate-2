@@ -2,37 +2,51 @@
 
 namespace App\Services\FormBuilder\Renderers;
 
+/**
+ * Renderer for select form elements.
+ */
 class SelectRenderer extends BaseElementRenderer
 {
-    public function render(array $element): string
-    {
-        $data = $this->prepareViewData($element);
-
-        return view('components.form-builder.elements.select', $data)->render();
-    }
-
+    /**
+     * Check if this renderer supports the given element type.
+     *
+     * @param string $type
+     * @return bool
+     */
     public function supports(string $type): bool
     {
         return $type === 'select';
     }
 
+    /**
+     * Get the default label for this element type.
+     *
+     * @return string
+     */
     protected function getDefaultLabel(): string
     {
         return 'New Select';
     }
 
+    /**
+     * Get the view name for this element type.
+     *
+     * @return string
+     */
     protected function getViewName(): string
     {
         return 'components.form-builder.elements.select';
     }
 
+    /**
+     * Get default properties for this element type.
+     *
+     * @return array
+     */
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();
-
-        // Add select-specific properties
-        $properties['options'] = [];
-
+        $properties['options'] = '';
         return $properties;
     }
 }

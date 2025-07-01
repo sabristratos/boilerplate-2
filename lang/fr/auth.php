@@ -27,4 +27,6 @@ return [
     'registration_success' => 'Inscription réussie.',
     'password_reset_success' => 'Réinitialisation du mot de passe réussie.',
     'logout' => 'Déconnecté avec succès.',
+    'or' => 'Ou',
+    'login_with' => 'Continuer avec :provider',
 ];

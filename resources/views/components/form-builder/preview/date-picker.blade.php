@@ -20,7 +20,9 @@
     $clearable = $properties['clearable'] ?? true;
     $disabled = $properties['disabled'] ?? false;
     $invalid = $properties['invalid'] ?? false;
-    $locale = $properties['locale'] ?? '';
+    $locale = $properties['locale'] ?? app()->getLocale() ?? 'en';
+    // Ensure locale is always a valid value
+    $locale = !empty($locale) ? $locale : 'en';
 @endphp
 
 <flux:date-picker 
@@ -47,7 +49,7 @@
     :description="$description"
     :badge="$badge"
     :presets="$presets"
-    :locale="$locale"
+    locale="{{ $locale }}"
     required="{{ $required ? 'true' : '' }}"
 >
     <x-slot name="trigger">

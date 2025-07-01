@@ -97,7 +97,7 @@ class Index extends Component
     {
         $forms = Form::where('user_id', auth()->id())
             ->when($this->search, function ($query, $search) {
-                $locale = app()->getLocale();
+                $locale = app()->getLocale() ?? 'en';
                 $query->where(function ($q) use ($search, $locale) {
                     $q->whereRaw("JSON_EXTRACT(name, '$.\"{$locale}\"') LIKE ?", ["%{$search}%"]);
                 });

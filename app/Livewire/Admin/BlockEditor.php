@@ -47,9 +47,10 @@ class BlockEditor extends Component
         $this->blockManager = $blockManager;
     }
 
-    public function mount(string $activeLocale): void
+    public function mount(string $activeLocale, array $state = []): void
     {
         $this->activeLocale = $activeLocale;
+        $this->state = $state;
     }
 
     public function updated(string $name, mixed $value): void
@@ -88,7 +89,9 @@ class BlockEditor extends Component
         $this->formTitle = 'Editing: '.($blockClass instanceof \App\Blocks\Block ? $blockClass->getName() : 'Block');
 
         $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
-        $this->state = array_merge($defaultData, $this->editingBlock->data ?? [], $this->editingBlock->settings ?? []);
+        $blockData = $this->editingBlock->getTranslatedData($this->activeLocale);
+        $blockSettings = $this->editingBlock->getSettingsArray();
+        $this->state = array_merge($defaultData, $blockData, $blockSettings);
 
         $this->blockStatus = $this->editingBlock->status;
         $this->isPublished = $this->editingBlock->status === ContentBlockStatus::PUBLISHED;
@@ -213,11 +216,16 @@ class BlockEditor extends Component
 
     public function updatedState(): void
     {
-        $this->dispatch('block-state-updated', id: $this->editingBlock->id, state: $this->state);
+        if ($this->editingBlock instanceof \App\Models\ContentBlock) {
+            $this->dispatch('block-state-updated', id: $this->editingBlock->id, state: $this->state);
+        }
     }
 
     public function onRepeaterUpdate(array $data): void
     {
+        if (!is_array($this->state)) {
+            $this->state = [];
+        }
         $this->state[str_replace('state.', '', $data['model'])] = $data['items'];
         $this->updatedState();
     }

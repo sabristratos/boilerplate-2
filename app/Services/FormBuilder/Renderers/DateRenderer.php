@@ -2,40 +2,54 @@
 
 namespace App\Services\FormBuilder\Renderers;
 
+/**
+ * Renderer for date form elements.
+ */
 class DateRenderer extends BaseElementRenderer
 {
-    public function render(array $element): string
-    {
-        $data = $this->prepareViewData($element);
-
-        return view('components.form-builder.elements.date', $data)->render();
-    }
-
+    /**
+     * Check if this renderer supports the given element type.
+     *
+     * @param string $type
+     * @return bool
+     */
     public function supports(string $type): bool
     {
         return $type === 'date';
     }
 
+    /**
+     * Get the default label for this element type.
+     *
+     * @return string
+     */
     protected function getDefaultLabel(): string
     {
-        return 'New Date Picker';
+        return 'New Date';
     }
 
+    /**
+     * Get the view name for this element type.
+     *
+     * @return string
+     */
     protected function getViewName(): string
     {
         return 'components.form-builder.elements.date';
     }
 
+    /**
+     * Get default properties for this element type.
+     *
+     * @return array
+     */
     public function getDefaultProperties(): array
     {
         $properties = parent::getDefaultProperties();
-
-        // Add comprehensive date-picker properties based on Flux documentation
-        $properties['mode'] = 'single';
-        $properties['minRange'] = '';
-        $properties['maxRange'] = '';
         $properties['min'] = '';
         $properties['max'] = '';
+        $properties['locale'] = app()->getLocale() ?? 'en';
+        $properties['mode'] = 'single';
         $properties['months'] = 1;
         $properties['description'] = '';
         $properties['descriptionTrailing'] = false;
@@ -51,8 +65,6 @@ class DateRenderer extends BaseElementRenderer
         $properties['clearable'] = true;
         $properties['disabled'] = false;
         $properties['invalid'] = false;
-        $properties['locale'] = '';
-
         return $properties;
     }
 } 

@@ -42,11 +42,16 @@ class PageManager extends Component
 
     public ?int $editingBlockId = null;
 
-    public string $activeSidebarTab = 'settings';
+    public string $tab = 'settings';
 
     public ?string $switchLocale = null;
 
     public bool $isPublished;
+
+    // Block library filtering
+    public string $blockSearch = '';
+    public string $selectedCategory = '';
+    public string $selectedComplexity = '';
 
     protected BlockManager $blockManager;
 
@@ -74,7 +79,6 @@ class PageManager extends Component
     {
         $this->editingBlockId = null;
         $this->editingBlockState = [];
-        $this->activeSidebarTab = 'settings';
         $this->dispatch('$refresh');
     }
 
@@ -82,7 +86,6 @@ class PageManager extends Component
     {
         $this->editingBlockId = null;
         $this->editingBlockState = [];
-        $this->activeSidebarTab = 'settings';
     }
 
     public function onBlockStateUpdate(int $id, array $state): void
@@ -98,6 +101,8 @@ class PageManager extends Component
 
     public function mount(Page $page): void
     {
+        $this->authorize('update', $page);
+        
         $this->page = $page;
         $this->initializeLocale();
         $this->loadPageTranslations();
@@ -111,11 +116,17 @@ class PageManager extends Component
     protected function initializeLocale(): void
     {
         $this->availableLocales = $this->getAvailableLocales();
-        $this->activeLocale = request()->query('locale', config('app.fallback_locale'));
-
-        if (! array_key_exists($this->activeLocale, $this->availableLocales)) {
-            $this->activeLocale = config('app.fallback_locale');
+        $requestedLocale = request()->query('locale', config('app.fallback_locale'));
+        
+        // Validate locale format (2-3 character language code)
+        if (!preg_match('/^[a-z]{2,3}$/', $requestedLocale)) {
+            $requestedLocale = config('app.fallback_locale');
         }
+        
+        $this->activeLocale = array_key_exists($requestedLocale, $this->availableLocales) 
+            ? $requestedLocale 
+            : config('app.fallback_locale');
+            
         $this->switchLocale = $this->activeLocale;
         app()->setLocale($this->activeLocale);
     }
@@ -135,9 +146,6 @@ class PageManager extends Component
 
     public function updatedSwitchLocale(string $locale): void
     {
-        // Add debugging toast to verify method is called
-        $this->showSuccessToast('Switching locale to: '.$locale);
-
         if (array_key_exists($locale, $this->availableLocales)) {
             $this->redirect(route('admin.pages.editor', ['page' => $this->page, 'locale' => $locale]));
         }
@@ -148,9 +156,58 @@ class PageManager extends Component
         return $this->page->contentBlocks()->ordered()->get();
     }
 
+    public function getFilteredBlocksProperty()
+    {
+        $blocks = $this->blockManager->getAvailableBlocks();
+
+        // Filter by search
+        if (!empty($this->blockSearch)) {
+            $blocks = $blocks->filter(function ($block) {
+                return str_contains(strtolower($block->getName()), strtolower($this->blockSearch)) ||
+                       str_contains(strtolower($block->getDescription()), strtolower($this->blockSearch)) ||
+                       collect($block->getTags())->contains(function ($tag) {
+                           return str_contains(strtolower($tag), strtolower($this->blockSearch));
+                       });
+            });
+        }
+
+        // Filter by category
+        if (!empty($this->selectedCategory)) {
+            $blocks = $blocks->filter(function ($block) {
+                return $block->getCategory() === $this->selectedCategory;
+            });
+        }
+
+        // Filter by complexity
+        if (!empty($this->selectedComplexity)) {
+            $blocks = $blocks->filter(function ($block) {
+                return $block->getComplexity() === $this->selectedComplexity;
+            });
+        }
+
+        return $blocks;
+    }
+
+    public function getAvailableCategoriesProperty()
+    {
+        return $this->blockManager->getAvailableBlocks()
+            ->pluck('category')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function getAvailableComplexitiesProperty()
+    {
+        return $this->blockManager->getAvailableBlocks()
+            ->pluck('complexity')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function editBlock(int $blockId): void
     {
-        $this->activeSidebarTab = 'edit';
         $this->dispatch('editBlock', $blockId);
     }
 
@@ -162,7 +219,7 @@ class PageManager extends Component
                 __('messages.page_manager.block_created_text', ['blockName' => $block->blockClass->getName()]),
                 __('messages.page_manager.block_created_title')
             );
-            $this->editBlock($block->id);
+            $this->dispatch('$refresh');
         } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.invalid_block_type_text'),

@@ -7,6 +7,8 @@ use App\Models\SettingGroup;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Auth\Access\AuthorizationException;
 
 class SettingsManager
 {
@@ -46,10 +48,47 @@ class SettingsManager
     }
 
     /**
+     * Get a translated setting value.
+     */
+    public function getTranslation(string $key, string $locale, mixed $default = null): mixed
+    {
+        $setting = $this->get($key, $default);
+        
+        if (is_array($setting) && isset($setting[$locale])) {
+            return $setting[$locale];
+        }
+        
+        return $default;
+    }
+
+    /**
      * Set a setting value.
      */
     public function set(string $key, mixed $value): void
     {
+        // Use direct array access instead of dot notation to handle keys with dots
+        $settingsConfig = Config::get('settings.settings', []);
+        $settingConfig = $settingsConfig[$key] ?? null;
+        
+        if (!$settingConfig) {
+            throw new \InvalidArgumentException("Setting configuration not found for key: {$key}");
+        }
+
+        // Validate permissions if specified
+        if (isset($settingConfig['permission'])) {
+            if (!auth()->user() || !auth()->user()->can($settingConfig['permission'])) {
+                throw new AuthorizationException('Insufficient permissions to modify this setting.');
+            }
+        }
+
+        // Validate value against rules if provided
+        if (isset($settingConfig['rules'])) {
+            $validator = Validator::make([$key => $value], [$key => $settingConfig['rules']]);
+            if ($validator->fails()) {
+                throw new \InvalidArgumentException($validator->errors()->first());
+            }
+        }
+
         $groupKey = $this->getGroupKey($key);
         $settingGroup = SettingGroup::where('key', $groupKey)->first();
 
@@ -61,6 +100,19 @@ class SettingsManager
 
         if (! $setting->exists) {
             $setting->setting_group_id = $settingGroup->id;
+            $setting->type = $settingConfig['type'] ?? 'text';
+            $setting->cast = $settingConfig['cast'] ?? 'string';
+            $setting->label = $settingConfig['label'] ?? [];
+            $setting->description = $settingConfig['description'] ?? null;
+            $setting->permission = $settingConfig['permission'] ?? null;
+            $setting->config_key = $settingConfig['config'] ?? null;
+            $setting->rules = $settingConfig['rules'] ?? null;
+            $setting->options = $settingConfig['options'] ?? null;
+            $setting->subfields = $settingConfig['subfields'] ?? null;
+            $setting->callout = $settingConfig['callout'] ?? null;
+            $setting->default = $settingConfig['default'] ?? null;
+            $setting->warning = $settingConfig['warning'] ?? null;
+            $setting->order = $settingConfig['order'] ?? 0;
         }
 
         $setting->value = $value;
@@ -70,16 +122,35 @@ class SettingsManager
     }
 
     /**
+     * Set a translated setting value.
+     */
+    public function setTranslation(string $key, string $locale, mixed $value): void
+    {
+        $currentValue = $this->get($key, []);
+        
+        if (!is_array($currentValue)) {
+            $currentValue = [];
+        }
+        
+        $currentValue[$locale] = $value;
+        $this->set($key, $currentValue);
+    }
+
+    /**
      * Get all settings.
      */
     public function getAll(): array
     {
-        return Cache::rememberForever($this->getCacheKey(), function () {
-            if (! Schema::hasTable('settings')) {
-                return [];
-            }
-
-            return Setting::all()->keyBy('key')->toArray();
+        $cacheKey = $this->getCacheKey();
+        
+        if ($this->supportsCacheTags()) {
+            return Cache::tags(['settings'])->remember($cacheKey, now()->addMinutes(30), function () {
+                return $this->loadSettingsFromDatabase();
+            });
+        }
+        
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () {
+            return $this->loadSettingsFromDatabase();
         });
     }
 
@@ -88,7 +159,11 @@ class SettingsManager
      */
     public function clearCache(): void
     {
-        Cache::forget($this->getCacheKey());
+        if ($this->supportsCacheTags()) {
+            Cache::tags(['settings'])->flush();
+        } else {
+            Cache::forget($this->getCacheKey());
+        }
     }
 
     /**
@@ -111,5 +186,67 @@ class SettingsManager
         }
 
         return $parts[0];
+    }
+
+    /**
+     * Load settings from database.
+     */
+    protected function loadSettingsFromDatabase(): array
+    {
+        if (! Schema::hasTable('settings')) {
+            return [];
+        }
+
+        $settings = Setting::with('settingGroup')->get();
+        $result = [];
+
+        foreach ($settings as $setting) {
+            $value = $setting->value;
+            switch ($setting->cast) {
+                case 'boolean':
+                    $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+                    break;
+                case 'integer':
+                    $value = is_null($value) ? null : (int) $value;
+                    break;
+                case 'array':
+                case 'json':
+                    $value = is_string($value) ? json_decode($value, true) : $value;
+                    break;
+                // Add more casts as needed
+            }
+            $result[$setting->key] = [
+                'value' => $value,
+                'type' => $setting->type,
+                'cast' => $setting->cast,
+                'label' => $setting->label,
+                'description' => $setting->description,
+                'permission' => $setting->permission,
+                'config_key' => $setting->config_key,
+                'rules' => $setting->rules,
+                'options' => $setting->options,
+                'subfields' => $setting->subfields,
+                'callout' => $setting->callout,
+                'default' => $setting->default,
+                'warning' => $setting->warning,
+                'order' => $setting->order,
+                'setting_group' => $setting->settingGroup,
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Check if the current cache store supports tagging.
+     */
+    protected function supportsCacheTags(): bool
+    {
+        try {
+            $store = Cache::getStore();
+            return method_exists($store, 'tags');
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

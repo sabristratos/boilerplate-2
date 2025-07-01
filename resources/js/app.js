@@ -3,6 +3,63 @@ import sort from '@alpinejs/sort'
 
 Alpine.plugin(sort)
 
+// Form Canvas Alpine.js component
+window.formCanvas = function() {
+    return {
+        refreshPreview() {
+            // Force a re-render of the preview by triggering a Livewire refresh
+            this.$wire.$refresh();
+        },
+        updatePreviewElement(event) {
+            console.log('Preview element update received:', event.detail);
+            // event.detail is an array with one element containing our data
+            const data = event.detail[0];
+            const elementIndex = data.elementIndex;
+            const elementId = data.elementId;
+            const html = data.html;
+            
+            console.log('Extracted data:', { elementIndex, elementId, html });
+            
+            const previewContainer = document.querySelector('[data-preview-element="' + elementId + '"]');
+            if (previewContainer) {
+                console.log('Updating preview container:', elementId);
+                previewContainer.innerHTML = html;
+                // Re-initialize Alpine.js components in the updated content
+                Alpine.initTree(previewContainer);
+            } else {
+                console.log('Preview container not found for element:', elementId);
+                console.log('Available containers:', document.querySelectorAll('[data-preview-element]'));
+            }
+        },
+        updateEditElement(event) {
+            console.log('Edit element update received:', event.detail);
+            // event.detail is an array with one element containing our data
+            const data = event.detail[0];
+            const elementIndex = data.elementIndex;
+            const elementId = data.elementId;
+            const html = data.html;
+            
+            console.log('Extracted edit data:', { elementIndex, elementId, html });
+            
+            // Find the edit element container by its wire:key pattern
+            const editContainer = document.querySelector(`[wire\\:key*="element-${elementId}"]`);
+            if (editContainer) {
+                console.log('Updating edit container:', elementId);
+                // Find the inner content div and update it
+                const contentDiv = editContainer.querySelector('.p-4');
+                if (contentDiv) {
+                    contentDiv.innerHTML = html;
+                    // Re-initialize Alpine.js components in the updated content
+                    Alpine.initTree(contentDiv);
+                }
+            } else {
+                console.log('Edit container not found for element:', elementId);
+                console.log('Available containers:', document.querySelectorAll('[wire\\:key*="element-"]'));
+            }
+        }
+    }
+}
+
 document.addEventListener('livewire:init', () => {
     Livewire.on('settings-updated', (event) => {
         if (!event || !event.settings) {

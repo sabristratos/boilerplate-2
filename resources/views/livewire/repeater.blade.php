@@ -9,7 +9,7 @@
                                 @case('select')
                                     <flux:select
                                         wire:model.live="items.{{ $index }}.{{ $key }}"
-                                        label="{{ $field['label'][$locale] ?? $field['label']['en'] ?? $field['label'] }}"
+                                        label="{{ $field['label'] }}"
                                     >
                                         @foreach ($field['options'] as $value => $label)
                                             <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
@@ -20,7 +20,7 @@
                                 @default
                                     <flux:input
                                         wire:model.live="items.{{ $index }}.{{ $key }}"
-                                        label="{{ $field['label'][$locale] ?? $field['label']['en'] ?? $field['label'] }}"
+                                        label="{{ $field['label'] }}"
                                         type="{{ $field['type'] }}"
                                     />
                                     @break
@@ -43,6 +43,7 @@
             wire:click="addItem"
             type="button"
             variant="outline"
+            icon="plus"
         >
             {{ __('buttons.add') }}
         </flux:button>

@@ -37,6 +37,14 @@
                 <flux:select.option value="100">{{ __('labels.per_page', ['count' => 100]) }}</flux:select.option>
             </flux:select>
 
+            <flux:button
+                href="{{ route('admin.import-export.index') }}?tab=export&type=forms"
+                variant="outline"
+                icon="arrow-down-tray"
+            >
+                {{ __('buttons.export') }}
+            </flux:button>
+
             <flux:button wire:click="openCreateModal" variant="primary" icon="plus">
                 {{ __('buttons.create_item', ['item' => __('navigation.forms')]) }}
             </flux:button>
@@ -96,7 +104,7 @@
                                 size="xs"
                                 icon="pencil-square"
                                 square
-                                tooltip="{{ __('buttons.edit') }}"
+                                :tooltip="__('buttons.edit')"
                                 wire:navigate
                             />
                             <flux:button
@@ -105,7 +113,7 @@
                                 size="xs"
                                 icon="document-text"
                                 square
-                                tooltip="{{ __('buttons.view_submissions') }}"
+                                :tooltip="__('messages.forms.tooltips.submissions')"
                                 wire:navigate
                             />
                             <flux:button
@@ -114,7 +122,7 @@
                                 size="xs"
                                 icon="eye"
                                 square
-                                tooltip="{{ __('buttons.view') }}"
+                                :tooltip="__('buttons.view')"
                             />
                         </td>
                     </tr>
@@ -137,21 +145,21 @@
 
     <flux:modal name="create-form">
         <form wire:submit.prevent="create">
-            <flux:heading>Create a new form</flux:heading>
+            <flux:heading>{{ __('messages.forms.form_builder_interface.create_new_form') }}</flux:heading>
             <div class="mt-4">
-                <flux:select wire:model="selectedPrebuiltForm" label="Prebuilt Form (optional)" placeholder="Choose a prebuilt form...">
-                    <flux:select.option value="">-- None --</flux:select.option>
+                <flux:select wire:model="selectedPrebuiltForm" :label="__('messages.forms.form_builder_interface.prebuilt_form_optional')" :placeholder="__('messages.forms.form_builder_interface.choose_prebuilt_form')">
+                    <flux:select.option value="">{{ __('messages.forms.form_builder_interface.none') }}</flux:select.option>
                     @foreach($this->availablePrebuiltForms as $prebuilt)
                         <flux:select.option value="{{ get_class($prebuilt) }}">{{ $prebuilt->getName() }}</flux:select.option>
                     @endforeach
                 </flux:select>
             </div>
             <div class="mt-4">
-                <flux:input wire:model="newFormName" label="Form Name" placeholder="e.g. Contact Us" />
+                <flux:input wire:model="newFormName" :label="__('messages.forms.form_builder_interface.form_name')" :placeholder="__('messages.forms.form_builder_interface.form_name_placeholder')" />
             </div>
             <div class="mt-6 flex justify-end gap-3">
-                <flux:button variant="ghost" @click="$flux.modal('create-form').close()">Cancel</flux:button>
-                <flux:button type="submit" variant="primary">Create</flux:button>
+                <flux:button variant="ghost" @click="$flux.modal('create-form').close()">{{ __('messages.forms.form_builder_interface.cancel') }}</flux:button>
+                <flux:button type="submit" variant="primary" icon="plus">{{ __('messages.forms.form_builder_interface.create') }}</flux:button>
             </div>
         </form>
     </flux:modal>

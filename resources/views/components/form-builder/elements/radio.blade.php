@@ -1,8 +1,42 @@
-@props(['element', 'properties', 'fluxProps'])
+@props(['element', 'properties', 'fluxProps', 'mode' => 'edit', 'fieldName' => null])
 
-<flux:field variant="inline">
-    <flux:radio 
-        variant="{{ $fluxProps['variant'] ?? 'default' }}"
-    />
-    <flux:label>{{ $properties['label'] }}</flux:label>
-</flux:field>
+@php
+    $isPreview = $mode === 'preview';
+    $wireModel = $isPreview && $fieldName ? "previewFormData.{$fieldName}" : null;
+    $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
+    
+    // Parse options (one per line)
+    $options = $properties['options'] ?? '';
+    $optionArray = [];
+    if (is_string($options)) {
+        $optionArray = array_filter(explode(PHP_EOL, $options));
+    } elseif (is_array($options)) {
+        $optionArray = $options;
+    }
+@endphp
+
+@if($isPreview && !empty($optionArray))
+    <flux:radio.group 
+        label="{{ $properties['label'] }}"
+        :wire:model="$wireModel"
+        :required="$required"
+    >
+        @foreach($optionArray as $option)
+            <flux:radio label="{{ $option }}" value="{{ $option }}" />
+        @endforeach
+    </flux:radio.group>
+@else
+    <flux:field variant="inline">
+        <flux:radio 
+            :wire:model="$wireModel"
+            :required="$required"
+        />
+        <flux:label>{{ $properties['label'] }}</flux:label>
+    </flux:field>
+@endif
+
+@if($isPreview && $fieldName)
+    @error("previewFormData.{$fieldName}")
+        <flux:error>{{ $message }}</flux:error>
+    @enderror
+@endif

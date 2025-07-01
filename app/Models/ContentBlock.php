@@ -68,6 +68,35 @@ class ContentBlock extends Model implements HasMedia, Sortable
         );
     }
 
+    public function getTranslatedData(string $locale = null): array
+    {
+        // Ensure we have a valid locale
+        if ($locale === null) {
+            $locale = app()->getLocale() ?: config('app.fallback_locale', 'en');
+        }
+        
+        $data = $this->getTranslation('data', $locale);
+        
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        return is_array($data) ? $data : [];
+    }
+
+    public function getSettingsArray(): array
+    {
+        $settings = $this->settings;
+        
+        if (is_string($settings)) {
+            $decoded = json_decode($settings, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        return is_array($settings) ? $settings : [];
+    }
+
     public function buildSortQuery(): \Illuminate\Database\Eloquent\Builder
     {
         return static::query()->where('page_id', $this->page_id);

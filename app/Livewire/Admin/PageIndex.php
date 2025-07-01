@@ -33,7 +33,7 @@ class PageIndex extends Component
     {
         return Page::query()
             ->when($this->search, function ($query, $search): void {
-                $locale = $this->filters['locale'] ?? app()->getLocale();
+                $locale = $this->filters['locale'] ?? app()->getLocale() ?? 'en';
                 $query->where(fn ($q) => $q->where('slug', 'like', '%'.$search.'%')
                     ->orWhereRaw("JSON_EXTRACT(title, '$.\"{$locale}\"') LIKE ?", ["%{$search}%"])
                 );
@@ -71,14 +71,25 @@ class PageIndex extends Component
 
     public function createPage(): void
     {
+        $this->authorize('create', Page::class);
+        
         $defaultLocale = config('app.fallback_locale');
         $title = __('messages.page_index.new_page_title');
+        $baseSlug = Str::slug($title);
+        $slug = $baseSlug;
+        $counter = 1;
+
+        // Ensure slug uniqueness
+        while (Page::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
 
         $page = Page::create([
             'title' => [
                 $defaultLocale => $title,
             ],
-            'slug' => Str::slug($title).'-'.uniqid(),
+            'slug' => $slug,
         ]);
 
         $this->redirectRoute('admin.pages.editor', ['page' => $page->id, 'locale' => $defaultLocale]);
@@ -98,7 +109,11 @@ class PageIndex extends Component
 
     public function delete(): void
     {
-        Page::find($this->deleteId)?->delete();
+        $page = Page::find($this->deleteId);
+        if ($page) {
+            $this->authorize('delete', $page);
+            $page->delete();
+        }
 
         $this->showDeleteModal = false;
         $this->showSuccessToast(__('Page deleted successfully.'));

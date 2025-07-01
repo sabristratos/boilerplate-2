@@ -16,9 +16,9 @@ class ApplyLocaleSettings
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $locale = auth()->user()->locale ?? session('locale') ?? Settings::get('general.default_locale', config('app.locale'));
+        $locale = auth()->user()->locale ?? session('locale') ?? Settings::get('general.default_locale', config('app.locale')) ?? 'en';
 
-        $fallbackLocale = Settings::get('general.fallback_locale', config('app.fallback_locale'));
+        $fallbackLocale = Settings::get('general.fallback_locale', config('app.fallback_locale')) ?? 'en';
 
         config([
             'app.locale' => $locale,

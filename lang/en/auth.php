@@ -27,4 +27,6 @@ return [
     'registration_success' => 'Registration successful.',
     'password_reset_success' => 'Password reset successfully.',
     'logout' => 'Logged out successfully.',
+    'or' => 'Or',
+    'login_with' => 'Continue with :provider',
 ];

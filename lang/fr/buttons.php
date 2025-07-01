@@ -41,4 +41,10 @@ return [
     'back_to_form' => 'Retour au formulaire',
     'back_to_submissions' => 'Retour aux soumissions',
     'edit_form' => 'Modifier le formulaire',
+    'actions' => 'buttons.actions',
+    'export' => 'buttons.export',
+    'create_item\', [\'item\' => __(\'navigation' => [
+        'forms' => 'buttons.create_item\', [\'item\' => __(\'navigation.forms',
+        'pages' => 'buttons.create_item\', [\'item\' => __(\'navigation.pages',
+    ],
 ];

@@ -152,6 +152,9 @@ class ResourceForm extends Component
                 $model->syncRoles($this->data['roles']);
             }
 
+            // Handle media reattachment after model is saved
+            $this->handleMediaReattachment($model);
+
             DB::commit();
 
             if ($isNew) {
@@ -170,12 +173,41 @@ class ResourceForm extends Component
                 __('messages.success.generic')
             );
 
+            // Redirect to resource index after success
+            $this->redirectRoute('admin.' . $this->getResourceInstance()::uriKey() . '.index', navigate: true);
+
         } catch (\Exception $e) {
             DB::rollBack();
             $this->showErrorToast(
                 $e->getMessage(),
                 __('messages.errors.generic')
             );
+        }
+    }
+
+    /**
+     * Handle media reattachment after model is saved.
+     */
+    protected function handleMediaReattachment($model): void
+    {
+        // Get all temporary media for this session and model type
+        $sessionId = session()->getId();
+        $modelType = get_class($model);
+        
+        $temporaryMediaRecords = \App\Models\TemporaryMedia::where('session_id', $sessionId)
+            ->where('model_type', $modelType)
+            ->get();
+        
+        foreach ($temporaryMediaRecords as $tempMedia) {
+            $media = $tempMedia->getFirstMedia('temp');
+            
+            if ($media) {
+                // Copy the media to the actual model
+                $media->copy($model, $tempMedia->collection_name);
+                
+                // Delete the temporary media record and its media
+                $tempMedia->delete();
+            }
         }
     }
 

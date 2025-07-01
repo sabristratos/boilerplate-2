@@ -16,7 +16,7 @@
                 <div class="flex justify-between items-center">
                     <flux:heading size="sm">{{ $formTitle }}</flux:heading>
                     <div class="flex items-center gap-4">
-                        <flux:field :label="__('Status')" variant="inline">
+                        <flux:field :label="__('messages.page_manager.status')" variant="inline">
                             <flux:switch
                                 wire:model.live="isPublished"
                             />
@@ -25,7 +25,7 @@
                             :color="$isPublished ? 'lime' : 'zinc'"
                             variant="solid"
                         >
-                           {{ $isPublished ? __('Published') : __('Draft') }}
+                           {{ $isPublished ? __('messages.page_manager.published') : __('messages.page_manager.draft') }}
                         </flux:badge>
                     </div>
                 </div>
@@ -50,6 +50,12 @@
                 </div>
             </form>
 
+        </div>
+    @else
+        <div class="flex flex-col items-center justify-center py-12 text-center">
+            <flux:icon name="pencil-square" class="w-12 h-12 text-zinc-400 mb-4" />
+            <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('messages.page_manager.no_block_selected') }}</flux:heading>
+            <flux:text variant="subtle" class="text-sm">{{ __('messages.page_manager.select_block_to_edit') }}</flux:text>
         </div>
     @endif
 </div>

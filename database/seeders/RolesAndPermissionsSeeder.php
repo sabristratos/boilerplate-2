@@ -22,6 +22,9 @@ class RolesAndPermissionsSeeder extends Seeder
             'dashboard.view',
 
             'pages.view',
+            'pages.edit',
+            'pages.create',
+            'pages.delete',
 
             // User permissions
             'users.view',
@@ -39,8 +42,13 @@ class RolesAndPermissionsSeeder extends Seeder
             'settings.general.manage',
             'settings.appearance.manage',
             'settings.contact.manage',
+            'settings.email.manage',
+            'settings.security.manage',
+            'settings.social.manage',
+            'settings.advanced.manage',
             'settings.content.manage',
             'settings.navigation.manage',
+            'settings.seo.manage',
 
             // Media permissions
             'media.view',
@@ -61,6 +69,15 @@ class RolesAndPermissionsSeeder extends Seeder
             'forms.edit',
             'forms.delete',
             'forms.submissions.view',
+
+            // Backup permissions
+            'backup.view',
+            'backup.create',
+            'backup.download',
+            'backup.delete',
+
+            // Content permissions
+            'edit content',
         ];
 
         foreach ($permissions as $permission) {
@@ -76,6 +93,10 @@ class RolesAndPermissionsSeeder extends Seeder
         $editorRole->givePermissionTo([
             'dashboard.view',
             'pages.view',
+            'pages.edit',
+            'pages.create',
+            'pages.delete',
+            'edit content',
             'media.view',
             'media.create',
             'media.edit',
@@ -85,6 +106,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'testimonials.edit',
             'testimonials.reorder',
             'testimonials.delete',
+            'backup.view',
         ]);
 
         // User role

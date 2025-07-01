@@ -10,6 +10,8 @@ class PageController extends Controller
 {
     public function show(Page $page): View|RedirectResponse
     {
+        $this->authorize('view', $page);
+        
         return view('pages.show', ['page' => $page]);
     }
 }

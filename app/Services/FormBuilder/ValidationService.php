@@ -2,14 +2,25 @@
 
 namespace App\Services\FormBuilder;
 
+/**
+ * Service for handling form element validation rules and messages.
+ */
 class ValidationService
 {
+    /** @var array */
     private array $availableRules;
 
+    /** @var array */
     private array $defaultMessages;
 
+    /** @var FieldValidationService */
     private FieldValidationService $fieldValidationService;
 
+    /**
+     * ValidationService constructor.
+     *
+     * @param FieldValidationService $fieldValidationService
+     */
     public function __construct(FieldValidationService $fieldValidationService)
     {
         $this->fieldValidationService = $fieldValidationService;
@@ -18,12 +29,20 @@ class ValidationService
     }
 
     /**
-     * Generate validation rules for an element
+     * Generate validation rules for an element.
+     *
+     * @param array|ElementDTO $element
+     * @return array
      */
-    public function generateRules(array $element): array
+    public function generateRules(array|ElementDTO $element): array
     {
+        // Convert array to ElementDTO if needed
+        if (is_array($element)) {
+            $element = new ElementDTO($element);
+        }
+
         $rules = [];
-        $validation = $element['validation'] ?? [];
+        $validation = $element->validation ?? [];
         $selectedRules = $validation['rules'] ?? [];
         $ruleValues = $validation['values'] ?? [];
 
@@ -45,12 +64,20 @@ class ValidationService
     }
 
     /**
-     * Generate validation messages for an element
+     * Generate validation messages for an element.
+     *
+     * @param array|ElementDTO $element
+     * @return array
      */
-    public function generateMessages(array $element): array
+    public function generateMessages(array|ElementDTO $element): array
     {
+        // Convert array to ElementDTO if needed
+        if (is_array($element)) {
+            $element = new ElementDTO($element);
+        }
+
         $messages = [];
-        $validation = $element['validation'] ?? [];
+        $validation = $element->validation ?? [];
         $selectedRules = $validation['rules'] ?? [];
         $customMessages = $validation['messages'] ?? [];
         $ruleValues = $validation['values'] ?? [];
@@ -58,7 +85,7 @@ class ValidationService
         foreach ($selectedRules as $ruleKey) {
             if (isset($this->availableRules[$ruleKey])) {
                 $rule = $this->availableRules[$ruleKey];
-                $fieldName = $element['properties']['label'] ?? 'field';
+                $fieldName = $element->properties['label'] ?? 'field';
 
                 // Use custom message if provided, otherwise generate default
                 if (isset($customMessages[$ruleKey]) && ! empty($customMessages[$ruleKey])) {
@@ -74,7 +101,9 @@ class ValidationService
     }
 
     /**
-     * Get all available validation rules
+     * Get all available validation rules.
+     *
+     * @return array
      */
     public function getAvailableRules(): array
     {
@@ -82,7 +111,10 @@ class ValidationService
     }
 
     /**
-     * Get relevant validation rules for a specific field type
+     * Get relevant validation rules for a specific field type.
+     *
+     * @param string $fieldType
+     * @return array
      */
     public function getRelevantRules(string $fieldType): array
     {
@@ -90,7 +122,10 @@ class ValidationService
     }
 
     /**
-     * Get relevant validation rules grouped by category for a field type
+     * Get relevant validation rules grouped by category for a field type.
+     *
+     * @param string $fieldType
+     * @return array
      */
     public function getRelevantRulesByCategory(string $fieldType): array
     {
@@ -98,7 +133,10 @@ class ValidationService
     }
 
     /**
-     * Get available categories for a field type
+     * Get available categories for a field type.
+     *
+     * @param string $fieldType
+     * @return array
      */
     public function getAvailableCategories(string $fieldType): array
     {
@@ -106,11 +144,16 @@ class ValidationService
     }
 
     /**
-     * Update validation rules for an element
+     * Update validation rules for an element.
+     *
+     * @param array $elements
+     * @param string $elementId
+     * @param array $rules
+     * @return void
      */
     public function updateValidationRules(array &$elements, string $elementId, array $rules): void
     {
-        $elementManager = new ElementManager;
+        $elementManager = new ElementManager(new ElementFactory());
         $index = $elementManager->findElementIndex($elements, $elementId);
 
         if ($index !== null) {
@@ -124,11 +167,17 @@ class ValidationService
     }
 
     /**
-     * Update validation message for a specific rule
+     * Update validation message for a specific rule.
+     *
+     * @param array $elements
+     * @param string $elementId
+     * @param string $rule
+     * @param string $message
+     * @return void
      */
     public function updateValidationMessage(array &$elements, string $elementId, string $rule, string $message): void
     {
-        $elementManager = new ElementManager;
+        $elementManager = new ElementManager(new ElementFactory());
         $index = $elementManager->findElementIndex($elements, $elementId);
 
         if ($index !== null) {
@@ -142,11 +191,17 @@ class ValidationService
     }
 
     /**
-     * Update validation rule value
+     * Update validation rule value.
+     *
+     * @param array $elements
+     * @param string $elementId
+     * @param string $rule
+     * @param string $value
+     * @return void
      */
     public function updateValidationRuleValue(array &$elements, string $elementId, string $rule, string $value): void
     {
-        $elementManager = new ElementManager;
+        $elementManager = new ElementManager(new ElementFactory());
         $index = $elementManager->findElementIndex($elements, $elementId);
 
         if ($index !== null) {
@@ -164,7 +219,12 @@ class ValidationService
     }
 
     /**
-     * Generate default validation message for a rule
+     * Generate default validation message for a rule.
+     *
+     * @param array $rule
+     * @param string $fieldName
+     * @param string|null $value
+     * @return string
      */
     private function generateDefaultMessage(array $rule, string $fieldName, ?string $value = null): string
     {

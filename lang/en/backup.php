@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'create_backup' => 'Create Database Backup',
+    'create_backup_description' => 'Create a complete backup of your database. This process may take a few moments.',
+    'creating_backup' => 'Creating Backup...',
+    'backup_history' => 'Backup History',
+    'backup_history_description' => 'View and manage your existing database backups.',
+    'filename' => 'Filename',
+    'size' => 'Size',
+    'created_at' => 'Created At',
+    'download' => 'Download',
+    'delete' => 'Delete',
+    'no_backups_found' => 'No Backups Found',
+    'no_backups_found_description' => 'No database backups have been created yet. Create your first backup using the button above.',
+    'delete_confirm_title' => 'Delete Backup',
+    'delete_confirm_text' => 'Are you sure you want to delete the backup ":filename"? This action cannot be undone.',
+    'created_successfully' => 'Database backup created successfully!',
+    'creation_failed' => 'Failed to create database backup',
+    'deleted_successfully' => 'Backup deleted successfully!',
+    'deletion_failed' => 'Failed to delete backup',
+    'file_not_found' => 'Backup file not found',
+    'mysql_not_supported' => 'Database backup is not supported on this system. MySQL backup tools (mysqldump) are not available. This feature will work when deployed to a server with proper MySQL tools installed.',
+    'postgresql_not_supported' => 'Database backup is not supported on this system. PostgreSQL backup tools (pg_dump) are not available. This feature will work when deployed to a server with proper PostgreSQL tools installed.',
+]; 
