@@ -80,14 +80,7 @@ $settings = [
         'cast' => 'integer',
         'rules' => 'nullable|integer|exists:pages,id',
         'permission' => 'settings.general.manage',
-        'options' => function () {
-            return \App\Models\Page::orderBy('title->' . app()->getLocale(), 'asc')
-                ->pluck('title', 'id')
-                ->map(function ($title, $id) {
-                    return is_array($title) ? ($title[app()->getLocale()] ?? $title['en'] ?? 'Untitled') : $title;
-                })
-                ->toArray();
-        },
+        'options' => 'dynamic:general.homepage',
     ],
     'appearance.theme' => [
         'group' => SettingGroupKey::APPEARANCE->value,

@@ -2,7 +2,6 @@
 
 namespace App\Actions\Content;
 
-use App\Enums\ContentBlockStatus;
 use App\Models\Page;
 use App\Services\BlockManager;
 
@@ -20,7 +19,7 @@ class CreateContentBlockAction
 
         $block = $page->contentBlocks()->create([
             'type' => $blockClass->getType(),
-            'status' => ContentBlockStatus::DRAFT,
+            'visible' => true,
         ]);
 
         $defaultData = $blockClass->getDefaultData();

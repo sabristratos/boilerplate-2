@@ -2,6 +2,7 @@
 
 return [
     'save' => 'Sauvegarder',
+    'publish' => 'Publier',
     'save_changes' => 'Enregistrer les modifications',
     'save_settings' => 'Enregistrer les paramètres',
     'update' => 'Mise à jour',

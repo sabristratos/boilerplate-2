@@ -15,10 +15,29 @@ return new class extends Migration
             $table->id();
             $table->json('title');
             $table->string('slug')->unique();
-            $table->enum('status', ['draft', 'published'])->default('draft');
             $table->json('meta_title')->nullable();
             $table->json('meta_description')->nullable();
             $table->boolean('no_index')->default(false);
+            // Draft fields
+            $table->json('draft_title')->nullable();
+            $table->string('draft_slug')->nullable();
+            $table->json('draft_meta_title')->nullable();
+            $table->json('draft_meta_description')->nullable();
+            $table->json('draft_meta_keywords')->nullable();
+            $table->json('draft_og_title')->nullable();
+            $table->json('draft_og_description')->nullable();
+            $table->json('draft_og_image')->nullable();
+            $table->json('draft_twitter_title')->nullable();
+            $table->json('draft_twitter_description')->nullable();
+            $table->json('draft_twitter_image')->nullable();
+            $table->json('draft_twitter_card_type')->nullable();
+            $table->json('draft_canonical_url')->nullable();
+            $table->json('draft_structured_data')->nullable();
+            $table->boolean('draft_no_index')->nullable();
+            $table->boolean('draft_no_follow')->nullable();
+            $table->boolean('draft_no_archive')->nullable();
+            $table->boolean('draft_no_snippet')->nullable();
+            $table->timestamp('last_draft_at')->nullable();
             $table->timestamps();
         });
     }

@@ -107,7 +107,7 @@ class SettingsManager
             $setting->permission = $settingConfig['permission'] ?? null;
             $setting->config_key = $settingConfig['config'] ?? null;
             $setting->rules = $settingConfig['rules'] ?? null;
-            $setting->options = $settingConfig['options'] ?? null;
+            $setting->options = $this->processOptions($settingConfig['options'] ?? null, $key);
             $setting->subfields = $settingConfig['subfields'] ?? null;
             $setting->callout = $settingConfig['callout'] ?? null;
             $setting->default = $settingConfig['default'] ?? null;
@@ -224,7 +224,7 @@ class SettingsManager
                 'permission' => $setting->permission,
                 'config_key' => $setting->config_key,
                 'rules' => $setting->rules,
-                'options' => $setting->options,
+                'options' => $this->processOptions($setting->options, $setting->key),
                 'subfields' => $setting->subfields,
                 'callout' => $setting->callout,
                 'default' => $setting->default,
@@ -235,6 +235,57 @@ class SettingsManager
         }
 
         return $result;
+    }
+
+    /**
+     * Process options to handle dynamic options.
+     */
+    protected function processOptions($options, string $key): mixed
+    {
+        if (is_string($options) && str_starts_with($options, 'dynamic:')) {
+            $dynamicKey = substr($options, 8); // Remove 'dynamic:' prefix
+            return $this->getDynamicOptions($dynamicKey);
+        }
+        
+        return $options;
+    }
+
+    /**
+     * Get options for a specific setting.
+     */
+    public function getOptions(string $key): array
+    {
+        $settings = $this->getAll();
+        $setting = $settings[$key] ?? null;
+        
+        if (!$setting) {
+            // Try to get from config if not in database
+            $settingConfig = Config::get("settings.settings.{$key}");
+            if ($settingConfig && isset($settingConfig['options'])) {
+                return $this->processOptions($settingConfig['options'], $key);
+            }
+            return [];
+        }
+        
+        return $this->processOptions($setting['options'], $key);
+    }
+
+    /**
+     * Get dynamic options for a setting.
+     */
+    public function getDynamicOptions(string $key): array
+    {
+        switch ($key) {
+            case 'general.homepage':
+                return \App\Models\Page::orderBy('title->' . app()->getLocale(), 'asc')
+                    ->pluck('title', 'id')
+                    ->map(function ($title, $id) {
+                        return is_array($title) ? ($title[app()->getLocale()] ?? $title['en'] ?? 'Untitled') : $title;
+                    })
+                    ->toArray();
+            default:
+                return [];
+        }
     }
 
     /**

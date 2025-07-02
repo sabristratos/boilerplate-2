@@ -1,4 +1,4 @@
-@props(['page', 'availableLocales', 'activeLocale', 'switchLocale', 'isPublished'])
+@props(['page', 'availableLocales', 'activeLocale', 'switchLocale'])
 
 <div class="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50">
     <!-- Left Section: Navigation & Page Info -->
@@ -19,7 +19,11 @@
     <!-- Center Section: Canvas Info -->
     <div class="flex items-center gap-4">
         <flux:heading size="sm">{{ __('messages.page_manager.page_canvas') }}</flux:heading>
-        <flux:text variant="subtle" class="text-sm">{{ __('messages.page_manager.auto_save_enabled') }}</flux:text>
+        @if($page->hasDraftChanges())
+            <flux:badge color="amber" variant="solid" class="text-xs">
+                {{ __('messages.page_manager.draft_changes') }}
+            </flux:badge>
+        @endif
     </div>
     
     <!-- Right Section: Controls -->
@@ -36,14 +40,6 @@
             </div>
         @endif
 
-        <!-- Publishing Switch -->
-        <div class="flex items-center gap-2">
-            <flux:field variant="inline">
-                <flux:switch wire:model.live="isPublished" />
-                <flux:label class="text-xs text-zinc-500 dark:text-zinc-400">{{ __('messages.page_manager.status') }}</flux:label>
-            </flux:field>
-        </div>
-
         <!-- Preview Button -->
         <flux:button
             href="{{ route('pages.show', $page) }}"
@@ -53,6 +49,17 @@
             size="sm"
         >
             {{ __('messages.page_manager.preview') }}
+        </flux:button>
+
+        <!-- Publish Button -->
+        <flux:button
+            wire:click="savePage"
+            icon="check"
+            variant="primary"
+            size="sm"
+            :disabled="!$page->hasDraftChanges()"
+        >
+            {{ __('buttons.publish') }}
         </flux:button>
     </div>
 </div> 

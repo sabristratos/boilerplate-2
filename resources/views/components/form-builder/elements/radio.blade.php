@@ -2,7 +2,7 @@
 
 @php
     $isPreview = $mode === 'preview';
-    $wireModel = $isPreview && $fieldName ? "previewFormData.{$fieldName}" : null;
+    $wireModel = $isPreview && $fieldName ? "formData.{$fieldName}" : null;
     $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
     
     // Parse options (one per line)
@@ -17,12 +17,12 @@
 
 @if($isPreview && !empty($optionArray))
     <flux:radio.group 
-        label="{{ $properties['label'] }}"
         :wire:model="$wireModel"
+        :label="$properties['label']"
         :required="$required"
     >
         @foreach($optionArray as $option)
-            <flux:radio label="{{ $option }}" value="{{ $option }}" />
+            <flux:radio value="{{ $option }}" label="{{ $option }}" />
         @endforeach
     </flux:radio.group>
 @else
@@ -36,7 +36,7 @@
 @endif
 
 @if($isPreview && $fieldName)
-    @error("previewFormData.{$fieldName}")
+    @error("formData.{$fieldName}")
         <flux:error>{{ $message }}</flux:error>
     @enderror
 @endif

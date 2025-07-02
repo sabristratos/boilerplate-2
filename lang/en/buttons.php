@@ -2,6 +2,7 @@
 
 return [
     'save' => 'Save',
+    'publish' => 'Publish',
     'save_changes' => 'Save Changes',
     'save_settings' => 'Save Settings',
     'update' => 'Update',

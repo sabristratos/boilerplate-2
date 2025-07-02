@@ -106,7 +106,8 @@ class FormDisplay extends Component
         
         if ($this->form->elements) {
             foreach ($this->form->elements as $element) {
-                $renderedElements[] = $this->elementFactory->renderElement($element);
+                $fieldName = $this->generateFieldName($element);
+                $renderedElements[] = $this->elementFactory->renderElement($element, 'preview', $fieldName);
             }
         }
 

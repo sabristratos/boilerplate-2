@@ -7,7 +7,7 @@
     $hasIconTrailing = $fluxProps['iconTrailing'] ?? false;
     $type = $element->type === 'email' ? 'email' : 'text';
     $isPreview = $mode === 'preview';
-    $wireModel = $isPreview && $fieldName ? "previewFormData.{$fieldName}" : null;
+    $wireModel = $isPreview && $fieldName ? "formData.{$fieldName}" : null;
     $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
 @endphp
 
@@ -68,7 +68,7 @@
 @endif
 
 @if($isPreview && $fieldName)
-    @error("previewFormData.{$fieldName}")
+    @error("formData.{$fieldName}")
         <flux:error>{{ $message }}</flux:error>
     @enderror
 @endif

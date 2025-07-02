@@ -293,7 +293,7 @@ class MediaUploaderTest extends TestCase
         $temporaryMedia = $component->get('temporaryMedia');
         dump('Temporary media:', $temporaryMedia);
         
-        ->assertDispatched('media-updated', isTemporary: true);
+        $component->assertDispatched('media-updated', isTemporary: true);
     }
 
     /** @test */

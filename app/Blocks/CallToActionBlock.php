@@ -2,26 +2,26 @@
 
 namespace App\Blocks;
 
-class HeroSectionBlock extends Block
+class CallToActionBlock extends Block
 {
     public function getName(): string
     {
-        return 'Hero Section';
+        return 'Call to Action';
     }
 
     public function getDescription(): string
     {
-        return 'Create an eye-catching hero section with heading, subheading, and call-to-action buttons.';
+        return 'Create compelling call-to-action sections with buttons and engaging content.';
     }
 
     public function getCategory(): string
     {
-        return 'layout';
+        return 'conversion';
     }
 
     public function getTags(): array
     {
-        return ['hero', 'cta', 'landing', 'banner'];
+        return ['cta', 'conversion', 'buttons', 'action'];
     }
 
     public function getComplexity(): string
@@ -31,23 +31,19 @@ class HeroSectionBlock extends Block
 
     public function getIcon(): string
     {
-        return 'photo';
+        return 'arrow-right';
     }
 
     public function getDefaultData(): array
     {
         return [
-            'overline' => 'Welcome',
-            'heading' => 'Build Something Amazing',
-            'subheading' => 'Create stunning websites with our powerful page builder and beautiful components.',
-            'background_image' => '',
-            'background_overlay' => 70,
+            'heading' => 'Ready to Get Started?',
+            'subheading' => 'Join thousands of satisfied customers who have already transformed their business with our platform.',
+            'background_color' => 'blue',
             'text_alignment' => 'center',
-            'content_width' => 'max-w-4xl',
-            'padding' => 'py-24',
             'buttons' => [
                 [
-                    'text' => 'Get Started',
+                    'text' => 'Get Started Now',
                     'url' => '#',
                     'variant' => 'primary',
                 ],
@@ -62,24 +58,20 @@ class HeroSectionBlock extends Block
 
     public function getTranslatableFields(): array
     {
-        return ['overline', 'heading', 'subheading', 'background_image', 'buttons'];
+        return ['heading', 'subheading', 'buttons'];
     }
 
     public function validationRules(): array
     {
         return [
-            'overline' => 'nullable|string|max:255',
             'heading' => 'required|string|max:255',
             'subheading' => 'nullable|string|max:500',
-            'background_image' => 'nullable|url',
-            'background_overlay' => 'integer|min:0|max:100',
-            'text_alignment' => 'string|in:left,center,right',
-            'content_width' => 'string|in:max-w-2xl,max-w-3xl,max-w-4xl,max-w-5xl,max-w-6xl,max-w-7xl',
-            'padding' => 'string|in:py-16,py-20,py-24,py-32,py-40,py-48',
+            'background_color' => 'required|string|in:blue,green,purple,orange,red,gray',
+            'text_alignment' => 'required|string|in:left,center,right',
             'buttons' => 'nullable|array',
             'buttons.*.text' => 'required|string|max:255',
             'buttons.*.variant' => 'required|string|in:primary,secondary,ghost',
             'buttons.*.url' => 'required|string',
         ];
     }
-}
+} 

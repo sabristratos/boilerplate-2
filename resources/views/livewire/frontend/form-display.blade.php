@@ -8,28 +8,33 @@
         </flux:callout>
     @else
         <form wire:submit="submit" class="space-y-6">
-            <flux:heading size="lg">{{ $form->getTranslation('name', app()->getLocale()) }}</flux:heading>
-            
             @if($form->elements)
-                <div class="grid grid-cols-12 gap-4">
+                <div class="grid grid-cols-12 gap-6">
                     @foreach($form->elements as $index => $element)
                         @php
                             $fieldName = 'field_' . $element['id'];
-                            $width = $element['styles']['desktop']['width'] ?? 'full';
                             
-                            // Convert width to column span
+                            // Get width from styles, with fallback to default
+                            $width = 'full';
+                            if (isset($element['styles']['desktop']['width'])) {
+                                $width = $element['styles']['desktop']['width'];
+                            } elseif (isset($element['styles']['width'])) {
+                                $width = $element['styles']['width'];
+                            }
+                            
+                            // Convert width to column span with responsive classes
                             $columnSpan = match($width) {
-                                'full' => 12,
-                                '1/2' => 6,
-                                '1/3' => 4,
-                                '2/3' => 8,
-                                '1/4' => 3,
-                                '3/4' => 9,
-                                default => 12
+                                'full' => 'col-span-12',
+                                '1/2' => 'col-span-12 md:col-span-6',
+                                '1/3' => 'col-span-12 md:col-span-4',
+                                '2/3' => 'col-span-12 md:col-span-8',
+                                '1/4' => 'col-span-12 md:col-span-3',
+                                '3/4' => 'col-span-12 md:col-span-9',
+                                default => 'col-span-12'
                             };
                         @endphp
                         
-                        <div class="col-span-{{ $columnSpan }}">
+                        <div class="{{ $columnSpan }}">
                             {!! $renderedElements[$index] ?? '' !!}
                         </div>
                     @endforeach

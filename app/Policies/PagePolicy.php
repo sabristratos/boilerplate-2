@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Enums\PublishStatus;
 use App\Models\Page;
 use App\Models\User;
 
@@ -10,8 +11,18 @@ class PagePolicy
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Page $page): bool
+    public function view(?User $user, Page $page): bool
     {
+        // Published pages are publicly viewable
+        if ($page->status === PublishStatus::PUBLISHED) {
+            return true;
+        }
+
+        // Draft pages require authentication and proper permissions
+        if (!$user) {
+            return false;
+        }
+
         return $user->can('pages.view');
     }
 

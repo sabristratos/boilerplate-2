@@ -2,7 +2,7 @@
 
 @php
     $isPreview = $mode === 'preview';
-    $wireModel = $isPreview && $fieldName ? "previewFormData.{$fieldName}" : null;
+    $wireModel = $isPreview && $fieldName ? "formData.{$fieldName}" : null;
     $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
     
     // Parse options (one per line)
@@ -36,7 +36,7 @@
 @endif
 
 @if($isPreview && $fieldName)
-    @error("previewFormData.{$fieldName}")
+    @error("formData.{$fieldName}")
         <flux:error>{{ $message }}</flux:error>
     @enderror
 @endif

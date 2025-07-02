@@ -61,15 +61,4 @@
             </div>
         </div>
     </div>
-
-    <!-- Save Button -->
-    <div class="pt-4">
-        <flux:button
-            wire:click="savePageDetails"
-            variant="primary"
-            class="w-full"
-        >
-            {{ __('messages.page_manager.save_page') }}
-        </flux:button>
-    </div>
 </div> 
