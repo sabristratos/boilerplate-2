@@ -1,5 +1,3 @@
-@props(['blocks', 'editingBlockId', 'editingBlockState', 'blockManager'])
-
 <div class="flex-1 overflow-y-auto">
     <div 
         class="space-y-0 p-0"
@@ -32,7 +30,7 @@
                 console.warn('Failed to update block state:', error);
             }
         "
-        @block-edit-started.window="
+        @block-editing-started.window="
             try {
                 // Clear all previous editing states
                 document.querySelectorAll('[data-block-id]').forEach(element => {
@@ -45,19 +43,19 @@
                 });
                 
                 // Set the new editing state
-                const blockElement = document.querySelector(`[data-block-id='${$event.detail.id}']`);
+                const blockElement = document.querySelector(`[data-block-id='${$event.detail.blockId}']`);
                 if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
                     const alpineComponent = blockElement._x_dataStack[0];
                     if (alpineComponent.data) {
                         alpineComponent.data.isEditing = true;
-                        Object.assign(alpineComponent.data, $event.detail.state);
+                        Object.assign(alpineComponent.data, $event.detail.blockState);
                     }
                 }
             } catch (error) {
                 console.warn('Failed to start block edit:', error);
             }
         "
-        @block-edit-cancelled.window="
+        @block-editing-cancelled.window="
             try {
                 // Clear all editing states
                 document.querySelectorAll('[data-block-id]').forEach(element => {
@@ -73,7 +71,7 @@
             }
         "
     >
-        @forelse($blocks as $block)
+        @forelse($this->blocks as $block)
             @if($block->isVisible())
                 <div x-sort:item="{{ $block->id }}" wire:key="block-{{ $block->id }}" data-block-id="{{ $block->id }}" class="relative group block-preview-section" tabindex="0" style="will-change: border-color, transform;">
                     <!-- Block Content (as real page) with border highlight on hover/focus -->
@@ -166,10 +164,10 @@
             </div>
         @endforelse
     </div>
-</div>
 
-<style>
-.block-preview-section > div:focus-within .group-focus-within\:border-blue-400 {
-    border-color: #60a5fa !important;
-}
-</style> 
+    <style>
+    .block-preview-section > div:focus-within .group-focus-within\:border-blue-400 {
+        border-color: #60a5fa !important;
+    }
+    </style>
+</div> 

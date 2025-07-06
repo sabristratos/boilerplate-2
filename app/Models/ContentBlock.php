@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Services\BlockManager;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Log;
@@ -24,6 +25,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class ContentBlock extends Model implements HasMedia, Sortable
 {
+    use HasFactory;
     use HasTranslations;
     use InteractsWithMedia;
     use SortableTrait;
@@ -42,11 +44,17 @@ class ContentBlock extends Model implements HasMedia, Sortable
         });
 
         static::updating(function ($block): void {
-            Log::info('Updating content block', [
-                'user_id' => auth()->id(),
-                'block_id' => $block->id,
-                'changes' => $block->getDirty(),
-            ]);
+            // Only log significant changes, not every auto-save
+            $changes = $block->getDirty();
+            $significantChanges = array_diff_key($changes, array_flip(['last_draft_at']));
+            
+            if (!empty($significantChanges)) {
+                Log::info('Updating content block', [
+                    'user_id' => auth()->id(),
+                    'block_id' => $block->id,
+                    'changes' => $significantChanges,
+                ]);
+            }
         });
 
         static::deleting(function ($block): void {

@@ -6,9 +6,11 @@ use App\Facades\Settings;
 use App\Models\Page;
 use App\Traits\WithToastNotifications;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('components.layouts.app')]
 class PageIndex extends Component
 {
     use WithPagination, WithToastNotifications;
@@ -103,8 +105,12 @@ class PageIndex extends Component
 
     public function confirmDelete(int $id): void
     {
-        $this->deleteId = $id;
-        $this->showDeleteModal = true;
+        $page = Page::find($id);
+        if ($page) {
+            $this->authorize('delete', $page);
+            $this->deleteId = $id;
+            $this->showDeleteModal = true;
+        }
     }
 
     public function delete(): void

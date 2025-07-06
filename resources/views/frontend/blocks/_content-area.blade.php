@@ -12,7 +12,7 @@
 <div x-data="{ data: {{ json_encode($blockData) }} }" class="w-full">
     <div class="prose dark:prose-invert max-w-none {{ $preview ? 'p-2' : 'p-4' }}">
         @if ($alpine)
-            <div x-html="data.content"></div>
+            <div x-html="data.content || ''"></div>
         @else
             {!! $blockData['content'] ?? '' !!}
         @endif

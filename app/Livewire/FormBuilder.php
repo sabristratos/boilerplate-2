@@ -300,58 +300,56 @@ class FormBuilder extends Component
 
     public function updatedDraftElements($value, $key)
     {
+        // Parse the key once to avoid multiple explode() calls
+        $parts = explode('.', $key);
+        $elementIndex = null;
+        
+        if (count($parts) >= 1 && is_numeric($parts[0])) {
+            $elementIndex = (int) $parts[0];
+        }
+
         // Handle locale property updates to ensure it's never empty
-        if (str_contains($key, 'properties.locale')) {
-            $parts = explode('.', $key);
-            if (count($parts) >= 3 && is_numeric($parts[0])) {
-                $elementIndex = (int) $parts[0];
-                if (empty($value)) {
-                    $this->draftElements[$elementIndex]['properties']['locale'] = 'en';
-                }
+        if (str_contains($key, 'properties.locale') && $elementIndex !== null) {
+            if (empty($value)) {
+                $this->draftElements[$elementIndex]['properties']['locale'] = 'en';
             }
         }
 
         // Handle validation rule activation based on input values
-        if (str_contains($key, 'validation.values.')) {
-            $parts = explode('.', $key);
-            if (count($parts) >= 4) {
-                $elementIndex = $parts[0];
-                $ruleKey = $parts[3];
+        if (str_contains($key, 'validation.values.') && count($parts) >= 4) {
+            $ruleKey = $parts[3];
 
-                // Ensure the validation structure exists
-                if (! isset($this->draftElements[$elementIndex]['validation'])) {
-                    $this->draftElements[$elementIndex]['validation'] = config('forms.elements.default_validation');
-                }
-                if (! isset($this->draftElements[$elementIndex]['validation']['rules'])) {
-                    $this->draftElements[$elementIndex]['validation']['rules'] = [];
-                }
-
-                $rules = $this->draftElements[$elementIndex]['validation']['rules'];
-                $inputValue = $this->draftElements[$elementIndex]['validation']['values'][$ruleKey] ?? '';
-
-                // If input has a value, add the rule; if empty, remove the rule
-                if (! empty($inputValue)) {
-                    if (! in_array($ruleKey, $rules)) {
-                        $rules[] = $ruleKey;
-                    }
-                } else {
-                    // Remove the rule if input is empty
-                    $rules = array_values(array_filter($rules, fn ($rule) => $rule !== $ruleKey));
-
-                    // Also remove any associated messages
-                    if (isset($this->draftElements[$elementIndex]['validation']['messages'][$ruleKey])) {
-                        unset($this->draftElements[$elementIndex]['validation']['messages'][$ruleKey]);
-                    }
-                }
-
-                $this->draftElements[$elementIndex]['validation']['rules'] = $rules;
+            // Ensure the validation structure exists
+            if (! isset($this->draftElements[$elementIndex]['validation'])) {
+                $this->draftElements[$elementIndex]['validation'] = config('forms.elements.default_validation');
             }
+            if (! isset($this->draftElements[$elementIndex]['validation']['rules'])) {
+                $this->draftElements[$elementIndex]['validation']['rules'] = [];
+            }
+
+            $rules = $this->draftElements[$elementIndex]['validation']['rules'];
+            $inputValue = $this->draftElements[$elementIndex]['validation']['values'][$ruleKey] ?? '';
+
+            // If input has a value, add the rule; if empty, remove the rule
+            if (! empty($inputValue)) {
+                if (! in_array($ruleKey, $rules)) {
+                    $rules[] = $ruleKey;
+                }
+            } else {
+                // Remove the rule if input is empty
+                $rules = array_values(array_filter($rules, fn ($rule) => $rule !== $ruleKey));
+
+                // Also remove any associated messages
+                if (isset($this->draftElements[$elementIndex]['validation']['messages'][$ruleKey])) {
+                    unset($this->draftElements[$elementIndex]['validation']['messages'][$ruleKey]);
+                }
+            }
+
+            $this->draftElements[$elementIndex]['validation']['rules'] = $rules;
         }
 
-        // Extract element index from the key (e.g., "0.properties.label" -> 0)
-        $parts = explode('.', $key);
-        if (count($parts) >= 1 && is_numeric($parts[0])) {
-            $elementIndex = (int) $parts[0];
+        // Refresh preview and edit elements if we have a valid element index
+        if ($elementIndex !== null) {
             $this->refreshPreviewElement($elementIndex);
             $this->refreshEditElement($elementIndex);
         }
@@ -376,12 +374,6 @@ class FormBuilder extends Component
             $fieldName = $this->generateFieldName($element);
             $previewHtml = $this->elementFactory->renderElement($element, 'preview', $fieldName);
 
-            \Log::info('Refreshing preview element', [
-                'elementIndex' => $elementIndex,
-                'elementId' => $element['id'],
-                'elementType' => $element['type'],
-            ]);
-
             $this->dispatch('preview-element-updated', [
                 'elementIndex' => $elementIndex,
                 'elementId' => $element['id'],
@@ -396,12 +388,6 @@ class FormBuilder extends Component
             $element = $this->draftElements[$elementIndex];
             $fieldName = $this->generateFieldName($element);
             $editHtml = $this->elementFactory->renderElement($element, 'edit');
-
-            \Log::info('Refreshing edit element', [
-                'elementIndex' => $elementIndex,
-                'elementId' => $element['id'],
-                'elementType' => $element['type'],
-            ]);
 
             $this->dispatch('edit-element-updated', [
                 'elementIndex' => $elementIndex,
@@ -702,8 +688,9 @@ class FormBuilder extends Component
     /**
      * Save the current draft data.
      */
-    public function saveDraft(SaveDraftFormAction $saveDraftAction): void
+    public function saveDraft(): void
     {
+        $saveDraftAction = app(SaveDraftFormAction::class);
         $saveDraftAction->execute(
             $this->form,
             $this->draftElements,
@@ -718,8 +705,9 @@ class FormBuilder extends Component
     /**
      * Publish the draft changes.
      */
-    public function publishDraft(PublishFormAction $publishAction): void
+    public function publishDraft(): void
     {
+        $publishAction = app(PublishFormAction::class);
         $publishAction->execute($this->form);
 
         // Refresh the component data after publishing
@@ -747,8 +735,9 @@ class FormBuilder extends Component
      * Discard the draft changes.
      */
     #[On('discardDraft')]
-    public function discardDraft(DiscardFormDraftAction $discardAction): void
+    public function discardDraft(): void
     {
+        $discardAction = app(DiscardFormDraftAction::class);
         $discardAction->execute($this->form);
 
         // Refresh the component data after discarding

@@ -31,7 +31,7 @@ class PagePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('pages.edit');
+        return $user->can('pages.create');
     }
 
     /**
@@ -47,6 +47,6 @@ class PagePolicy
      */
     public function delete(User $user, Page $page): bool
     {
-        return $user->can('pages.edit');
+        return $user->can('pages.delete');
     }
 }

@@ -4,31 +4,25 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Actions\Content\CreateContentBlockAction;
-use App\Actions\Content\DeleteContentBlockAction;
-use App\Actions\Content\SaveDraftContentBlockAction;
 use App\Actions\Content\SaveDraftPageDetailsAction;
-use App\Actions\Content\UpdateBlockOrderAction;
-use App\Models\ContentBlock;
 use App\Models\Page;
 use App\Services\BlockManager;
-use App\Traits\WithConfirmationModal;
 use App\Traits\WithToastNotifications;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
-use Livewire\WithFileUploads;
 
 /**
  * Page Manager Livewire component for editing pages and their content blocks.
  *
  * This component provides the main interface for managing page content,
- * including adding, editing, reordering, and deleting content blocks.
- * It supports multi-locale content editing and draft/published states.
+ * delegating specific functionality to child components.
  */
+#[Layout('components.layouts.editors')]
 class PageManager extends Component
 {
-    use WithConfirmationModal, WithFileUploads, WithToastNotifications;
+    use WithToastNotifications;
 
     /**
      * The page being edited.
@@ -85,52 +79,11 @@ class PageManager extends Component
      */
     public ?string $switchLocale = null;
 
-    // Block editing state
-    /**
-     * ID of the block currently being edited.
-     */
-    public ?int $editingBlockId = null;
-
-    /**
-     * State data for the block being edited.
-     *
-     * @var array<string, mixed>
-     */
-    public array $editingBlockState = [];
-
-    /**
-     * Whether the block being edited is visible.
-     */
-    public bool $editingBlockVisible = true;
-
-    /**
-     * Image upload for the block being edited.
-     *
-     * @var mixed
-     */
-    public $editingBlockImageUpload;
-
     // UI state
     /**
      * Currently active tab in the editor.
      */
     public string $tab = 'settings';
-
-    // Block library filtering
-    /**
-     * Search term for filtering blocks.
-     */
-    public string $blockSearch = '';
-
-    /**
-     * Selected category for filtering blocks.
-     */
-    public string $selectedCategory = '';
-
-    /**
-     * Selected complexity level for filtering blocks.
-     */
-    public string $selectedComplexity = '';
 
     /**
      * Block manager service instance.
@@ -231,222 +184,6 @@ class PageManager extends Component
     }
 
     /**
-     * Get filtered blocks based on search and filter criteria.
-     *
-     * @return \Illuminate\Support\Collection
-     */
-    public function getFilteredBlocksProperty()
-    {
-        $blocks = $this->blockManager->getAvailableBlocks();
-
-        // Filter by search
-        if (! empty($this->blockSearch)) {
-            $blocks = $blocks->filter(function ($block) {
-                return str_contains(strtolower($block->getName()), strtolower($this->blockSearch)) ||
-                       str_contains(strtolower($block->getDescription()), strtolower($this->blockSearch)) ||
-                       collect($block->getTags())->contains(function ($tag) {
-                           return str_contains(strtolower($tag), strtolower($this->blockSearch));
-                       });
-            });
-        }
-
-        // Filter by category
-        if (! empty($this->selectedCategory)) {
-            $blocks = $blocks->filter(function ($block) {
-                return $block->getCategory() === $this->selectedCategory;
-            });
-        }
-
-        // Filter by complexity
-        if (! empty($this->selectedComplexity)) {
-            $blocks = $blocks->filter(function ($block) {
-                return $block->getComplexity() === $this->selectedComplexity;
-            });
-        }
-
-        return $blocks;
-    }
-
-    /**
-     * Get available categories for filtering.
-     *
-     * @return array<string>
-     */
-    public function getAvailableCategoriesProperty()
-    {
-        return $this->blockManager->getAvailableBlocks()
-            ->pluck('category')
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Get available complexity levels for filtering.
-     *
-     * @return array<string>
-     */
-    public function getAvailableComplexitiesProperty()
-    {
-        return $this->blockManager->getAvailableBlocks()
-            ->pluck('complexity')
-            ->unique()
-            ->values()
-            ->all();
-    }
-
-    /**
-     * Start editing a specific block.
-     */
-    public function editBlock(int $blockId): void
-    {
-        $block = ContentBlock::find($blockId);
-
-        if (! $block) {
-            $this->showWarningToast(
-                __('messages.block_editor.block_not_found_text'),
-                __('messages.block_editor.block_not_found_title')
-            );
-
-            return;
-        }
-
-        $this->editingBlockId = $blockId;
-        $this->editingBlockVisible = $block->isVisible();
-        $this->editingBlockImageUpload = null;
-
-        // Load block data - prefer draft data if available, otherwise use published data
-        $blockClass = $this->blockManager->find($block->type);
-        $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
-
-        // Use draft data if available, otherwise fall back to published data
-        $blockData = $block->hasDraftChanges()
-            ? $block->getDraftTranslatedData($this->activeLocale)
-            : $block->getTranslatedData($this->activeLocale);
-
-        $blockSettings = $block->hasDraftChanges()
-            ? $block->getDraftSettingsArray()
-            : $block->getSettingsArray();
-
-        $this->editingBlockState = array_merge($defaultData, $blockData, $blockSettings);
-    }
-
-    /**
-     * Cancel editing the current block.
-     */
-    public function cancelBlockEdit(): void
-    {
-        $this->editingBlockId = null;
-        $this->editingBlockState = [];
-        $this->editingBlockVisible = true;
-        $this->editingBlockImageUpload = null;
-    }
-
-    /**
-     * Handle updates to the editing block state.
-     */
-    public function updatedEditingBlockState(): void
-    {
-        if ($this->editingBlockId) {
-            $this->saveCurrentBlockDraft();
-        }
-    }
-
-    /**
-     * Handle updates to the editing block visibility.
-     */
-    public function updatedEditingBlockVisible(bool $value): void
-    {
-        if ($this->editingBlockId) {
-            $this->saveCurrentBlockDraft();
-        }
-    }
-
-    /**
-     * Create a new block of the specified type.
-     */
-    public function createBlock(string $type, CreateContentBlockAction $createContentBlockAction): void
-    {
-        try {
-            $block = $createContentBlockAction->execute($this->page, $type, $this->availableLocales);
-
-            $this->showSuccessToast(
-                __('messages.page_manager.block_created_text'),
-                __('messages.page_manager.block_created_title')
-            );
-
-            // Start editing the new block
-            $this->editBlock($block->id);
-
-        } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.page_manager.block_creation_failed_text'),
-                __('messages.page_manager.block_creation_failed_title')
-            );
-        }
-    }
-
-    /**
-     * Update the order of blocks.
-     */
-    public function updateBlockOrder(array $sort, UpdateBlockOrderAction $updateBlockOrderAction): void
-    {
-        try {
-            $updateBlockOrderAction->execute($this->page, $sort);
-
-            $this->showSuccessToast(
-                __('messages.page_manager.block_order_updated_text'),
-                __('messages.page_manager.block_order_updated_title')
-            );
-
-        } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.page_manager.block_order_update_failed_text'),
-                __('messages.page_manager.block_order_update_failed_title')
-            );
-        }
-    }
-
-    /**
-     * Confirm deletion of a block.
-     */
-    public function confirmDeleteBlock(int $blockId): void
-    {
-        $this->confirm(__('messages.page_manager.confirm_delete_block_text'), [
-            'onConfirmed' => 'deleteBlock',
-            'onConfirmedParams' => [$blockId],
-        ]);
-    }
-
-    /**
-     * Delete a block after confirmation.
-     */
-    #[On('deleteBlockConfirmed')]
-    public function deleteBlock(int $blockId): void
-    {
-        try {
-            $deleteContentBlockAction = app(DeleteContentBlockAction::class);
-            $deleteContentBlockAction->execute($blockId);
-
-            $this->showSuccessToast(
-                __('messages.page_manager.block_deleted_text'),
-                __('messages.page_manager.block_deleted_title')
-            );
-
-            // Cancel editing if the deleted block was being edited
-            if ($this->editingBlockId === $blockId) {
-                $this->cancelBlockEdit();
-            }
-
-        } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.page_manager.block_deletion_failed_text'),
-                __('messages.page_manager.block_deletion_failed_title')
-            );
-        }
-    }
-
-    /**
      * Generate a slug from the page title.
      */
     public function generateSlug(): void
@@ -484,20 +221,39 @@ class PageManager extends Component
     }
 
     /**
-     * Save the current block's draft state.
+     * Handle block creation events from child components.
      */
-    protected function saveCurrentBlockDraft(): void
+    #[On('block-created')]
+    public function handleBlockCreated(array $data): void
     {
-        if (! $this->editingBlockId) {
-            return;
-        }
+        $this->showSuccessToast(
+            __('messages.page_manager.block_created_text'),
+            __('messages.page_manager.block_created_title')
+        );
+    }
 
-        try {
-            $saveDraftContentBlockAction = app(SaveDraftContentBlockAction::class);
-            $saveDraftContentBlockAction->execute($this->editingBlockId, $this->editingBlockState, $this->editingBlockVisible);
-        } catch (\Exception $e) {
-            // Silently fail for auto-save operations
-        }
+    /**
+     * Handle block deletion events from child components.
+     */
+    #[On('block-deleted')]
+    public function handleBlockDeleted(array $data): void
+    {
+        $this->showSuccessToast(
+            __('messages.page_manager.block_deleted_text'),
+            __('messages.page_manager.block_deleted_title')
+        );
+    }
+
+    /**
+     * Handle block order update events from child components.
+     */
+    #[On('block-order-updated')]
+    public function handleBlockOrderUpdated(array $data): void
+    {
+        $this->showSuccessToast(
+            __('messages.page_manager.block_order_updated_text'),
+            __('messages.page_manager.block_order_updated_title')
+        );
     }
 
     /**
@@ -507,7 +263,6 @@ class PageManager extends Component
      */
     public function render()
     {
-        return view('livewire.admin.page-manager')
-            ->layout('layouts.admin');
+        return view('livewire.admin.page-manager');
     }
 }
