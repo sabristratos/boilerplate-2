@@ -44,6 +44,12 @@ class ConfirmationModal extends Component
         $this->show = true;
     }
 
+    #[On('close-confirmation-modal')]
+    public function close(): void
+    {
+        $this->resetModal();
+    }
+
     public function confirm(): void
     {
         if ($this->action !== null && $this->action !== '' && $this->action !== '0') {

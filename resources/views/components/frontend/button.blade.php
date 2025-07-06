@@ -11,12 +11,15 @@
 
     $variantClasses = [
         'primary' => 'bg-primary hover:bg-primary-dark text-white hover:scale-105',
+        'secondary' => 'bg-zinc-600 hover:bg-zinc-700 text-white hover:scale-105',
+        'ghost' => 'bg-transparent hover:bg-white/10 text-white hover:scale-105 border border-white/20',
         'outline' => 'bg-transparent border-2 border-white text-white hover:bg-white hover:text-gray-900',
     ];
 
     $sizeClasses = [
         'lg' => 'px-8 py-4',
         'md' => 'px-6 py-3',
+        'sm' => 'px-4 py-2',
     ];
 
     $classes = implode(' ', [

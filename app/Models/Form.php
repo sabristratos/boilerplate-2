@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\HasRevisions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +29,7 @@ use Spatie\Translatable\HasTranslations;
  */
 class Form extends Model
 {
-    use HasFactory, HasTranslations;
+    use HasFactory, HasTranslations, HasRevisions;
 
     /**
      * The attributes that are translatable.
@@ -139,12 +140,72 @@ class Form extends Model
         return ! empty($draftName) ? $draftName : $publishedName;
     }
 
+
+
     /**
-     * Publish the draft changes to the published fields.
+     * Discard all draft changes.
+     */
+    public function discardDraft(): void
+    {
+        // Clear draft fields
+        $this->draft_name = null;
+        $this->draft_elements = null;
+        $this->draft_settings = null;
+        $this->last_draft_at = null;
+
+        $this->save();
+    }
+
+    /**
+     * Get the revision data that should be tracked.
+     *
+     * @return array<string, mixed>
+     */
+    public function getRevisionData(): array
+    {
+        // Always return name and draft_name as associative arrays with locale keys
+        $name = $this->getTranslations('name');
+        $draftName = $this->getTranslations('draft_name');
+
+        return [
+            'id' => $this->id,
+            'user_id' => $this->user_id,
+            'name' => $name,
+            'elements' => $this->elements,
+            'settings' => $this->settings,
+            'draft_name' => $draftName,
+            'draft_elements' => $this->draft_elements,
+            'draft_settings' => $this->draft_settings,
+            'last_draft_at' => $this->last_draft_at,
+        ];
+    }
+
+    /**
+     * Get the fields that should be excluded from revision tracking.
+     *
+     * @return array<string>
+     */
+    public function getRevisionExcludedFields(): array
+    {
+        return [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ];
+    }
+
+    /**
+     * Override the publishDraft method to create a revision.
      */
     public function publishDraft(): void
     {
         if ($this->hasDraftChanges()) {
+            // Create a revision before publishing
+            $this->createManualRevision('publish', 'Published draft changes');
+
+            // Prevent automatic revision on update
+            $this->skipRevision = true;
+
             // Copy draft fields to published fields
             if (! empty($this->draft_name)) {
                 $this->name = $this->draft_name;
@@ -165,20 +226,8 @@ class Form extends Model
             $this->last_draft_at = null;
 
             $this->save();
+
+            $this->skipRevision = false;
         }
-    }
-
-    /**
-     * Discard all draft changes.
-     */
-    public function discardDraft(): void
-    {
-        // Clear draft fields
-        $this->draft_name = null;
-        $this->draft_elements = null;
-        $this->draft_settings = null;
-        $this->last_draft_at = null;
-
-        $this->save();
     }
 }

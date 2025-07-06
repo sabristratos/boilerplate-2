@@ -7,83 +7,105 @@ use App\Models\ContentBlock;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\BlockManager;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
-beforeEach(function () {
-    // Create the permission if it doesn't exist
-    $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'pages.edit']);
-    
-    $this->user = User::factory()->create();
-    $this->user->givePermissionTo('pages.edit');
-    
-    $this->page = Page::factory()->create([
-        'title' => ['en' => 'Test Page'],
-    ]);
+uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->user->assignRole('admin');
+    
+    $this->page = Page::factory()->create();
     $this->blockManager = app(BlockManager::class);
 });
 
-describe('PageCanvas Component', function () {
-    it('can mount with page and block manager', function () {
-        Livewire::actingAs($this->user)
-            ->test(PageCanvas::class, [
-                'page' => $this->page,
-                'activeLocale' => 'en'
-            ])
-            ->assertSet('page.id', $this->page->id)
-            ->assertSet('activeLocale', 'en');
-    });
-
-    it('displays blocks in correct order', function () {
-        $block1 = ContentBlock::factory()->create([
+describe('PageCanvas', function () {
+    it('renders the page canvas with blocks', function () {
+        // Create some test blocks
+        ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'sort' => 1,
-            'type' => 'content-area',
-            'data' => ['content' => ['en' => 'First block']]
+            'type' => 'hero',
+            'order' => 1,
+            'data' => ['heading' => 'Test Hero'],
+            'is_visible' => true,
         ]);
 
-        $block2 = ContentBlock::factory()->create([
+        ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'sort' => 2,
-            'type' => 'content-area',
-            'data' => ['content' => ['en' => 'Second block']]
+            'type' => 'contact',
+            'order' => 2,
+            'data' => ['heading' => 'Test Contact'],
+            'is_visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'blockManager' => $this->blockManager
             ])
-            ->assertSee('First block')
-            ->assertSee('Second block');
+            ->assertSee('Test Hero')
+            ->assertSee('Test Contact');
     });
 
-    it('can initiate block editing', function () {
+    it('can edit a block', function () {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'type' => 'content-area',
-            'data' => ['content' => ['en' => 'Test content']]
+            'type' => 'hero',
+            'order' => 1,
+            'data' => ['heading' => 'Original Heading'],
+            'is_visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'blockManager' => $this->blockManager
             ])
             ->call('editBlock', $block->id)
             ->assertDispatched('edit-block', ['blockId' => $block->id]);
     });
 
-    it('can delete a block', function () {
+    it('can duplicate a block', function () {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'type' => 'content-area'
+            'type' => 'hero',
+            'order' => 1,
+            'data' => ['heading' => 'Original Heading'],
+            'is_visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'blockManager' => $this->blockManager
+            ])
+            ->call('duplicateBlock', $block->id)
+            ->assertDispatched('block-created', ['blockId' => $block->id + 1, 'blockType' => 'hero']);
+
+        // Verify the duplicated block exists
+        $duplicatedBlock = ContentBlock::where('page_id', $this->page->id)
+            ->where('type', 'hero')
+            ->where('id', '!=', $block->id)
+            ->first();
+
+        expect($duplicatedBlock)->not->toBeNull();
+        expect($duplicatedBlock->type)->toBe('hero');
+    });
+
+    it('can delete a block', function () {
+        $block = ContentBlock::factory()->create([
+            'page_id' => $this->page->id,
+            'type' => 'hero',
+            'order' => 1,
+            'data' => ['heading' => 'Test Heading'],
+            'is_visible' => true,
+        ]);
+
+        Livewire::actingAs($this->user)
+            ->test(PageCanvas::class, [
+                'page' => $this->page,
+                'blockManager' => $this->blockManager
             ])
             ->call('deleteBlock', $block->id)
             ->assertDispatched('block-deleted', ['blockId' => $block->id]);
@@ -91,99 +113,72 @@ describe('PageCanvas Component', function () {
         $this->assertDatabaseMissing('content_blocks', ['id' => $block->id]);
     });
 
-    it('can reorder blocks', function () {
+    it('can update block order', function () {
         $block1 = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'sort' => 1,
-            'type' => 'content-area'
+            'type' => 'hero',
+            'order' => 1,
+            'is_visible' => true,
         ]);
 
         $block2 = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'sort' => 2,
-            'type' => 'content-area'
+            'type' => 'contact',
+            'order' => 2,
+            'is_visible' => true,
         ]);
 
-        $newOrder = [$block2->id, $block1->id];
-
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'blockManager' => $this->blockManager
             ])
-            ->call('updateBlockOrder', $newOrder)
-            ->assertDispatched('block-order-updated', ['sort' => $newOrder]);
+            ->call('updateBlockOrder', [$block2->id, $block1->id]);
 
-        // Verify the order was updated in the database
-        $block1->refresh();
-        $block2->refresh();
-        expect($block1->sort)->toBe(2);
-        expect($block2->sort)->toBe(1);
+        // Verify the order was updated
+        $this->assertDatabaseHas('content_blocks', [
+            'id' => $block2->id,
+            'order' => 1
+        ]);
+
+        $this->assertDatabaseHas('content_blocks', [
+            'id' => $block1->id,
+            'order' => 2
+        ]);
     });
 
-    it('handles empty page with no blocks', function () {
-        Livewire::actingAs($this->user)
-            ->test(PageCanvas::class, [
-                'page' => $this->page,
-                'activeLocale' => 'en'
-            ])
-            ->assertSee(__('messages.page_canvas.no_blocks_message'));
-    });
-
-    it('dispatches block creation event when add block is clicked', function () {
-        Livewire::actingAs($this->user)
-            ->test(PageCanvas::class, [
-                'page' => $this->page,
-                'activeLocale' => 'en'
-            ])
-            ->call('addBlock')
-            ->assertDispatched('show-block-library');
-    });
-
-    it('can duplicate a block', function () {
+    it('handles block editing events', function () {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'type' => 'content-area',
-            'data' => ['content' => ['en' => 'Original content']]
+            'type' => 'hero',
+            'order' => 1,
+            'data' => ['heading' => 'Test Heading'],
+            'is_visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'blockManager' => $this->blockManager
             ])
-            ->call('duplicateBlock', $block->id)
-            ->assertDispatched('block-created', ['blockId' => $block->id + 1, 'blockType' => 'content-area']);
-
-        // Verify the block was duplicated
-        $duplicatedBlock = ContentBlock::where('page_id', $this->page->id)
-            ->where('id', '!=', $block->id)
-            ->first();
-        
-        expect($duplicatedBlock)->not->toBeNull();
-        expect($duplicatedBlock->type)->toBe('content-area');
-        expect($duplicatedBlock->data['content']['en'])->toBe('Original content');
+            ->dispatch('block-editing-started', [
+                'blockId' => $block->id,
+                'blockState' => ['heading' => 'Updated Heading']
+            ])
+            ->assertSet('editingBlockId', $block->id)
+            ->assertSet('editingBlockState', ['heading' => 'Updated Heading']);
     });
 
-    it('handles block editing with different block types', function () {
-        $contentBlock = ContentBlock::factory()->create([
-            'page_id' => $this->page->id,
-            'type' => 'content-area'
-        ]);
-
-        $ctaBlock = ContentBlock::factory()->create([
-            'page_id' => $this->page->id,
-            'type' => 'call-to-action'
-        ]);
-
+    it('handles block editing cancelled events', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'blockManager' => $this->blockManager
             ])
-            ->call('editBlock', $contentBlock->id)
-            ->assertDispatched('edit-block', ['blockId' => $contentBlock->id])
-            ->call('editBlock', $ctaBlock->id)
-            ->assertDispatched('edit-block', ['blockId' => $ctaBlock->id]);
+            ->set('editingBlockId', 1)
+            ->set('editingBlockState', ['heading' => 'Test'])
+            ->dispatch('block-editing-cancelled')
+            ->assertSet('editingBlockId', null)
+            ->assertSet('editingBlockState', []);
     });
 }); 

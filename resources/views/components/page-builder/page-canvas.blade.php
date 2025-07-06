@@ -15,63 +15,69 @@
                 } catch (error) {
                     console.warn('Failed to reorder blocks:', error);
                 }
+            },
+            
+            handleBlockStateUpdated(event) {
+                try {
+                    const blockElement = document.querySelector(`[data-block-id='${event.detail.id}']`);
+                    if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
+                        const alpineComponent = blockElement._x_dataStack[0];
+                        if (alpineComponent.data) {
+                            Object.assign(alpineComponent.data, event.detail.state);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to update block state:', error);
+                }
+            },
+            
+            handleBlockEditStarted(event) {
+                try {
+                    // Clear all previous editing states
+                    document.querySelectorAll('[data-block-id]').forEach(element => {
+                        if (element._x_dataStack && element._x_dataStack[0]) {
+                            const alpineComponent = element._x_dataStack[0];
+                            if (alpineComponent.data && alpineComponent.data.isEditing) {
+                                alpineComponent.data.isEditing = false;
+                            }
+                        }
+                    });
+                    
+                    // Set the new editing state
+                    const blockElement = document.querySelector(`[data-block-id='${event.detail.id}']`);
+                    if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
+                        const alpineComponent = blockElement._x_dataStack[0];
+                        if (alpineComponent.data) {
+                            alpineComponent.data.isEditing = true;
+                            Object.assign(alpineComponent.data, event.detail.state);
+                        }
+                    }
+                } catch (error) {
+                    console.warn('Failed to start block edit:', error);
+                }
+            },
+            
+            handleBlockEditCancelled() {
+                try {
+                    // Clear all editing states
+                    document.querySelectorAll('[data-block-id]').forEach(element => {
+                        if (element._x_dataStack && element._x_dataStack[0]) {
+                            const alpineComponent = element._x_dataStack[0];
+                            if (alpineComponent.data && alpineComponent.data.isEditing) {
+                                alpineComponent.data.isEditing = false;
+                            }
+                        }
+                    });
+                } catch (error) {
+                    console.warn('Failed to cancel block edit:', error);
+                }
             }
         }"
         x-sort
         x-on:sort.stop="reorder($event)"
-        @block-state-updated.window="
-            try {
-                const blockElement = document.querySelector(`[data-block-id='${$event.detail.id}']`);
-                if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
-                    const alpineComponent = blockElement._x_dataStack[0];
-                    if (alpineComponent.data) {
-                        Object.assign(alpineComponent.data, $event.detail.state);
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to update block state:', error);
-            }
-        "
-        @block-edit-started.window="
-            try {
-                // Clear all previous editing states
-                document.querySelectorAll('[data-block-id]').forEach(element => {
-                    if (element._x_dataStack && element._x_dataStack[0]) {
-                        const alpineComponent = element._x_dataStack[0];
-                        if (alpineComponent.data && alpineComponent.data.isEditing) {
-                            alpineComponent.data.isEditing = false;
-                        }
-                    }
-                });
-                
-                // Set the new editing state
-                const blockElement = document.querySelector(`[data-block-id='${$event.detail.id}']`);
-                if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
-                    const alpineComponent = blockElement._x_dataStack[0];
-                    if (alpineComponent.data) {
-                        alpineComponent.data.isEditing = true;
-                        Object.assign(alpineComponent.data, $event.detail.state);
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to start block edit:', error);
-            }
-        "
-        @block-edit-cancelled.window="
-            try {
-                // Clear all editing states
-                document.querySelectorAll('[data-block-id]').forEach(element => {
-                    if (element._x_dataStack && element._x_dataStack[0]) {
-                        const alpineComponent = element._x_dataStack[0];
-                        if (alpineComponent.data && alpineComponent.data.isEditing) {
-                            alpineComponent.data.isEditing = false;
-                        }
-                    }
-                });
-            } catch (error) {
-                console.warn('Failed to cancel block edit:', error);
-            }
-        "
+        @block-state-updated.window="handleBlockStateUpdated($event)"
+        @block-edit-started.window="handleBlockEditStarted($event)"
+        @block-edit-cancelled.window="handleBlockEditCancelled()"
     >
         @forelse($blocks as $block)
             @if($block->isVisible())

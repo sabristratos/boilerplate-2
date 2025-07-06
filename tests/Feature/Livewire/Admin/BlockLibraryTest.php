@@ -6,47 +6,28 @@ use App\Livewire\Admin\BlockLibrary;
 use App\Models\Page;
 use App\Models\User;
 use App\Services\BlockManager;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 
-beforeEach(function () {
-    // Create the permission if it doesn't exist
-    $permission = \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'pages.edit']);
-    
-    $this->user = User::factory()->create();
-    $this->user->givePermissionTo('pages.edit');
-    
-    $this->page = Page::factory()->create([
-        'title' => ['en' => 'Test Page'],
-    ]);
+uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->user->assignRole('admin');
+    
+    $this->page = Page::factory()->create();
     $this->blockManager = app(BlockManager::class);
 });
 
-describe('BlockLibrary Component', function () {
-    it('can mount with page and block manager', function () {
+describe('BlockLibrary', function () {
+    it('renders the block library with available blocks', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
                 'blockManager' => $this->blockManager
             ])
-            ->assertSet('page.id', $this->page->id)
-            ->assertSet('blockManager', $this->blockManager)
-            ->assertSet('search', '')
-            ->assertSet('selectedCategory', '');
-    });
-
-    it('displays all available block types when no filter is applied', function () {
-        Livewire::actingAs($this->user)
-            ->test(BlockLibrary::class, [
-                'page' => $this->page,
-                'blockManager' => $this->blockManager
-            ])
-            ->assertSee('Content Area')
-            ->assertSee('Call to Action')
             ->assertSee('Contact Form')
-            ->assertSee('Hero Section')
-            ->assertSee('Image Gallery')
-            ->assertSee('Testimonials');
+            ->assertSee('Hero Section');
     });
 
     it('filters blocks by search term', function () {
@@ -55,9 +36,8 @@ describe('BlockLibrary Component', function () {
                 'page' => $this->page,
                 'blockManager' => $this->blockManager
             ])
-            ->set('search', 'content')
-            ->assertSee('Content Area')
-            ->assertDontSee('Call to Action')
+            ->set('search', 'hero')
+            ->assertSee('Hero Section')
             ->assertDontSee('Contact Form');
     });
 
@@ -68,8 +48,7 @@ describe('BlockLibrary Component', function () {
                 'blockManager' => $this->blockManager
             ])
             ->set('selectedCategory', 'content')
-            ->assertSee('Content Area')
-            ->assertDontSee('Call to Action')
+            ->assertSee('Hero Section')
             ->assertDontSee('Contact Form');
     });
 
@@ -79,48 +58,10 @@ describe('BlockLibrary Component', function () {
                 'page' => $this->page,
                 'blockManager' => $this->blockManager
             ])
-            ->set('search', 'area')
+            ->set('search', 'hero')
             ->set('selectedCategory', 'content')
-            ->assertSee('Content Area')
-            ->assertDontSee('Call to Action');
-    });
-
-    it('can create a content area block', function () {
-        Livewire::actingAs($this->user)
-            ->test(BlockLibrary::class, [
-                'page' => $this->page,
-                'blockManager' => $this->blockManager
-            ])
-            ->call('createBlock', 'content-area')
-            ->assertDispatched('block-created', [
-                'blockId' => 1,
-                'blockType' => 'content-area'
-            ])
-            ->assertDispatched('hide-block-library');
-
-        // Verify the block was created in the database
-        $this->assertDatabaseHas('content_blocks', [
-            'page_id' => $this->page->id,
-            'type' => 'content-area'
-        ]);
-    });
-
-    it('can create a call to action block', function () {
-        Livewire::actingAs($this->user)
-            ->test(BlockLibrary::class, [
-                'page' => $this->page,
-                'blockManager' => $this->blockManager
-            ])
-            ->call('createBlock', 'call-to-action')
-            ->assertDispatched('block-created', [
-                'blockId' => 1,
-                'blockType' => 'call-to-action'
-            ]);
-
-        $this->assertDatabaseHas('content_blocks', [
-            'page_id' => $this->page->id,
-            'type' => 'call-to-action'
-        ]);
+            ->assertSee('Hero Section')
+            ->assertDontSee('Contact Form');
     });
 
     it('can create a contact form block', function () {
@@ -156,42 +97,6 @@ describe('BlockLibrary Component', function () {
         $this->assertDatabaseHas('content_blocks', [
             'page_id' => $this->page->id,
             'type' => 'hero'
-        ]);
-    });
-
-    it('can create an image gallery block', function () {
-        Livewire::actingAs($this->user)
-            ->test(BlockLibrary::class, [
-                'page' => $this->page,
-                'blockManager' => $this->blockManager
-            ])
-            ->call('createBlock', 'image-gallery')
-            ->assertDispatched('block-created', [
-                'blockId' => 1,
-                'blockType' => 'image-gallery'
-            ]);
-
-        $this->assertDatabaseHas('content_blocks', [
-            'page_id' => $this->page->id,
-            'type' => 'image-gallery'
-        ]);
-    });
-
-    it('can create a testimonials block', function () {
-        Livewire::actingAs($this->user)
-            ->test(BlockLibrary::class, [
-                'page' => $this->page,
-                'blockManager' => $this->blockManager
-            ])
-            ->call('createBlock', 'testimonials')
-            ->assertDispatched('block-created', [
-                'blockId' => 1,
-                'blockType' => 'testimonials'
-            ]);
-
-        $this->assertDatabaseHas('content_blocks', [
-            'page_id' => $this->page->id,
-            'type' => 'testimonials'
         ]);
     });
 
@@ -239,11 +144,7 @@ describe('BlockLibrary Component', function () {
                 'page' => $this->page,
                 'blockManager' => $this->blockManager
             ])
-            ->assertSee('Add rich text content')
-            ->assertSee('Create compelling call-to-action sections')
-            ->assertSee('Display contact forms')
-            ->assertSee('Showcase hero sections with images and text')
-            ->assertSee('Display image galleries')
-            ->assertSee('Show customer testimonials');
+            ->assertSee('Create compelling hero sections')
+            ->assertSee('Display contact forms and information');
     });
 }); 

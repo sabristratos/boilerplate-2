@@ -83,6 +83,15 @@ class FormBuilderOptionsRepeater extends Component
 
     public function updatedOptions($value, $key): void
     {
+        // Debounce the update to avoid excessive server requests
+        $this->dispatch('debounced-options-update', [
+            'elementIndex' => $this->elementIndex,
+            'propertyPath' => $this->propertyPath,
+            'key' => $key,
+            'value' => $value
+        ]);
+        
+        // Update parent immediately for real-time feedback
         $this->updateParent();
     }
 
@@ -102,12 +111,13 @@ class FormBuilderOptionsRepeater extends Component
             }
         }
 
-        // Update the parent component
+        // Update the parent component with more detailed information
         $this->dispatch('options-updated', [
             'elementIndex' => $this->elementIndex,
             'propertyPath' => $this->propertyPath,
             'options' => $this->options,
             'optionsString' => trim($optionsString),
+            'timestamp' => now()->timestamp
         ]);
     }
 

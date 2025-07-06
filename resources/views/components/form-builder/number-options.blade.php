@@ -14,21 +14,21 @@
             <flux:label>Copyable</flux:label>
         </flux:field>
         <flux:input 
-            wire:model.live.debounce="draftElements.{{ $selectedElementIndex }}.properties.min" 
+            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.min" 
             type="number"
             label="Minimum Value" 
             placeholder="e.g. 0"
             help="Leave empty for no minimum value"
         />
         <flux:input 
-            wire:model.live.debounce="draftElements.{{ $selectedElementIndex }}.properties.max" 
+            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.max" 
             type="number"
             label="Maximum Value" 
             placeholder="e.g. 100"
             help="Leave empty for no maximum value"
         />
         <flux:input 
-            wire:model.live.debounce="draftElements.{{ $selectedElementIndex }}.properties.step" 
+            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.step" 
             type="number"
             label="Step Value" 
             placeholder="e.g. 1, 0.1, 10"

@@ -1,38 +1,6 @@
 @props(['element', 'properties', 'fluxProps', 'mode' => 'edit', 'fieldName' => null])
 
 @php
-<<<<<<< HEAD
-    $options = $properties['options'] ?? [];
-    $parsedOptions = [];
-    
-    // Handle both string and array options
-    if (is_array($options)) {
-        foreach ($options as $option) {
-            if (is_array($option) && isset($option['value']) && isset($option['label'])) {
-                $parsedOptions[] = $option;
-            } elseif (is_string($option)) {
-                $option = trim($option);
-                if ($option === '') continue;
-                if (str_contains($option, '|')) {
-                    [$value, $label] = explode('|', $option, 2);
-                    $parsedOptions[] = ['value' => trim($value), 'label' => trim($label)];
-                } else {
-                    $parsedOptions[] = ['value' => $option, 'label' => $option];
-                }
-            }
-        }
-    }
-@endphp
-
-<flux:radio.group 
-    label="{{ $properties['label'] ?? '' }}"
-    variant="{{ $fluxProps['variant'] ?? 'default' }}"
->
-    @foreach($parsedOptions as $option)
-        <flux:radio value="{{ $option['value'] }}" label="{{ $option['label'] }}" />
-    @endforeach
-</flux:radio.group>
-=======
     $isPreview = $mode === 'preview';
     $wireModel = $isPreview && $fieldName ? "formData.{$fieldName}" : null;
     $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
@@ -72,4 +40,3 @@
         <flux:error>{{ $message }}</flux:error>
     @enderror
 @endif
->>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d

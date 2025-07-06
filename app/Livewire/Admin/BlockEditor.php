@@ -78,89 +78,69 @@ class BlockEditor extends Component
         $this->blockManager = $blockManager;
     }
 
-
-
-
-
     /**
      * Handle edit block events from PageCanvas.
      */
     #[On('edit-block')]
     public function handleEditBlock($data = null): void
     {
-        if (!is_array($data)) {
-            $data = [];
-        }
-        
         $blockId = $data['blockId'] ?? null;
-        
-        if ($blockId) {
-            // Save current block state before switching
-            if ($this->editingBlockId && $this->editingBlockId !== $blockId) {
-                $this->saveCurrentBlockDraft();
-            }
-            
-            $this->editingBlockId = $blockId;
-            $this->loadBlockData();
-            
-            // Dispatch event to notify PageCanvas of the editing state change
-            $this->dispatch('block-editing-started', [
-                'blockId' => $this->editingBlockId,
-                'blockState' => $this->editingBlockState
-            ]);
-        }
-    }
 
-    /**
-     * Handle cancel block edit events.
-     */
-    #[On('cancel-block-edit')]
-    public function handleCancelBlockEdit(): void
-    {
-        // Save current state before canceling
-        if ($this->editingBlockId) {
-            $this->saveCurrentBlockDraft();
-        }
-
-        // Clear editing state
-        $this->editingBlockId = null;
-        $this->editingBlockState = [];
-        $this->editingBlockVisible = true;
-        $this->editingBlockImageUpload = null;
-
-        // Dispatch event to notify PageCanvas that editing was cancelled
-        $this->dispatch('block-editing-cancelled');
-    }
-
-    /**
-     * Called at the end of every component request.
-     */
-    public function dehydrate(): void
-    {
-        // Note: Auto-save is now handled via debounced events to reduce database load
-    }
-
-    /**
-     * Load block data for editing.
-     */
-    protected function loadBlockData(): void
-    {
-        if (!$this->editingBlockId) {
+        if (!$blockId) {
             return;
         }
 
-        $block = ContentBlock::find($this->editingBlockId);
+        $block = ContentBlock::find($blockId);
 
         if (!$block) {
             return;
         }
 
-        // Clear previous state
+        // Set editing state
+        $this->editingBlockId = $blockId;
+        $this->editingBlockVisible = $block->isVisible();
+
+        // Load block data
+        $this->loadBlockData($block);
+
+        // Clear any previous image upload
+        $this->editingBlockImageUpload = null;
+    }
+
+    /**
+     * Handle cancel block edit events from PageCanvas.
+     */
+    #[On('cancel-block-edit')]
+    public function handleCancelBlockEdit(): void
+    {
+        $this->editingBlockId = null;
         $this->editingBlockState = [];
         $this->editingBlockImageUpload = null;
+    }
 
-        // Set new editing state
-        $this->editingBlockVisible = $block->isVisible();
+    /**
+     * Handle block deletion events from PageCanvas.
+     */
+    #[On('block-deleted')]
+    public function handleBlockDeleted($data): void
+    {
+        $deletedBlockId = $data['blockId'] ?? null;
+        
+        // Clear editing state if the deleted block was being edited
+        if ($this->editingBlockId === $deletedBlockId) {
+            $this->editingBlockId = null;
+            $this->editingBlockState = [];
+            $this->editingBlockImageUpload = null;
+        }
+    }
+
+    /**
+     * Load block data for editing.
+     */
+    protected function loadBlockData(ContentBlock $block): void
+    {
+        // Clear previous state
+        $this->editingBlockState = [];
 
         // Load block data - prefer draft data if available, otherwise use published data
         $blockClass = $this->blockManager->find($block->type);
@@ -184,16 +164,10 @@ class BlockEditor extends Component
     public function updatedEditingBlockState(): void
     {
         if ($this->editingBlockId) {
-            // Dispatch event to update Alpine data in the preview immediately
+            // Dispatch event to update PageCanvas immediately
             $this->dispatch('block-state-updated', [
                 'id' => $this->editingBlockId,
                 'state' => $this->editingBlockState
-            ]);
-            
-            // Update PageCanvas editing state
-            $this->dispatch('block-editing-started', [
-                'blockId' => $this->editingBlockId,
-                'blockState' => $this->editingBlockState
             ]);
             
             // Debounce the save operation to avoid excessive database writes
@@ -202,67 +176,150 @@ class BlockEditor extends Component
     }
 
     /**
-     * Handle updates to the editing block visibility.
+     * Handle visibility changes.
      */
-    public function updatedEditingBlockVisible(bool $value): void
+    public function updatedEditingBlockVisible(): void
     {
         if ($this->editingBlockId) {
-            $this->saveCurrentBlockDraft();
-            
-            // Dispatch event to update Alpine data in the preview
-            $this->dispatch('block-state-updated', [
-                'id' => $this->editingBlockId,
-                'state' => $this->editingBlockState
-            ]);
+            // Save the visibility change immediately
+            $this->saveBlockDraft();
         }
     }
 
     /**
-     * Handle debounced save events.
+     * Handle debounced save requests.
      */
     #[On('debounced-save-block')]
     public function handleDebouncedSave(): void
     {
         if ($this->editingBlockId) {
-            $this->saveCurrentBlockDraft();
+            $this->saveBlockDraft();
         }
     }
 
     /**
-     * Save the current block's draft state.
+     * Handle repeater updates from child components.
      */
-    protected function saveCurrentBlockDraft(): void
+    #[On('repeater-updated')]
+    public function handleRepeaterUpdated($data): void
     {
-        if (! $this->editingBlockId) {
+        if (isset($data['model']) && isset($data['items'])) {
+            // Update the editingBlockState with the new items
+            $modelPath = $data['model'];
+            $items = $data['items'];
+            
+            // Convert dot notation to array path
+            $pathParts = explode('.', $modelPath);
+            $current = &$this->editingBlockState;
+            
+            foreach ($pathParts as $part) {
+                if (!isset($current[$part])) {
+                    $current[$part] = [];
+                }
+                $current = &$current[$part];
+            }
+            
+            $current = $items;
+            
+            // Dispatch event to update PageCanvas immediately
+            $this->dispatch('block-state-updated', [
+                'id' => $this->editingBlockId,
+                'state' => $this->editingBlockState
+            ]);
+            
+            // Debounce the save operation
+            $this->dispatch('debounced-save-block');
+        }
+    }
+
+    /**
+     * Handle media updates from media uploader.
+     */
+    #[On('media-updated')]
+    public function handleMediaUpdated($modelId = null, $collection = null, $isTemporary = false): void
+    {
+        if ($this->editingBlockId && $collection) {
+            // Get the current block
+            $block = ContentBlock::find($this->editingBlockId);
+            
+            if (!$block) {
+                return;
+            }
+
+            // Get the media URL for the collection (will be null if removed)
+            $media = $block->getFirstMedia($collection);
+            $mediaUrl = $media ? $media->getUrl() : null;
+
+            // Update the editingBlockState with the media URL (or null if removed)
+            // For hero section, this would be background_image
+            if ($collection === 'background_image') {
+                $this->editingBlockState['background_image'] = $mediaUrl;
+            }
+            // Add more collections as needed
+            // elseif ($collection === 'other_collection') {
+            //     $this->editingBlockState['other_field'] = $mediaUrl;
+            // }
+
+            // Dispatch event to update PageCanvas immediately
+            $this->dispatch('block-state-updated', [
+                'id' => $this->editingBlockId,
+                'state' => $this->editingBlockState
+            ]);
+            
+            // Debounce the save operation
+            $this->dispatch('debounced-save-block');
+        }
+    }
+
+    /**
+     * Save the current block as a draft.
+     */
+    public function saveBlockDraft(): void
+    {
+        if (!$this->editingBlockId) {
             return;
         }
 
         try {
-            $contentBlock = ContentBlock::find($this->editingBlockId);
-            
-            if (!$contentBlock) {
+            $block = ContentBlock::find($this->editingBlockId);
+
+            if (!$block) {
                 return;
             }
 
             $saveDraftContentBlockAction = app(SaveDraftContentBlockAction::class);
             $saveDraftContentBlockAction->execute(
-                $contentBlock,
+                $block,
                 $this->editingBlockState,
                 $this->activeLocale,
                 $this->editingBlockVisible,
                 $this->editingBlockImageUpload,
                 $this->blockManager
             );
+
+            // No success toast needed since user can see changes live
+
         } catch (\Exception $e) {
-            // Silently fail for auto-save operations
+            $this->showErrorToast(
+                __('messages.block_editor.block_save_failed_text'),
+                __('messages.block_editor.block_save_failed_title')
+            );
         }
+    }
+
+    /**
+     * Cancel editing the current block.
+     */
+    public function cancelEditing(): void
+    {
+        $this->dispatch('cancel-block-edit');
     }
 
     /**
      * Get the current block being edited.
      */
     #[Computed]
-    public function getCurrentBlockProperty()
+    public function getCurrentBlockProperty(): ?ContentBlock
     {
         if (!$this->editingBlockId) {
             return null;
@@ -272,10 +329,10 @@ class BlockEditor extends Component
     }
 
     /**
-     * Get the block class for the current block.
+     * Get the current block class being edited.
      */
     #[Computed]
-    public function getCurrentBlockClassProperty()
+    public function getCurrentBlockClassProperty(): ?\App\Blocks\Block
     {
         $block = $this->currentBlock;
         
@@ -284,6 +341,18 @@ class BlockEditor extends Component
         }
 
         return $this->blockManager->find($block->type);
+    }
+
+    /**
+     * Get the current editing state for a specific block.
+     */
+    public function getEditingStateForBlock(int $blockId): ?array
+    {
+        if ($this->editingBlockId === $blockId) {
+            return $this->editingBlockState;
+        }
+
+        return null;
     }
 
     /**
@@ -298,17 +367,5 @@ class BlockEditor extends Component
             'currentBlock' => $this->currentBlock,
             'currentBlockClass' => $this->currentBlockClass
         ]);
-    }
-
-    /**
-     * Get the current editing state for the parent component.
-     */
-    #[Computed]
-    public function getEditingStateProperty(): array
-    {
-        return [
-            'editingBlockId' => $this->editingBlockId,
-            'editingBlockState' => $this->editingBlockState,
-        ];
     }
 } 

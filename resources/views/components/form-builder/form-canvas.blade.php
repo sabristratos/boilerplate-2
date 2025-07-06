@@ -2,7 +2,12 @@
 
 <div 
     class="flex-1 p-8 overflow-y-auto" 
-    @drop.prevent="handleDrop($event)" 
+    @drop.prevent="
+        const type = $event.dataTransfer.getData('type');
+        if (type) {
+            $wire.addElement(type);
+        }
+    " 
     @dragover.prevent
     @dragover="$el.classList.add('drag-over')"
     @dragleave="$el.classList.remove('drag-over')"
@@ -44,14 +49,16 @@
                                 @php
                                     $fieldName = \Illuminate\Support\Str::slug($element['properties']['label'] ?? 'field', '_') ?: 'field_' . $element['id'];
                                 @endphp
-                                @include('components.form-builder.preview.' . $element['type'], [
-                                    'fieldName' => $fieldName,
-                                    'label' => $element['properties']['label'] ?? 'Field',
-                                    'placeholder' => $element['properties']['placeholder'] ?? '',
-                                    'required' => in_array('required', $element['validation']['rules'] ?? []),
-                                    'options' => $this->parseOptionsForPreview($element['properties']['options'] ?? ''),
-                                    'properties' => $element['properties'] ?? [],
-                                ])
+                                <div data-preview-element-id="{{ $element['id'] }}">
+                                    @include('components.form-builder.preview.' . $element['type'], [
+                                        'fieldName' => $fieldName,
+                                        'label' => $element['properties']['label'] ?? 'Field',
+                                        'placeholder' => $element['properties']['placeholder'] ?? '',
+                                        'required' => in_array('required', $element['validation']['rules'] ?? []),
+                                        'options' => $this->parseOptionsForPreview($element['properties']['options'] ?? ''),
+                                        'properties' => $element['properties'] ?? [],
+                                    ])
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -113,7 +120,7 @@
                     <div
                         wire:key="element-{{ $element['id'] }}"
                         x-sort:item="{{ $element['order'] ?? $index }}"
-                        @click="$wire.set('selectedElementId', '{{ $element['id'] }}')"
+                        @click="$wire.selectElement('{{ $element['id'] }}')"
                         class="relative cursor-pointer group [body:not(.sorting)_&]:hover:bg-zinc-50 dark:[body:not(.sorting)_&]:hover:bg-zinc-800/50 rounded-md responsive-grid-item"
                         :class="{ 'ring-2 ring-primary-500 ring-offset-2 ring-offset-zinc-100 dark:ring-offset-zinc-900': $wire.selectedElementId === '{{ $element['id'] }}' }"
                         style="grid-column: span {{ $columnSpan }};"
@@ -134,8 +141,18 @@
                                 :tooltip="__('messages.forms.form_builder_interface.delete_element')"
                             />
                         </div>
-                        <div class="p-4">
-                            {!! $renderedElements[$index] ?? '' !!}
+                        <div class="p-4" data-edit-element-id="{{ $element['id'] }}">
+                            @php
+                                $fieldName = \Illuminate\Support\Str::slug($element['properties']['label'] ?? 'field', '_') ?: 'field_' . $element['id'];
+                            @endphp
+                            @include('components.form-builder.preview.' . $element['type'], [
+                                'fieldName' => $fieldName,
+                                'label' => $element['properties']['label'] ?? 'Field',
+                                'placeholder' => $element['properties']['placeholder'] ?? '',
+                                'required' => in_array('required', $element['validation']['rules'] ?? []),
+                                'options' => $this->parseOptionsForPreview($element['properties']['options'] ?? ''),
+                                'properties' => $element['properties'] ?? [],
+                            ])
                         </div>
                     </div>
                 @empty

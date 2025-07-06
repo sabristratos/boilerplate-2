@@ -142,25 +142,6 @@ select:focus[data-flux-control] {
     .grid-desktop-3-4 { grid-column: span 9; }
 }
 
-/* Debug styles - remove in production */
-.responsive-grid-item::before {
-    content: attr(class);
-    position: absolute;
-    top: -20px;
-    left: 0;
-    background: rgba(0, 0, 0, 0.8);
-    color: white;
-    padding: 2px 6px;
-    font-size: 10px;
-    border-radius: 3px;
-    z-index: 1000;
-    opacity: 0;
-    transition: opacity 0.2s;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
 
 .responsive-grid-item:hover::before {
     opacity: 1;

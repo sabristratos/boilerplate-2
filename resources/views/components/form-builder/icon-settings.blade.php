@@ -1,32 +1,31 @@
 @props(['selectedElement', 'selectedElementIndex', 'availableIcons'])
-<div class="space-y-4">
-    <flux:heading size="sm" class="flex items-center gap-2">
-        <flux:icon name="photo" class="size-4" />
-        Icons
-    </flux:heading>
-    <div class="grid grid-cols-2 gap-3">
-        @php
-            // Build icon options HTML
-            $leadingIconOptions = '<flux:select.option value="">No icon</flux:select.option>';
-            $trailingIconOptions = '<flux:select.option value="">No icon</flux:select.option>';
-            foreach ($availableIcons as $iconKey => $iconName) {
-                $leadingIconOptions .= '<flux:select.option value="' . htmlspecialchars($iconKey) . '">' . htmlspecialchars($iconName) . '</flux:select.option>';
-                $trailingIconOptions .= '<flux:select.option value="' . htmlspecialchars($iconKey) . '">' . htmlspecialchars($iconName) . '</flux:select.option>';
-            }
-        @endphp
+@if($selectedElement['type'] !== 'textarea')
+    <div class="space-y-4">
+        <flux:heading size="sm" class="flex items-center gap-2">
+            <flux:icon name="photo" class="size-4" />
+            Icon
+        </flux:heading>
         <flux:select 
             wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.icon" 
             label="Leading Icon"
             placeholder="Choose an icon..."
+            variant="listbox"
+            searchable
         >
-            {!! $leadingIconOptions !!}
-        </flux:select>
-        <flux:select 
-            wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.iconTrailing" 
-            label="Trailing Icon"
-            placeholder="Choose an icon..."
-        >
-            {!! $trailingIconOptions !!}
+            <flux:select.option value="">
+                <div class="flex items-center gap-2">
+                    <flux:icon name="minus" variant="mini" class="text-zinc-400" />
+                    No icon
+                </div>
+            </flux:select.option>
+            @foreach($availableIcons as $iconKey => $iconName)
+                <flux:select.option value="{{ $iconKey }}">
+                    <div class="flex items-center gap-2">
+                        <flux:icon name="{{ $iconKey }}" variant="mini" class="text-zinc-500" />
+                        {{ $iconName }}
+                    </div>
+                </flux:select.option>
+            @endforeach
         </flux:select>
     </div>
-</div> 
+@endif 

@@ -1,5 +1,11 @@
 <div class="form-display">
-    @if($submitted)
+    @if(isset($error))
+        <flux:callout variant="danger" icon="exclamation-triangle">
+            <flux:callout.text>
+                {{ $error }}
+            </flux:callout.text>
+        </flux:callout>
+    @elseif($submitted)
         <flux:callout variant="success" icon="check-circle">
             <flux:callout.heading>Form Submitted!</flux:callout.heading>
             <flux:callout.text>
@@ -8,7 +14,7 @@
         </flux:callout>
     @else
         <form wire:submit="submit" class="space-y-6">
-            @if($form->elements)
+            @if($form && $form->elements)
                 <div class="grid grid-cols-12 gap-6">
                     @foreach($form->elements as $index => $element)
                         @php

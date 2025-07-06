@@ -221,6 +221,66 @@ class PageManager extends Component
     }
 
     /**
+     * Save the page as draft.
+     */
+    public function saveDraft(): void
+    {
+        try {
+            $saveDraftPageDetailsAction = app(SaveDraftPageDetailsAction::class);
+            $saveDraftPageDetailsAction->execute($this->page, [
+                'title' => $this->title,
+                'slug' => $this->slug,
+                'meta_title' => $this->meta_title,
+                'meta_description' => $this->meta_description,
+                'no_index' => $this->no_index,
+            ]);
+
+            $this->showSuccessToast(
+                __('messages.page_manager.draft_saved_text'),
+                __('messages.page_manager.draft_saved_title')
+            );
+
+        } catch (\Exception $e) {
+            $this->showErrorToast(
+                __('messages.page_manager.draft_save_failed_text'),
+                __('messages.page_manager.draft_save_failed_title')
+            );
+        }
+    }
+
+    /**
+     * Publish the page draft.
+     */
+    public function publishPage(): void
+    {
+        try {
+            // First save any current changes as draft
+            $saveDraftPageDetailsAction = app(SaveDraftPageDetailsAction::class);
+            $saveDraftPageDetailsAction->execute($this->page, [
+                'title' => $this->title,
+                'slug' => $this->slug,
+                'meta_title' => $this->meta_title,
+                'meta_description' => $this->meta_description,
+                'no_index' => $this->no_index,
+            ]);
+
+            // Then publish the draft
+            $this->page->publishDraft();
+
+            $this->showSuccessToast(
+                __('messages.page_manager.page_published_text'),
+                __('messages.page_manager.page_published_title')
+            );
+
+        } catch (\Exception $e) {
+            $this->showErrorToast(
+                __('messages.page_manager.page_publish_failed_text'),
+                __('messages.page_manager.page_publish_failed_title')
+            );
+        }
+    }
+
+    /**
      * Handle block creation events from child components.
      */
     #[On('block-created')]

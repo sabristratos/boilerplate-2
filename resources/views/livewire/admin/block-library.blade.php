@@ -1,4 +1,4 @@
-<div class="space-y-3">
+<div class="p-5 space-y-3">
     <div>
         <flux:heading size="sm">{{ __('messages.page_manager.block_library') }}</flux:heading>
         <flux:text variant="subtle" class="text-sm">{{ __('messages.page_manager.add_content_blocks') }}</flux:text>
@@ -29,7 +29,7 @@
     </div>
     
     <!-- Block List -->
-    <div class="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto">
+    <div class="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto pr-2">
         @forelse($this->filteredBlocks as $block)
             <div class="p-3 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:border-zinc-300 dark:hover:border-zinc-600 transition-colors cursor-pointer group" wire:click="createBlock('{{ $block->getType() }}')">
                 <div class="flex items-start gap-3">

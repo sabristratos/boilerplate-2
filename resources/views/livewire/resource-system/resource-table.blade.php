@@ -205,6 +205,7 @@
                         @endforeach
                         <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
                              <flux:button href="{{ route('admin.resources.' . $this->resource::uriKey() . '.edit', $resource->id) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="{{ __('buttons.edit') }}" />
+                             <x-revision-link :model="$resource" :model-type="$this->resource::uriKey()" />
                              <flux:button wire:click="confirmDelete({{ $resource->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('buttons.delete') }}" />
                         </td>
                     </tr>

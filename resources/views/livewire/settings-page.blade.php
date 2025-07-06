@@ -240,6 +240,7 @@
                                             <flux:description>{{ __($setting->description) }}</flux:description>
                                         @endif
                                         <livewire:repeater
+                                            wire:model="state.{{ $setting->key }}"
                                             :items="data_get($state, $setting->key, [])"
                                             :subfields="$setting->subfields"
                                             model="{{ $setting->key }}"

@@ -31,7 +31,7 @@
     placeholder="{{ $placeholder }}"
     mode="{{ $mode }}"
     :months="$months"
-    :description-trailing="$descriptionTrailing"
+    description-trailing="{{ $descriptionTrailing ? 'true' : 'false' }}"
     size="{{ $size }}"
     :week-numbers="$weekNumbers"
     :selectable-header="$selectableHeader"

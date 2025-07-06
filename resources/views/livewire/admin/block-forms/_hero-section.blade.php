@@ -76,7 +76,9 @@
             <div>
                 <flux:label>{{ __('blocks.hero_section.background_image_upload_label') }}</flux:label>
                 <div class="mt-1">
-                    <livewire:media-uploader :model="$editingBlock" collection="background_image" />
+                    @if(isset($currentBlock))
+                        <livewire:media-uploader :model="$currentBlock" collection="background_image" />
+                    @endif
                 </div>
             </div>
 
@@ -104,8 +106,9 @@
         <flux:heading size="sm" class="mb-4">{{ __('blocks.hero_section.buttons_label') }}</flux:heading>
         
         <livewire:repeater
-            model="state.buttons"
-            :items="$state['buttons'] ?? []"
+            wire:model="editingBlockState.buttons"
+            model="editingBlockState.buttons"
+            :items="$editingBlockState['buttons'] ?? []"
             :subfields="[
                 'text' => [
                     'label' => __('blocks.hero_section.button_text_label'),

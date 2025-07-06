@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use Livewire\Attributes\Modelable;
@@ -43,13 +45,17 @@ class Repeater extends Component
         }
     }
 
-    public function updatedItems(): void
+    public function updated($property)
     {
-        $this->dispatchItemsUpdated();
+        // Only dispatch for nested item changes that wire:model might not catch
+        if (str_starts_with($property, 'items.')) {
+            $this->dispatchItemsUpdated();
+        }
     }
 
-    protected function dispatchItemsUpdated()
+    protected function dispatchItemsUpdated(): void
     {
+        // Dispatch to parent component to update the editingBlockState
         $this->dispatch('repeater-updated', [
             'model' => $this->model,
             'items' => $this->items,

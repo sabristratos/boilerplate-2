@@ -51,16 +51,6 @@
     }
 }" class="file-upload-container">
     
-<<<<<<< HEAD
-    <flux:input 
-        type="file"
-        label="{{ $properties['label'] ?? '' }}" 
-        placeholder="{{ $properties['placeholder'] ?? '' }}"
-        :multiple="$multiple"
-        {!! $attributesString !!}
-        @change="handleFileSelect($event)"
-    />
-=======
     @if($hasIcon && $hasIconTrailing)
         <flux:input 
             type="file"
@@ -124,7 +114,6 @@
             :accept="$accept"
         />
     @endif
->>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
 
     @if($maxSize)
         <div class="mt-2 text-sm text-zinc-500">

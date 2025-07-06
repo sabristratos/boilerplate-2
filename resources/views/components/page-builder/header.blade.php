@@ -51,9 +51,19 @@
             {{ __('messages.page_manager.preview') }}
         </flux:button>
 
+        <!-- Save as Draft Button -->
+        <flux:button
+            wire:click="saveDraft"
+            icon="document-text"
+            variant="outline"
+            size="sm"
+        >
+            {{ __('buttons.save_as_draft') }}
+        </flux:button>
+
         <!-- Publish Button -->
         <flux:button
-            wire:click="savePage"
+            wire:click="publishPage"
             icon="check"
             variant="primary"
             size="sm"

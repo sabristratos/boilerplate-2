@@ -90,12 +90,26 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function ():
 
     // Import/Export
     Route::get('import-export', \App\Livewire\Admin\ImportExport::class)->name('import-export.index');
+
+    // Revisions
+    Route::get('revisions/{modelType}/{modelId}', \App\Livewire\Admin\RevisionShow::class)->name('revisions.show');
 });
 
 require __DIR__.'/auth.php';
 
 // Form display route
-Route::get('/form/{form:id}', \App\Livewire\Frontend\FormDisplay::class)->name('forms.display');
+Route::get('/form/{form}', \App\Livewire\Frontend\FormDisplay::class)->name('forms.display');
+
+// Debug route for testing
+Route::get('/debug/form/{id}', function($id) {
+    $form = \App\Models\Form::find($id);
+    dd([
+        'form_id' => $id,
+        'form_found' => $form ? 'yes' : 'no',
+        'form_data' => $form ? $form->toArray() : null,
+        'elements' => $form ? $form->elements : null
+    ]);
+});
 
 // Dynamic page routes (must be last)
 Route::get('/{page:slug}', [PageController::class, 'show'])

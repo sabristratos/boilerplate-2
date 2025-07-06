@@ -146,7 +146,7 @@ describe('PageManager Component', function () {
     it('handles block creation events', function () {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
-            ->call('handleBlockCreated', ['blockId' => 1, 'blockType' => 'content-area'])
+            ->call('handleBlockCreated', ['blockId' => 1, 'blockType' => 'hero'])
             ->assertHasNoErrors(); // Event assertion omitted due to Livewire version
     });
 

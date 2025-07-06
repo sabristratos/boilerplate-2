@@ -1,5 +1,6 @@
 import './bootstrap';
 import sort from '@alpinejs/sort'
+import './form-builder';
 
 Alpine.plugin(sort)
 

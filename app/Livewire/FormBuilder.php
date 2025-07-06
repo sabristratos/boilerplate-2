@@ -62,6 +62,10 @@ class FormBuilder extends Component
 
     public bool $isPreviewMode = false;
 
+    // Add regular properties for selected element data
+    public ?array $selectedElement = null;
+    public ?int $selectedElementIndex = null;
+
     protected $queryString = [
         'tab' => ['except' => 'toolbox'],
         'propertiesTab' => ['except' => 'basic'],
@@ -101,26 +105,15 @@ class FormBuilder extends Component
     public function mount(Form $form)
     {
         $this->form = $form;
-
-        // Load current data (draft if available, otherwise published)
         $this->elements = $form->getCurrentElements();
         $this->draftElements = $form->getCurrentElements();
         $this->settings = $form->getCurrentSettings();
         $this->draftName = $form->getCurrentName();
 
-        // Ensure all elements have an order field
-        foreach ($this->elements as $index => $element) {
-            if (! isset($this->elements[$index]['order'])) {
-                $this->elements[$index]['order'] = $index;
-            }
-        }
-        foreach ($this->draftElements as $index => $element) {
-            if (! isset($this->draftElements[$index]['order'])) {
-                $this->draftElements[$index]['order'] = $index;
-            }
-        }
+        // Initialize selected element data
+        $this->updateSelectedElementData();
 
-        // Ensure all elements have proper validation and properties structure
+        // Ensure proper structure for all elements
         $this->ensureValidationStructure();
         $this->ensurePropertiesStructure();
     }
@@ -244,7 +237,7 @@ class FormBuilder extends Component
 
         // Select the newly added element (last element)
         $lastElement = end($this->draftElements);
-        $this->selectedElementId = $lastElement['id'];
+        $this->selectElement($lastElement['id']);
 
         // Ensure properties structure is maintained
         $this->ensurePropertiesStructure();
@@ -264,6 +257,9 @@ class FormBuilder extends Component
         if ($this->selectedElementId === $elementId) {
             $this->selectedElementId = null;
         }
+
+        // Update selected element data
+        $this->updateSelectedElementData();
     }
 
     #[On('options-updated')]
@@ -275,6 +271,21 @@ class FormBuilder extends Component
 
         // Update the options string in the element
         data_set($this->elements, "{$elementIndex}.properties.{$propertyPath}", $optionsString);
+        data_set($this->draftElements, "{$elementIndex}.properties.{$propertyPath}", $optionsString);
+        
+        // Refresh the preview and edit elements
+        if (isset($elementIndex)) {
+            $this->refreshPreviewElement($elementIndex);
+            $this->refreshEditElement($elementIndex);
+        }
+    }
+
+    #[On('debounced-options-update')]
+    public function handleDebouncedOptionsUpdate(array $data): void
+    {
+        // This method can be used for additional processing if needed
+        // For now, we'll just log the debounced update
+        logger()->debug('Debounced options update', $data);
     }
 
     public function handleReorder($orderedOrders)
@@ -357,14 +368,61 @@ class FormBuilder extends Component
         // Ensure properties structure is maintained after updates
         $this->ensurePropertiesStructure();
 
-        // Dispatch event for real-time updates
-        $this->dispatch('element-updated', key: $key, value: $value);
+        // Dispatch event for real-time updates with more detailed information
+        $this->dispatch('element-updated', [
+            'key' => $key,
+            'value' => $value,
+            'elementIndex' => $elementIndex,
+            'elementId' => $elementIndex !== null ? ($this->draftElements[$elementIndex]['id'] ?? null) : null,
+            'timestamp' => now()->timestamp
+        ]);
     }
 
     // Backward compatibility method
     public function updatedElements($value, $key)
     {
         $this->updatedDraftElements($value, $key);
+    }
+
+    /**
+     * Select an element by its ID.
+     */
+    public function selectElement(string $elementId): void
+    {
+        logger()->debug('selectElement called', [
+            'elementId' => $elementId,
+            'currentSelectedElementId' => $this->selectedElementId,
+            'draftElementsCount' => count($this->draftElements)
+        ]);
+        
+        $this->selectedElementId = $elementId;
+        $this->updateSelectedElementData();
+    }
+
+    private function updateSelectedElementData()
+    {
+        logger()->debug('updateSelectedElementData called', [
+            'selectedElementId' => $this->selectedElementId,
+            'draftElementsCount' => count($this->draftElements),
+            'draftElementIds' => collect($this->draftElements)->pluck('id')->toArray()
+        ]);
+        
+        if ($this->selectedElementId === null) {
+            $this->selectedElement = null;
+            $this->selectedElementIndex = null;
+            logger()->debug('Selected element cleared');
+            return;
+        }
+
+        $this->selectedElement = $this->elementManager->findElement($this->draftElements, $this->selectedElementId);
+        $this->selectedElementIndex = $this->elementManager->findElementIndex($this->draftElements, $this->selectedElementId);
+        
+        // Debug logging
+        logger()->debug('Selected element data updated', [
+            'selectedElementId' => $this->selectedElementId,
+            'selectedElement' => $this->selectedElement ? 'found' : 'not found',
+            'selectedElementIndex' => $this->selectedElementIndex,
+        ]);
     }
 
     public function refreshPreviewElement($elementIndex)
@@ -467,16 +525,6 @@ class FormBuilder extends Component
     }
 
     #[Computed]
-    public function selectedElement()
-    {
-        if ($this->selectedElementId === null) {
-            return null;
-        }
-
-        return $this->elementManager->findElement($this->draftElements, $this->selectedElementId);
-    }
-
-    #[Computed]
     public function selectedElementSaved()
     {
         if ($this->selectedElementId === null) {
@@ -484,16 +532,6 @@ class FormBuilder extends Component
         }
 
         return $this->elementManager->findElement($this->elements, $this->selectedElementId);
-    }
-
-    #[Computed]
-    public function selectedElementIndex()
-    {
-        if ($this->selectedElementId === null) {
-            return null;
-        }
-
-        return $this->elementManager->findElementIndex($this->draftElements, $this->selectedElementId);
     }
 
     #[Computed]
@@ -513,7 +551,7 @@ class FormBuilder extends Component
             return [];
         }
 
-        $options = $this->draftElements[$this->selectedElementIndex()]['properties']['options'] ?? '';
+        $options = $this->draftElements[$this->selectedElementIndex]['properties']['options'] ?? '';
 
         if (is_array($options)) {
             return $options;
@@ -760,7 +798,7 @@ class FormBuilder extends Component
 
     public function render()
     {
-        $renderedElements = collect($this->elements)->map(fn ($element) => $this->elementFactory->renderElement($element));
+        $renderedElements = collect($this->draftElements)->map(fn ($element) => $this->elementFactory->renderElement($element));
 
         return view('livewire.form-builder', [
             'elementTypes' => FormElementType::cases(),

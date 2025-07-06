@@ -1,7 +1,6 @@
 @props([
     'block',
     'data' => [],
-    'alpine' => false,
     'preview' => false,
 ])
 
@@ -13,18 +12,7 @@
     $backgroundOverlay = $blockData['background_overlay'] ?? 70;
 @endphp
 
-<div x-data="{ 
-    data: {{ json_encode($blockData) }},
-    getTextAlignment() {
-        return this.data.text_alignment || 'center';
-    },
-    getContentWidth() {
-        return this.data.content_width || 'max-w-4xl';
-    },
-    getPadding() {
-        return this.data.padding || 'py-24';
-    }
-}" class="{{ $alpine ? '' : 'relative ' . $padding . ' w-full flex items-center justify-center overflow-hidden' }}" {{ $alpine ? 'x-bind:class="\'relative \' + getPadding() + \' w-full flex items-center justify-center overflow-hidden\'"' : '' }}>
+<div class="relative {{ $padding }} w-full flex items-center justify-center overflow-hidden">
     <!-- Background Image with Overlay -->
     @php
         $backgroundImage = config('app.default_hero_background', 'https://images.unsplash.com/photo-1543393716-375f47996a77?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D');
@@ -44,56 +32,34 @@
 
     <!-- Hero Content -->
     <div class="relative z-10 px-4 w-full">
-        <div class="{{ $alpine ? '' : $contentWidth . ' mx-auto text-' . $textAlignment }}" {{ $alpine ? 'x-bind:class="getContentWidth() + \' mx-auto text-\' + getTextAlignment()"' : '' }}>
+        <div class="{{ $contentWidth }} mx-auto text-{{ $textAlignment }}">
             @if($blockData['overline'] ?? false)
                 <div class="text-sm font-semibold text-blue-400 dark:text-blue-300 uppercase tracking-wide mb-2">
-                    @if($alpine)
-                        <span x-text="data.overline || ''"></span>
-                    @else
-                        {{ $blockData['overline'] }}
-                    @endif
+                    {{ $blockData['overline'] }}
                 </div>
             @endif
 
             @if($blockData['heading'] ?? false)
                 <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
-                    @if($alpine)
-                        <span x-html="data.heading || ''"></span>
-                    @else
-                        {!! $blockData['heading'] !!}
-                    @endif
+                    {!! $blockData['heading'] !!}
                 </h1>
             @endif
 
             @if($blockData['subheading'] ?? false)
                 <p class="text-xl md:text-2xl text-zinc-200 mb-8 max-w-3xl {{ $textAlignment === 'center' ? 'mx-auto' : '' }}">
-                    @if($alpine)
-                        <span x-text="data.subheading || ''"></span>
-                    @else
-                        {{ $blockData['subheading'] }}
-                    @endif
+                    {{ $blockData['subheading'] }}
                 </p>
             @endif
 
             <div class="{{ $preview ? 'mt-2' : 'mt-8' }} flex flex-col sm:flex-row gap-4 {{ $textAlignment === 'center' ? 'justify-center' : ($textAlignment === 'right' ? 'justify-end' : 'justify-start') }}">
-                @if($alpine)
-                    <template x-for="(button, index) in (data.buttons || [])" :key="index">
-                        <x-frontend.button
-                            x-bind:href="button.url || '#'"
-                            x-bind:variant="button.variant || 'primary'"
-                            x-text="button.text || ''"
-                        />
-                    </template>
-                @else
-                    @foreach($blockData['buttons'] ?? [] as $button)
-                        <x-frontend.button
-                            :href="$button['url'] ?? '#'"
-                            :variant="$button['variant'] ?? 'primary'"
-                        >
-                            {{ $button['text'] }}
-                        </x-frontend.button>
-                    @endforeach
-                @endif
+                @foreach($blockData['buttons'] ?? [] as $button)
+                    <x-frontend.button
+                        :href="$button['url'] ?? '#'"
+                        :variant="$button['variant'] ?? 'primary'"
+                    >
+                        {{ $button['text'] }}
+                    </x-frontend.button>
+                @endforeach
             </div>
         </div>
     </div>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Services\BlockManager;
+use App\Traits\HasRevisions;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +30,7 @@ class ContentBlock extends Model implements HasMedia, Sortable
     use HasTranslations;
     use InteractsWithMedia;
     use SortableTrait;
+    use HasRevisions;
 
     /**
      * Boot the model and register event listeners.
@@ -224,36 +226,7 @@ class ContentBlock extends Model implements HasMedia, Sortable
         return (bool) $value;
     }
 
-    /**
-     * Publish the draft changes to the published state.
-     *
-     * This method copies draft data and settings to the published fields
-     * and clears the draft data.
-     */
-    public function publishDraft(): void
-    {
-        $hasChanges = $this->hasDraftChanges();
 
-        // Only handle visibility changes if draft_visible is explicitly set
-        if ($this->draft_visible !== null) {
-            $this->visible = (bool) $this->draft_visible;
-            $hasChanges = true;
-        }
-
-        if ($hasChanges) {
-            // Copy draft data to published data
-            $this->data = $this->draft_data;
-            $this->settings = $this->draft_settings;
-
-            // Clear draft data
-            $this->draft_data = null;
-            $this->draft_settings = null;
-            $this->draft_visible = null;
-            $this->last_draft_at = null;
-
-            $this->save();
-        }
-    }
 
     /**
      * Discard all draft changes.
@@ -304,5 +277,77 @@ class ContentBlock extends Model implements HasMedia, Sortable
             'draft_visible' => 'boolean',
             'last_draft_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Get the revision data that should be tracked.
+     *
+     * @return array<string, mixed>
+     */
+    public function getRevisionData(): array
+    {
+        return [
+            'id' => $this->id,
+            'type' => $this->type,
+            'page_id' => $this->page_id,
+            'data' => $this->data,
+            'settings' => $this->settings,
+            'draft_data' => $this->draft_data,
+            'draft_settings' => $this->draft_settings,
+            'visible' => $this->visible,
+            'draft_visible' => $this->draft_visible,
+            'order' => $this->order,
+            'last_draft_at' => $this->last_draft_at,
+        ];
+    }
+
+    /**
+     * Get the fields that should be excluded from revision tracking.
+     *
+     * @return array<string>
+     */
+    public function getRevisionExcludedFields(): array
+    {
+        return [
+            'created_at',
+            'updated_at',
+            'deleted_at',
+        ];
+    }
+
+    /**
+     * Override the publishDraft method to create a revision.
+     */
+    public function publishDraft(): void
+    {
+        $hasChanges = $this->hasDraftChanges();
+
+        // Only handle visibility changes if draft_visible is explicitly set
+        if ($this->draft_visible !== null) {
+            $this->visible = (bool) $this->draft_visible;
+            $hasChanges = true;
+        }
+
+        if ($hasChanges) {
+            // Create a revision before publishing
+            $this->createManualRevision('publish', 'Published draft changes');
+
+            // Prevent automatic revision on update
+            $this->skipRevision = true;
+
+            // Copy draft data to published data
+            $this->data = $this->draft_data;
+            $this->settings = $this->draft_settings;
+
+            // Clear draft data
+            $this->draft_data = null;
+            $this->draft_settings = null;
+            $this->draft_visible = null;
+            $this->last_draft_at = null;
+
+            $this->save();
+
+            $this->skipRevision = false;
+        }
     }
 }

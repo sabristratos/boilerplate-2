@@ -17,59 +17,6 @@
         }"
         x-sort
         x-on:sort.stop="reorder($event)"
-        @block-state-updated.window="
-            try {
-                const blockElement = document.querySelector(`[data-block-id='${$event.detail.id}']`);
-                if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
-                    const alpineComponent = blockElement._x_dataStack[0];
-                    if (alpineComponent.data) {
-                        Object.assign(alpineComponent.data, $event.detail.state);
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to update block state:', error);
-            }
-        "
-        @block-editing-started.window="
-            try {
-                // Clear all previous editing states
-                document.querySelectorAll('[data-block-id]').forEach(element => {
-                    if (element._x_dataStack && element._x_dataStack[0]) {
-                        const alpineComponent = element._x_dataStack[0];
-                        if (alpineComponent.data && alpineComponent.data.isEditing) {
-                            alpineComponent.data.isEditing = false;
-                        }
-                    }
-                });
-                
-                // Set the new editing state
-                const blockElement = document.querySelector(`[data-block-id='${$event.detail.blockId}']`);
-                if (blockElement && blockElement._x_dataStack && blockElement._x_dataStack[0]) {
-                    const alpineComponent = blockElement._x_dataStack[0];
-                    if (alpineComponent.data) {
-                        alpineComponent.data.isEditing = true;
-                        Object.assign(alpineComponent.data, $event.detail.blockState);
-                    }
-                }
-            } catch (error) {
-                console.warn('Failed to start block edit:', error);
-            }
-        "
-        @block-editing-cancelled.window="
-            try {
-                // Clear all editing states
-                document.querySelectorAll('[data-block-id]').forEach(element => {
-                    if (element._x_dataStack && element._x_dataStack[0]) {
-                        const alpineComponent = element._x_dataStack[0];
-                        if (alpineComponent.data && alpineComponent.data.isEditing) {
-                            alpineComponent.data.isEditing = false;
-                        }
-                    }
-                });
-            } catch (error) {
-                console.warn('Failed to cancel block edit:', error);
-            }
-        "
     >
         @forelse($this->blocks as $block)
             @if($block->isVisible())
@@ -100,14 +47,12 @@
                         <div class="relative cursor-pointer" wire:click="editBlock({{ $block->id }})" style="pointer-events: auto;">
                             @php
                                 $blockClass = $blockManager->find($block->type);
-                                $alpine = false;
                                 
+                                // Use editing state if this block is being edited, otherwise use block data
                                 if ($editingBlockId === $block->id && $editingBlockState && is_array($editingBlockState)) {
-                                    // When editing, use the editing state as the primary data
                                     $data = $editingBlockState;
-                                    $alpine = true;
                                 } else {
-                                    // When not editing, use draft data if available, otherwise use published data
+                                    // Use draft data if available, otherwise use published data
                                     if ($block->hasDraftChanges()) {
                                         $data = array_merge($block->getDraftTranslatedData(app()->getLocale()), $block->getDraftSettingsArray());
                                     } else {
@@ -117,7 +62,7 @@
                             @endphp
 
                             @if($blockClass)
-                                @include($blockClass->getFrontendView(), ['block' => $block, 'data' => $data, 'alpine' => $alpine])
+                                @include($blockClass->getFrontendView(), ['block' => $block, 'data' => $data])
                             @endif
                         </div>
                     </div>

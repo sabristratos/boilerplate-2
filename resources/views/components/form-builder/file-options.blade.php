@@ -14,13 +14,13 @@
             <flux:label>Show File Preview</flux:label>
         </flux:field>
         <flux:input 
-            wire:model.live.debounce="draftElements.{{ $selectedElementIndex }}.properties.accept" 
+            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.accept" 
             label="Accepted File Types" 
             placeholder="e.g. .pdf,.doc,.docx or image/*"
             help="Comma-separated list of file extensions or MIME types"
         />
         <flux:input 
-            wire:model.live.debounce="draftElements.{{ $selectedElementIndex }}.properties.maxSize" 
+            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.maxSize" 
             label="Maximum File Size" 
             placeholder="e.g. 5MB, 10MB"
             help="Maximum allowed file size"

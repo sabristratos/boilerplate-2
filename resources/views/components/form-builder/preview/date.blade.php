@@ -25,11 +25,12 @@
 
 <flux:date-picker 
     wire:model="previewFormData.{{ $fieldName }}" 
-    label="{{ $label }}"
+    label="{{ $label }}{{ $required ? ' *' : '' }}"
     placeholder="{{ $placeholder }}"
+    required="{{ $required ? 'true' : '' }}"
     mode="{{ $mode }}"
     :months="$months"
-    :description-trailing="$descriptionTrailing"
+    description-trailing="{{ $descriptionTrailing ? 'true' : 'false' }}"
     size="{{ $size }}"
     :week-numbers="$weekNumbers"
     :selectable-header="$selectableHeader"

@@ -3,6 +3,7 @@
 return [
     'save' => 'Save',
     'publish' => 'Publish',
+    'save_as_draft' => 'Save as Draft',
     'save_changes' => 'Save Changes',
     'save_settings' => 'Save Settings',
     'update' => 'Update',

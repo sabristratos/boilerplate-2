@@ -25,13 +25,13 @@
                     </flux:tab>
                 </flux:tabs>
 
-                <flux:tab.panel name="settings" class="p-5">
+                <flux:tab.panel name="settings">
                     <x-page-builder.settings-panel 
                         :activeLocale="$activeLocale"
                     />
                 </flux:tab.panel>
 
-                <flux:tab.panel name="add" class="p-5">
+                <flux:tab.panel name="add">
                     <livewire:admin.block-library 
                         :page="$page" 
                         :availableLocales="$availableLocales"
@@ -59,4 +59,7 @@
             />
         </div>
     </div>
+
+    <!-- Confirmation Modal -->
+    <livewire:confirmation-modal />
 </div>

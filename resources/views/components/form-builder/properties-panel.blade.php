@@ -1,4 +1,5 @@
 @props(['selectedElement', 'selectedElementIndex', 'selectedElementId', 'activeBreakpoint', 'availableValidationRules', 'availableIcons'])
+
 <div class="w-96 bg-white dark:bg-zinc-800/50 border-s border-zinc-200 dark:border-zinc-700/50 overflow-y-auto">
     @if($selectedElement)
         <div class="p-4" wire:key="properties-{{ $selectedElementId }}">

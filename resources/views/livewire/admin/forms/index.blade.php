@@ -116,6 +116,7 @@
                                 :tooltip="__('messages.forms.tooltips.submissions')"
                                 wire:navigate
                             />
+                            <x-revision-link :model="$form" model-type="form" />
                             <flux:button
                                 href="#"
                                 variant="ghost"

@@ -128,6 +128,7 @@
                                 tooltip="{{ __('buttons.view') }}"
                             />
                             <flux:button href="{{ route('admin.pages.editor', ['page' => $page->id, 'locale' => $filters['locale'] ?? app()->getLocale()]) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="{{ __('buttons.edit') }}" />
+                            <x-revision-link :model="$page" model-type="page" />
                             <flux:button wire:click="confirmDelete({{ $page->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('buttons.delete') }}" />
                         </td>
                     </tr>

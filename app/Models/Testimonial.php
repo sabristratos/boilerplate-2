@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasRevisions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Spatie\EloquentSortable\Sortable;
@@ -11,7 +12,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 
 class Testimonial extends Model implements HasMedia, Sortable
 {
-    use HasFactory, InteractsWithMedia, SortableTrait;
+    use HasFactory, InteractsWithMedia, SortableTrait, HasRevisions;
 
     protected $fillable = [
         'name',

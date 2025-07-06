@@ -11,7 +11,7 @@ class FormDisplay extends Component
 {
     use WithFileUploads;
 
-    public Form $form;
+    public $form = null;
 
     public array $formData = [];
 
@@ -26,17 +26,40 @@ class FormDisplay extends Component
         $this->elementFactory = $elementFactory;
     }
 
-    public function mount($form)
+    public function mount($form = null)
     {
-        $this->form = $form;
-        $this->initializeFormData();
+        // Handle both Form object and form ID
+        if (is_numeric($form) || (is_string($form) && ctype_digit($form))) {
+            // If it's a numeric ID (as number or string), find the form
+            $formId = (int) $form;
+            $this->form = Form::find($formId);
+            
+            if (!$this->form) {
+                \Log::warning('FormDisplay: Form not found with ID', ['form_id' => $formId]);
+            }
+        } elseif ($form instanceof Form) {
+            // If it's already a Form object
+            $this->form = $form;
+        } elseif (is_array($form)) {
+            // If it's an array with formId
+            $formId = $form['formId'] ?? $form['form_id'] ?? null;
+            if ($formId) {
+                $this->form = Form::find($formId);
+            }
+        }
+        
+        if ($this->form) {
+            $this->initializeFormData();
+        } else {
+            \Log::warning('FormDisplay: No form loaded', ['form_parameter' => $form]);
+        }
     }
 
     private function initializeFormData()
     {
         $this->formData = [];
 
-        if ($this->form->elements) {
+        if ($this->form && $this->form->elements) {
             foreach ($this->form->elements as $element) {
                 $fieldName = $this->generateFieldName($element);
                 $this->formData[$fieldName] = '';
@@ -53,6 +76,11 @@ class FormDisplay extends Component
 
     public function submit()
     {
+        if (!$this->form) {
+            $this->addError('general', 'Form not found.');
+            return;
+        }
+
         $errorHandler = app(\App\Services\FormBuilder\FormSubmissionErrorHandler::class);
         $result = $errorHandler->handleSubmission($this->form, $this->formData);
 
@@ -77,12 +105,32 @@ class FormDisplay extends Component
 
     public function render()
     {
+        if (!$this->form) {
+            return view('livewire.frontend.form-display', [
+                'renderedElements' => [],
+                'error' => 'Form not found.'
+            ]);
+        }
+
         $renderedElements = [];
 
         if ($this->form->elements) {
-            foreach ($this->form->elements as $element) {
-                $fieldName = $this->generateFieldName($element);
-                $renderedElements[] = $this->elementFactory->renderElement($element, 'preview', $fieldName);
+            try {
+                foreach ($this->form->elements as $element) {
+                    $fieldName = $this->generateFieldName($element);
+                    $renderedElements[] = $this->elementFactory->renderElement($element, 'preview', $fieldName);
+                }
+            } catch (\Exception $e) {
+                \Log::error('FormDisplay: Error rendering elements', [
+                    'form_id' => $this->form->id,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return view('livewire.frontend.form-display', [
+                    'renderedElements' => [],
+                    'error' => 'Error rendering form elements: ' . $e->getMessage()
+                ]);
             }
         }
 

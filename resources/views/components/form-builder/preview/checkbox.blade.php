@@ -1,6 +1,10 @@
 <flux:checkbox.group 
     wire:model="previewFormData.{{ $fieldName }}" 
-    label="{{ $label }}"
+    label="{{ $label }}{{ $required ? ' *' : '' }}"
+    required="{{ $required ? 'true' : '' }}"
+    badge="{{ $properties['badge'] ?? '' }}"
+    description="{{ $properties['description'] ?? '' }}"
+    description-trailing="{{ $properties['descriptionTrailing'] ?? false ? 'true' : 'false' }}"
 >
     @foreach($options as $option)
         <flux:checkbox value="{{ $option['value'] }}" label="{{ $option['label'] }}" />

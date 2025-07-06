@@ -1,6 +1,6 @@
 @props(['activeLocale'])
 
-<div class="space-y-6">
+<div class="p-5 space-y-6">
 
     <!-- Page Title -->
     <flux:input

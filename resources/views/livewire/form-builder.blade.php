@@ -1,13 +1,54 @@
 <div
     class="flex flex-col h-screen bg-zinc-100 dark:bg-zinc-900 font-sans"
     x-data="{
+        ...formBuilderEditor(),
+        
+        // Handle drop events
         handleDrop(event) {
             const type = event.dataTransfer.getData('type');
             if (type) {
                 $wire.addElement(type);
             }
+        },
+        
+        // Handle element property updates
+        handleElementUpdate(event) {
+            // Dispatch event for other components to listen to
+            this.$dispatch('form-element-updated', event);
+        },
+        
+        // Update preview element in real-time
+        updatePreviewElement(event) {
+            const elementId = event.elementId;
+            const previewContainer = document.querySelector(`[data-preview-element-id='${elementId}']`);
+            if (previewContainer) {
+                previewContainer.innerHTML = event.html;
+            }
+        },
+        
+        // Update edit element in real-time
+        updateEditElement(event) {
+            const elementId = event.elementId;
+            const editContainer = document.querySelector(`[data-edit-element-id='${elementId}']`);
+            if (editContainer) {
+                editContainer.innerHTML = event.html;
+            }
         }
     }"
+    x-init="
+        // Listen for element updates from Livewire
+        $wire.on('element-updated', (event) => {
+            handleElementUpdate(event);
+        });
+        
+        $wire.on('preview-element-updated', (event) => {
+            updatePreviewElement(event);
+        });
+        
+        $wire.on('edit-element-updated', (event) => {
+            updateEditElement(event);
+        });
+    "
 >
     <!-- Unified Header -->
     <x-form-builder.header 
@@ -32,7 +73,7 @@
         <!-- Center Panel: Canvas -->
         <div class="flex-1 flex flex-col">
             <x-form-builder.form-canvas 
-                :elements="$elements" 
+                :elements="$draftElements" 
                 :activeBreakpoint="$activeBreakpoint" 
                 :isPreviewMode="$isPreviewMode" 
                 :form="$form" 
@@ -43,8 +84,8 @@
 
         <!-- Right Panel: Properties -->
         <x-form-builder.properties-panel 
-            :selectedElement="$this->selectedElement" 
-            :selectedElementIndex="$this->selectedElementIndex" 
+            :selectedElement="$selectedElement" 
+            :selectedElementIndex="$selectedElementIndex" 
             :selectedElementId="$selectedElementId"
             :activeBreakpoint="$activeBreakpoint" 
             :availableValidationRules="$this->availableValidationRules" 

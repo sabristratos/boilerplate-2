@@ -53,7 +53,7 @@
                                     {{ $form->getTranslation('name', app()->getLocale()) }}
                                 </h3>
                                 
-                                @livewire('frontend.form-display', ['formId' => $form->id], key('form-' . $form->id))
+                                @livewire('frontend.form-display', ['form' => $form->id], key('form-' . $form->id))
                             </div>
                         @else
                             <div class="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">

@@ -1,7 +1,15 @@
 @props(['selectedElement', 'selectedElementIndex'])
 
-<flux:input wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.label" label="Label" />
-<flux:input wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.placeholder" label="Placeholder" />
+<flux:input 
+    wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.label" 
+    label="Label" 
+    placeholder="Enter field label"
+/>
+<flux:input 
+    wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.placeholder" 
+    label="Placeholder" 
+    placeholder="Enter placeholder text"
+/>
 
 @if(in_array($selectedElement['type'], ['select', 'checkbox', 'radio']))
     @php
@@ -15,5 +23,11 @@
 @endif
 
 @if($selectedElement['type'] === 'textarea')
-    <flux:input wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.rows" type="number" label="Rows" placeholder="3" help="Number of visible text lines" />
+    <flux:input 
+        wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.rows" 
+        type="number" 
+        label="Rows" 
+        placeholder="3" 
+        help="Number of visible text lines" 
+    />
 @endif 

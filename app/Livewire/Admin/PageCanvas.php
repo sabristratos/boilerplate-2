@@ -52,8 +52,6 @@ class PageCanvas extends Component
      */
     protected BlockManager $blockManager;
 
-
-
     /**
      * Mount the component with the page to edit.
      */
@@ -70,8 +68,6 @@ class PageCanvas extends Component
     {
         $this->blockManager = $blockManager;
     }
-
-
 
     /**
      * Get the blocks for the current page.
@@ -98,8 +94,38 @@ class PageCanvas extends Component
             return;
         }
 
+        // Set the editing state
+        $this->editingBlockId = $blockId;
+        
+        // Load initial block data for preview
+        $this->loadBlockDataForPreview($block);
+        
         // Dispatch event to notify BlockEditor component
         $this->dispatch('edit-block', ['blockId' => $blockId]);
+    }
+
+    /**
+     * Load block data for preview.
+     */
+    protected function loadBlockDataForPreview(ContentBlock $block): void
+    {
+        // Clear previous state
+        $this->editingBlockState = [];
+
+        // Load block data - prefer draft data if available, otherwise use published data
+        $blockClass = $this->blockManager->find($block->type);
+        $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
+
+        // Use draft data if available, otherwise fall back to published data
+        $blockData = $block->hasDraftChanges()
+            ? $block->getDraftTranslatedData($this->activeLocale)
+            : $block->getTranslatedData($this->activeLocale);
+
+        $blockSettings = $block->hasDraftChanges()
+            ? $block->getDraftSettingsArray()
+            : $block->getSettingsArray();
+
+        $this->editingBlockState = array_merge($defaultData, $blockData, $blockSettings);
     }
 
     /**
@@ -107,31 +133,39 @@ class PageCanvas extends Component
      */
     public function cancelBlockEdit(): void
     {
+        $this->editingBlockId = null;
+        $this->editingBlockState = [];
+        
         // Dispatch event to notify BlockEditor component
         $this->dispatch('cancel-block-edit');
     }
 
     /**
-     * Handle block editing started events from BlockEditor.
+     * Handle block state updates from BlockEditor.
      */
-    #[On('block-editing-started')]
-    public function handleBlockEditingStarted($data): void
+    #[On('block-state-updated')]
+    public function handleBlockStateUpdated($data): void
     {
-        $this->editingBlockId = $data['blockId'] ?? null;
-        $this->editingBlockState = $data['blockState'] ?? [];
+        if (isset($data['id']) && $data['id'] === $this->editingBlockId) {
+            $this->editingBlockState = $data['state'] ?? [];
+        }
     }
 
     /**
-     * Handle block editing cancelled events from BlockEditor.
+     * Handle delete action from confirmation modal.
      */
-    #[On('block-editing-cancelled')]
-    public function handleBlockEditingCancelled(): void
+    #[On('deleteBlock')]
+    public function handleDeleteBlock($data): void
     {
-        $this->editingBlockId = null;
-        $this->editingBlockState = [];
+        $blockId = $data['data']['blockId'] ?? $data['blockId'] ?? null;
+        
+        if ($blockId) {
+            $this->deleteBlock($blockId);
+            
+            // Close the confirmation modal
+            $this->dispatch('close-confirmation-modal');
+        }
     }
-
-
 
     /**
      * Update the order of blocks.
@@ -157,42 +191,43 @@ class PageCanvas extends Component
      */
     public function confirmDeleteBlock(int $blockId): void
     {
+        $block = ContentBlock::find($blockId);
+
+        if (! $block) {
+            $this->showWarningToast(
+                __('messages.block_editor.block_not_found_text'),
+                __('messages.block_editor.block_not_found_title')
+            );
+            return;
+        }
+
         $this->confirmAction(
-            __('messages.page_manager.confirm_delete_block_title'),
-            __('messages.page_manager.confirm_delete_block_text'),
+            __('messages.page_manager.delete_block_title'),
+            __('messages.page_manager.delete_block_text'),
             'deleteBlock',
             ['blockId' => $blockId]
         );
     }
 
-
-
     /**
-     * Delete a block after confirmation.
+     * Delete a block.
      */
-    #[On('deleteBlock')]
-    public function deleteBlock($data): void
+    public function deleteBlock(int $blockId): void
     {
-        // Ensure data is an array
-        if (!is_array($data)) {
-            $data = [];
-        }
-        
-        $blockId = $data['blockId'] ?? null;
-        
-        if (!$blockId) {
-            $this->showErrorToast('Invalid block ID provided');
-            return;
-        }
-
         try {
             $deleteContentBlockAction = app(DeleteContentBlockAction::class);
             $deleteContentBlockAction->execute($blockId);
 
-            $this->dispatch('block-deleted', ['blockId' => $blockId]);
+            // Clear editing state if the deleted block was being edited
+            if ($this->editingBlockId === $blockId) {
+                $this->editingBlockId = null;
+                $this->editingBlockState = [];
+            }
 
-            // Cancel editing if the deleted block was being edited
-            $this->dispatch('cancel-block-edit');
+            // Refresh the page to get updated blocks list
+            $this->page->refresh();
+
+            $this->dispatch('block-deleted', ['blockId' => $blockId]);
 
         } catch (\Exception $e) {
             $this->showErrorToast(
@@ -202,8 +237,6 @@ class PageCanvas extends Component
         }
     }
 
-
-
     /**
      * Render the component.
      *
@@ -212,7 +245,7 @@ class PageCanvas extends Component
     public function render()
     {
         return view('livewire.admin.page-canvas', [
-            'blockManager' => $this->blockManager
+            'blockManager' => $this->blockManager,
         ]);
     }
 } 
