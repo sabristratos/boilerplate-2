@@ -1,11 +1,22 @@
+<<<<<<< HEAD
 @props(['form', 'elements', 'selectedElementId', 'activeBreakpoint', 'isPreviewMode', 'renderedElements'])
+=======
+@props(['form', 'elements', 'selectedElementId', 'activeBreakpoint', 'isPreviewMode', 'previewElements', 'renderedElements'])
+>>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
 <div 
     class="flex-1 p-8 overflow-y-auto" 
     @drop.prevent="handleDrop($event)" 
     @dragover.prevent
+<<<<<<< HEAD
     @dragover="$el.classList.add('drag-over')"
     @dragleave="$el.classList.remove('drag-over')"
     @drop="$el.classList.remove('drag-over')"
+=======
+    x-data="formCanvas()"
+    @element-updated.window="refreshPreview()"
+    @preview-element-updated.window="updatePreviewElement($event)"
+    @edit-element-updated.window="updateEditElement($event)"
+>>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
 >
     @if($isPreviewMode)
         <!-- Preview Mode -->
@@ -39,6 +50,7 @@
                                     $columnSpan = 12;
                                 }
                             @endphp
+<<<<<<< HEAD
                             <div class="responsive-grid-item" style="grid-column: span {{ $columnSpan }};">
                                 @php
                                     $fieldName = \Illuminate\Support\Str::slug($element['properties']['label'] ?? 'field', '_') ?: 'field_' . $element['id'];
@@ -51,20 +63,24 @@
                                     'options' => $this->parseOptionsForPreview($element['properties']['options'] ?? ''),
                                     'properties' => $element['properties'] ?? [],
                                 ])
+=======
+                            <div class="responsive-grid-item" style="grid-column: span {{ $columnSpan }};" wire:key="preview-element-{{ $element['id'] }}" data-preview-element="{{ $element['id'] }}">
+                                {!! $previewElements[$index] ?? '' !!}
+>>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
                             </div>
                         @endforeach
                     </div>
                 @else
                     <flux:callout variant="secondary" icon="information-circle">
                         <flux:callout.text>
-                            This form has no elements configured yet.
+                            {{ __('messages.forms.form_builder_interface.form_has_no_elements') }}
                         </flux:callout.text>
                     </flux:callout>
                 @endif
                 
                 <div class="flex justify-end">
                     <flux:button type="submit" icon="paper-airplane">
-                        Submit Form
+                        {{ __('messages.forms.form_builder_interface.submit_form') }}
                     </flux:button>
                 </div>
             </form>
@@ -123,14 +139,14 @@
                                 size="xs" 
                                 variant="ghost" 
                                 x-sort:handle 
-                                tooltip="Drag to reorder this element"
+                                :tooltip="__('messages.forms.form_builder_interface.drag_to_reorder')"
                             />
                             <flux:button 
                                 wire:click="confirmDelete('{{ $element['id'] }}', 'deleteElement')" 
                                 icon="trash" 
                                 size="xs" 
                                 variant="danger" 
-                                tooltip="Delete this element"
+                                :tooltip="__('messages.forms.form_builder_interface.delete_element')"
                             />
                         </div>
                         <div class="p-4">
@@ -138,6 +154,7 @@
                         </div>
                     </div>
                 @empty
+<<<<<<< HEAD
                     <div class="text-center border-2 border-dashed border-zinc-300 dark:border-zinc-700 col-span-full p-16 rounded-lg bg-zinc-50 dark:bg-zinc-800/30 transition-all duration-300 hover:border-primary-400 dark:hover:border-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950/20">
                         <div class="max-w-md mx-auto">
                             <div class="w-16 h-16 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -162,6 +179,17 @@
                                 </div>
                             </div>
                         </div>
+=======
+                    <div class="text-center border-2 border-dashed border-zinc-300 dark:border-zinc-700 col-span-full p-12 rounded-lg">
+                        <flux:heading>{{ __('messages.forms.form_builder_interface.drop_elements_here') }}</flux:heading>
+                        <flux:text variant="subtle">{{ __('messages.forms.form_builder_interface.drag_drop_instructions') }}</flux:text>
+                        <flux:callout variant="secondary" icon="information-circle" class="mt-4 max-w-md mx-auto">
+                            <flux:callout.text>
+                                <p>{{ __('messages.forms.form_builder_interface.drag_form_elements') }}</p>
+                                <p>{{ __('messages.forms.form_builder_interface.reorder_instructions') }}</p>
+                            </flux:callout.text>
+                        </flux:callout>
+>>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
                     </div>
                 @endforelse
             </div>

@@ -1,4 +1,4 @@
-@props(['element', 'properties', 'fluxProps'])
+@props(['element', 'properties', 'fluxProps', 'mode' => 'edit', 'fieldName' => null])
 
 @php
     // Extract all properties with defaults
@@ -22,7 +22,14 @@
     $clearable = $properties['clearable'] ?? true;
     $disabled = $properties['disabled'] ?? false;
     $invalid = $properties['invalid'] ?? false;
-    $locale = $properties['locale'] ?? '';
+    $locale = $properties['locale'] ?? app()->getLocale() ?? 'en';
+    // Ensure locale is always a valid value
+    $locale = !empty($locale) ? $locale : 'en';
+    
+    // Preview mode specific properties
+    $isPreview = $mode === 'preview';
+    $wireModel = $isPreview && $fieldName ? "formData.{$fieldName}" : null;
+    $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
 @endphp
 
 <flux:date-picker 
@@ -41,8 +48,24 @@
     :clearable="$clearable"
     :disabled="$disabled"
     :invalid="$invalid"
+    locale="{{ $locale }}"
+    :wire:model="$wireModel"
+    :required="$required"
+    :min-range="$isPreview && $minRange ? $minRange : null"
+    :max-range="$isPreview && $maxRange ? $maxRange : null"
+    :min="$isPreview && $min ? $min : null"
+    :max="$isPreview && $max ? $max : null"
+    :description="$isPreview && $description ? $description : null"
+    :badge="$isPreview && $badge ? $badge : null"
+    :presets="$isPreview && $presets ? $presets : null"
 >
     <x-slot name="trigger">
         <flux:date-picker.input />
     </x-slot>
-</flux:date-picker> 
+</flux:date-picker>
+
+@if($isPreview && $fieldName)
+    @error("formData.{$fieldName}")
+        <flux:error>{{ $message }}</flux:error>
+    @enderror
+@endif 

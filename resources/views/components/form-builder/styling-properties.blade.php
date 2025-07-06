@@ -95,7 +95,7 @@
         </div>
     </div>
     <flux:input 
-        wire:model.live.debounce="elements.{{ $selectedElementIndex }}.styles.{{ $activeBreakpoint }}.fontSize" 
+        wire:model.live.debounce="draftElements.{{ $selectedElementIndex }}.styles.{{ $activeBreakpoint }}.fontSize" 
         label="Font Size" 
         placeholder="e.g. 16px or 1rem"
         tooltip="Set a custom font size for this element. Use CSS units like px, rem, em, or %"

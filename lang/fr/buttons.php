@@ -2,6 +2,7 @@
 
 return [
     'save' => 'Sauvegarder',
+    'publish' => 'Publier',
     'save_changes' => 'Enregistrer les modifications',
     'save_settings' => 'Enregistrer les paramètres',
     'update' => 'Mise à jour',
@@ -41,4 +42,10 @@ return [
     'back_to_form' => 'Retour au formulaire',
     'back_to_submissions' => 'Retour aux soumissions',
     'edit_form' => 'Modifier le formulaire',
+    'actions' => 'buttons.actions',
+    'export' => 'buttons.export',
+    'create_item\', [\'item\' => __(\'navigation' => [
+        'forms' => 'buttons.create_item\', [\'item\' => __(\'navigation.forms',
+        'pages' => 'buttons.create_item\', [\'item\' => __(\'navigation.pages',
+    ],
 ];

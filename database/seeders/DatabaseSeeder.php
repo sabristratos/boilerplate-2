@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Testimonial;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -12,6 +11,11 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
+     * 
+     * Required environment variables:
+     * - ADMIN_NAME: The name of the super admin user
+     * - ADMIN_EMAIL: The email address of the super admin user
+     * - ADMIN_PASSWORD: The password for the super admin user
      */
     public function run(): void
     {
@@ -22,16 +26,15 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Creating default users...');
         $this->createUsers();
 
-        // 3. Sync Settings to create groups
-        $this->command->info('Syncing application settings...');
-        Artisan::call('settings:sync');
-
-        // 4. Seed Content
+        // 3. Seed Content (pages first)
         $this->command->info('Seeding content...');
         $this->call([
             PageSeeder::class,
         ]);
-        Testimonial::factory(10)->create();
+
+        // 4. Sync Settings to create groups (after pages exist)
+        $this->command->info('Syncing application settings...');
+        Artisan::call('settings:sync');
 
         // 5. Sync Translations
         $this->command->info('Syncing translations from files...');
@@ -41,28 +44,27 @@ class DatabaseSeeder extends Seeder
 
     protected function createUsers(): void
     {
-        // Super Admin
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@admin.com',
+        // Get admin credentials from environment variables
+        $adminName = env('ADMIN_NAME');
+        $adminEmail = env('ADMIN_EMAIL');
+        $adminPassword = env('ADMIN_PASSWORD');
+
+        // Validate that all required environment variables are set
+        if (!$adminName || !$adminEmail || !$adminPassword) {
+            throw new \Exception(
+                'Missing required environment variables for admin user. ' .
+                'Please set ADMIN_NAME, ADMIN_EMAIL, and ADMIN_PASSWORD in your .env file.'
+            );
+        }
+
+        // Create Super Admin user
+        User::create([
+            'name' => $adminName,
+            'email' => $adminEmail,
+            'password' => bcrypt($adminPassword),
+            'email_verified_at' => now(),
         ])->assignRole('Super Admin');
 
-        // Test User (also a Super Admin)
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ])->assignRole('Super Admin');
-
-        // Editor
-        User::factory()->create([
-            'name' => 'Editor User',
-            'email' => 'editor@example.com',
-        ])->assignRole('editor');
-
-        // Regular User
-        User::factory()->create([
-            'name' => 'Regular User',
-            'email' => 'user@example.com',
-        ])->assignRole('user');
+        $this->command->info("Super Admin user created: {$adminEmail}");
     }
 }

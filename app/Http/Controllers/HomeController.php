@@ -11,6 +11,7 @@ class HomeController extends Controller
     {
         $homepageId = Settings::get('general.homepage');
         if ($homepageId && $page = Page::find($homepageId)) {
+            $this->authorize('view', $page);
             return app(PageController::class)->show($page);
         }
 

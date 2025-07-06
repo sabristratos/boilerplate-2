@@ -23,7 +23,6 @@
                                 @case('text')
                                     <flux:input
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -33,7 +32,6 @@
                                 @case('textarea')
                                     <flux:textarea
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -43,7 +41,6 @@
                                 @case('checkbox')
                                     <flux:checkbox
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -53,7 +50,6 @@
                                 @case('radio')
                                     <flux:radio.group
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     >
@@ -85,8 +81,9 @@
                                             label="{{ __($setting->label) }}"
                                             description="{{ __($setting->description ?? '') }}"
                                         >
+                                            <flux:select.option value="">{{ __('labels.select_homepage') }}</flux:select.option>
                                             @forelse($setting->options ?? [] as $value => $label)
-                                                <flux:select.option value="{{ $value }}">{{ __($label) }}</flux:select.option>
+                                                <flux:select.option value="{{ $value }}">{{ $label }}</flux:select.option>
                                             @empty
                                                 <flux:select.option value="" disabled>{{ __('messages.no_pages_found') }}</flux:select.option>
                                             @endforelse
@@ -94,7 +91,6 @@
                                     @else
                                         <flux:select
                                             wire:model.live="state.{{ $setting->key }}"
-                                            :value="$setting->value"
                                             label="{{ __($setting->label) }}"
                                             description="{{ __($setting->description ?? '') }}"
                                         >
@@ -125,7 +121,6 @@
                                     <flux:input
                                         type="color"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -136,7 +131,6 @@
                                     <flux:input
                                         type="date"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -147,7 +141,6 @@
                                     <flux:input
                                         type="datetime-local"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -158,7 +151,6 @@
                                     <flux:input
                                         type="email"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -169,7 +161,6 @@
                                     <flux:input
                                         type="number"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -180,7 +171,6 @@
                                     <flux:input
                                         type="password"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -192,7 +182,6 @@
                                         <flux:input
                                             type="range"
                                             wire:model.live="state.{{ $setting->key }}"
-                                            :value="$setting->value"
                                             min="{{ $setting->min ?? 0 }}"
                                             max="{{ $setting->max ?? 100 }}"
                                             step="{{ $setting->step ?? 1 }}"
@@ -205,7 +194,6 @@
                                     <flux:input
                                         type="tel"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -216,7 +204,6 @@
                                     <flux:input
                                         type="time"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -227,7 +214,6 @@
                                     <flux:input
                                         type="url"
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />
@@ -266,7 +252,6 @@
                                 @default
                                     <flux:input
                                         wire:model.live="state.{{ $setting->key }}"
-                                        :value="$setting->value"
                                         label="{{ __($setting->label) }}"
                                         description="{{ __($setting->description ?? '') }}"
                                     />

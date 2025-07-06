@@ -56,6 +56,7 @@ return [
     'close' => 'Close',
     'block_form_label' => 'Form',
     'block_form_placeholder' => 'Select a form',
+    'select_form_placeholder' => 'Choose a form to include',
     'toast_form_saved' => 'Form saved successfully.',
     'toast_field_added' => 'Field added successfully.',
     'toast_field_removed' => 'Field removed successfully.',

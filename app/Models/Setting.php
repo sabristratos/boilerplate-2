@@ -73,6 +73,7 @@ class Setting extends Model implements HasMedia
             'options' => 'array',
             'subfields' => 'array',
             'callout' => 'array',
+            'default' => 'array',
         ];
     }
 }

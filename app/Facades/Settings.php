@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static void set(string $key, mixed $value)
  * @method static void setTranslation(string $key, string $locale, mixed $value)
  * @method static array getAll()
+ * @method static array getOptions(string $key)
  * @method static void clearCache()
  *
  * @see \App\Services\SettingsManager

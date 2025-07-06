@@ -13,4 +13,5 @@ enum SettingGroupKey: string
     case CONTACT = 'contact';
     case CONTENT = 'content';
     case NAVIGATION = 'navigation';
+    case SEO = 'seo';
 }

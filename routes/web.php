@@ -14,10 +14,35 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
+// Sitemap routes
+Route::get('sitemap.xml', function () {
+    $path = public_path('sitemap.xml');
+    if (!file_exists($path)) {
+        \Artisan::call('sitemap:generate');
+    }
+    return response()->file($path, ['Content-Type' => 'application/xml']);
+})->name('sitemap.xml');
+
+Route::get('sitemap.txt', function () {
+    $path = public_path('sitemap.txt');
+    if (!file_exists($path)) {
+        \Artisan::call('sitemap:generate', ['--format' => 'txt']);
+    }
+    return response()->file($path, ['Content-Type' => 'text/plain']);
+})->name('sitemap.txt');
+
 // Authenticated routes
 Route::middleware(['auth', 'verified'])->group(function (): void {
     Route::get('dashboard', Dashboard::class)->name('dashboard');
 });
+
+// Admin redirect route
+Route::get('admin', function () {
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+})->name('admin');
 
 // Admin routes
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function (): void {
@@ -55,6 +80,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function ():
     Route::get('help', function () {
         return view('admin.help.index');
     })->name('help.index');
+
+    // Database Backup
+    Route::get('backup', \App\Livewire\Admin\DatabaseBackup::class)->name('backup.index');
+    Route::get('backup/download/{filename}', [\App\Http\Controllers\BackupController::class, 'download'])->name('backup.download');
+
+    // Import/Export
+    Route::get('import-export', \App\Livewire\Admin\ImportExport::class)->name('import-export.index');
 });
 
 require __DIR__.'/auth.php';
@@ -63,4 +95,6 @@ require __DIR__.'/auth.php';
 Route::get('/form/{form:id}', \App\Livewire\Frontend\FormDisplay::class)->name('forms.display');
 
 // Dynamic page routes (must be last)
-Route::get('/{page:slug}', [PageController::class, 'show'])->name('pages.show');
+Route::get('/{page:slug}', [PageController::class, 'show'])
+    ->where('page', '^(?!admin).*$')
+    ->name('pages.show');

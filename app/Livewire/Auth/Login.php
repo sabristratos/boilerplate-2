@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Services\SocialLoginService;
 use App\Traits\WithToastNotifications;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
@@ -50,6 +51,38 @@ class Login extends Component
 
         $this->showSuccessToast(__('auth.login_success', ['name' => Auth::user()->name]));
         $this->redirectIntended(default: route('dashboard', absolute: false), navigate: true);
+    }
+
+    /**
+     * Redirect to social login provider
+     */
+    public function socialLogin(string $provider): void
+    {
+        try {
+            $socialLoginService = app(SocialLoginService::class);
+            
+            if (!$socialLoginService->isProviderEnabled($provider)) {
+                $this->showErrorToast('Social login is not enabled for this provider.');
+                return;
+            }
+
+            $this->redirect(route('social.redirect', $provider));
+        } catch (\Exception $e) {
+            $this->showErrorToast('Unable to process social login. Please try again.');
+        }
+    }
+
+    /**
+     * Get enabled social login providers
+     */
+    public function getEnabledProvidersProperty(): array
+    {
+        try {
+            $socialLoginService = app(SocialLoginService::class);
+            return $socialLoginService->getEnabledProviders();
+        } catch (\Exception $e) {
+            return [];
+        }
     }
 
     /**

@@ -15,14 +15,14 @@
             }
         @endphp
         <flux:select 
-            wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.icon" 
+            wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.icon" 
             label="Leading Icon"
             placeholder="Choose an icon..."
         >
             {!! $leadingIconOptions !!}
         </flux:select>
         <flux:select 
-            wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.iconTrailing" 
+            wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.iconTrailing" 
             label="Trailing Icon"
             placeholder="Choose an icon..."
         >

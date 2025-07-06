@@ -1,25 +1,70 @@
-@props(['form'])
-<div class="p-4 border-b border-zinc-200 dark:border-zinc-700">
-    <a href="{{ route('admin.forms.index') }}" wire:navigate class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors mb-4">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-            <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
-        </svg>
-        <span class="text-sm font-medium">{{ __('navigation.forms') }}</span>
-    </a>
-    <div class="flex justify-between items-start mb-4">
+@props(['form', 'activeBreakpoint', 'isPreviewMode', 'hasUnsavedChanges'])
+
+<div class="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50">
+    <!-- Left Section: Navigation & Form Info -->
+    <div class="flex items-center gap-3">
+        <a href="{{ route('admin.forms.index') }}" wire:navigate class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
+            <flux:icon name="arrow-left" class="w-4 h-4" />
+            <span class="text-sm font-medium">{{ __('navigation.forms') }}</span>
+        </a>
+        <div class="w-px h-4 bg-zinc-300 dark:bg-zinc-600"></div>
         <div>
-            <flux:heading size="lg">{{ $form->getTranslation('name', 'en') }}</flux:heading>
-            <flux:text variant="subtle">ID: {{ $form->id }}</flux:text>
+            <h1 class="text-sm font-medium text-zinc-900 dark:text-white">
+                {{ $form->getTranslation('name', 'en') }}
+            </h1>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400">ID: {{ $form->id }}</p>
         </div>
+    </div>
+    
+    <!-- Center Section: Breakpoint Controls -->
+    <div class="flex items-center gap-2">
+        <flux:button icon="computer-desktop" wire:click="$set('activeBreakpoint', 'desktop')" :variant="$activeBreakpoint === 'desktop' ? 'primary' : 'ghost'" size="sm" />
+        <flux:button icon="device-tablet" wire:click="$set('activeBreakpoint', 'tablet')" :variant="$activeBreakpoint === 'tablet' ? 'primary' : 'ghost'" size="sm" />
+        <flux:button icon="device-phone-mobile" wire:click="$set('activeBreakpoint', 'mobile')" :variant="$activeBreakpoint === 'mobile' ? 'primary' : 'ghost'" size="sm" />
+    </div>
+    
+    <!-- Right Section: Controls -->
+    <div class="flex items-center gap-4">
+        <!-- Submissions Button -->
         <flux:button 
             href="{{ route('admin.forms.submissions', $form) }}" 
             wire:navigate
             size="sm"
             variant="ghost"
             icon="document-text"
-            tooltip="View form submissions"
+            :tooltip="__('messages.forms.form_builder_interface.view_submissions_tooltip')"
         >
-            Submissions ({{ $form->submissions()->count() }})
+            {{ __('messages.forms.form_builder_interface.submissions') }} ({{ $form->submissions()->count() }})
+        </flux:button>
+
+        <!-- Unsaved Changes Badge -->
+        @if($hasUnsavedChanges)
+            <flux:badge color="amber" icon="exclamation-triangle" class="text-xs">
+                {{ __('messages.forms.form_builder_interface.unsaved_changes') }}
+            </flux:badge>
+        @endif
+
+        <!-- Save Button -->
+        <flux:button 
+            wire:click="save" 
+            icon="check"
+            variant="primary"
+            size="sm"
+            :tooltip="__('messages.forms.form_builder_interface.save_tooltip')"
+        >
+            {{ __('messages.forms.form_builder_interface.save') }}
+        </flux:button>
+
+        <!-- Preview Button -->
+        <flux:button 
+            variant="ghost" 
+            icon="eye"
+            wire:click="togglePreview"
+            :variant="$isPreviewMode ? 'primary' : 'ghost'"
+            size="sm"
+            :tooltip="$isPreviewMode ? __('messages.forms.form_builder_interface.exit_preview_tooltip') : __('messages.forms.form_builder_interface.preview_tooltip')"
+        >
+            {{ $isPreviewMode ? __('messages.forms.form_builder_interface.exit_preview') : __('messages.forms.form_builder_interface.preview') }}
         </flux:button>
     </div>
 </div> 

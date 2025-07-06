@@ -109,6 +109,36 @@ class SyncSettings extends Command
 
         Settings::clearCache();
         $this->info('Settings cache cleared.');
+
+        // Set homepage to the first page if it exists and homepage setting is not set
+        $this->setHomepageSetting();
+
         $this->info('Settings synchronization complete.');
+    }
+
+    /**
+     * Set the homepage setting to the first page if it exists and homepage setting is not set
+     */
+    protected function setHomepageSetting(): void
+    {
+        try {
+            $homepageSetting = Settings::get('general.homepage');
+            
+            // If homepage setting is not set, try to set it to the first page
+            if (empty($homepageSetting)) {
+                $firstPage = \App\Models\Page::orderBy('id')->first();
+                
+                if ($firstPage) {
+                    Settings::set('general.homepage', $firstPage->id);
+                    $this->info("Homepage setting set to page: {$firstPage->title}");
+                } else {
+                    $this->warn('No pages found to set as homepage.');
+                }
+            } else {
+                $this->info('Homepage setting already configured.');
+            }
+        } catch (\Exception $e) {
+            $this->warn("Could not set homepage setting: {$e->getMessage()}");
+        }
     }
 }

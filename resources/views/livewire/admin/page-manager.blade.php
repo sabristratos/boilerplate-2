@@ -7,248 +7,96 @@
         editingBlockId = $event.detail.id;
         liveState = $event.detail.state;
     "
-    @block-was-updated.window="
+    @block-edit-cancelled.window="
         editingBlockId = null;
         liveState = null;
     "
-    class="flex h-screen flex-col"
+    class="flex flex-col h-screen bg-zinc-100 dark:bg-zinc-900 font-sans"
 >
+    <!-- Unified Header -->
+    <x-page-builder.header 
+        :page="$page" 
+        :availableLocales="$availableLocales" 
+        :activeLocale="$activeLocale" 
+        :switchLocale="$switchLocale" 
+    />
 
-    <div class="flex-1 flex overflow-hidden">
-        <main class="flex-1 overflow-y-auto p-4">
-        <header class="bg-white dark:bg-zinc-800/50 backdrop-blur-md mb-6 z-20 shrink-0">
-        <div class="mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <a href="{{ route('admin.pages.index') }}" wire:navigate class="flex items-center gap-2 text-zinc-600 dark:text-zinc-300 hover:text-zinc-900 dark:hover:text-white transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-5 h-5">
-                            <path fill-rule="evenodd" d="M17 10a.75.75 0 0 1-.75.75H5.612l4.158 3.96a.75.75 0 1 1-1.04 1.08l-5.5-5.25a.75.75 0 0 1 0-1.08l5.5-5.25a.75.75 0 1 1 1.04 1.08L5.612 9.25H16.25A.75.75 0 0 1 17 10Z" clip-rule="evenodd" />
-                        </svg>
-                        <span class="text-sm font-medium">{{ __('navigation.pages') }}</span>
-                    </a>
-                </div>
-
-                @if(isset($page))
-                    <div>
-                        <h1 class="text-lg font-semibold text-zinc-900 dark:text-white truncate" title="{{ $page->getTranslation('title', app()->getLocale()) }}">
-                            {{ $page->getTranslation('title', app()->getLocale()) }}
-                        </h1>
-                    </div>
-                @endif
-
-                <div class="flex items-center gap-2">
-                    @if(count($this->availableLocales) > 1)
-                            <flux:radio.group wire:model.live="switchLocale" variant="segmented" size="sm">
-                                @foreach($this->availableLocales as $localeCode => $localeName)
-                                    <flux:radio
-                                        value="{{ $localeCode }}"
-                                        label="{{ $localeName }}"
-                                    >
-                                    </flux:radio>
-                                @endforeach
-                            </flux:radio.group>
-                    @endif
-                </div>
-            </div>
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Panel: Toolbox & Settings -->
+        <div class="w-96 bg-white dark:bg-zinc-800/50 border-e border-zinc-200 dark:border-zinc-700/50 flex flex-col overflow-visible">
+            <x-page-builder.toolbox 
+                :tab="$tab" 
+                :activeLocale="$activeLocale" 
+                :blockManager="$this->blockManager"
+            />
         </div>
-    </header>
-            <div class="space-y-4"
-                x-data="{
-                    reorder(event) {
-                        const container = event.target;
-                        const items = container.querySelectorAll('[x-sort\\:item]');
-                        const ids = Array.from(items).map(item => item.getAttribute('x-sort:item'));
-                        this.$wire.call('updateBlockOrder', ids);
-                    }
-                }"
-                x-sort
-                x-on:sort.stop="reorder($event)">
-                @forelse($this->blocks as $block)
-                    <div x-sort:item="{{ $block->id }}" wire:key="block-{{ $block->id }}" class="relative group">
-                        <div class="border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
-                            <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                <flux:button wire:click="editBlock({{ $block->id }})" size="xs" variant="filled" icon="pencil-square" :tooltip="__('Edit')"></flux:button>
-                                <flux:button wire:click="confirmDeleteBlock({{ $block->id }})" size="xs" variant="danger" icon="trash" :tooltip="__('Delete')"></flux:button>
-                            </div>
-                            <div class="p-2 bg-zinc-50 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700 flex items-center">
-                                <div class="flex items-center gap-2">
-                                    <flux:tooltip :content="__('messages.page_manager.drag_to_reorder')">
-                                        <div class="cursor-grab" x-sort:handle>
-                                            <flux:icon name="bars-3" class="h-4 w-4 text-zinc-400"></flux:icon>
-                                        </div>
-                                    </flux:tooltip>
-                                    <flux:badge size="sm">{{ Str::title(str_replace('-', ' ', $block->type)) }}</flux:badge>
-                                    @if($block->status)
-                                        <flux:badge size="sm" color="{{ $block->status->color() }}" class="ml-2">
-                                            {{ $block->status->label() }}
-                                        </flux:badge>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="relative" wire:click.self="editBlock({{ $block->id }})">
-                                @php
-                                    $blockClass = $this->blockManager->find($block->type);
-                                    $data = $block->data;
-                                    $alpine = false;
-                                    if ($editingBlockId === $block->id && $editingBlockState) {
-                                        $data = array_merge($data, $editingBlockState);
-                                        $alpine = true;
-                                    }
-                                @endphp
 
-                                @if($blockClass)
-                                    <div class="cursor-pointer hover:opacity-90 transition-opacity">
-                                        @include($blockClass->getFrontendView(), ['block' => $block, 'data' => $data, 'alpine' => $alpine])
-                                    </div>
-                                @endif
-                            </div>
-                        </div>
-                    </div>
-                @empty
-                    <div class="flex flex-col items-center justify-center p-12 border-2 border-dashed border-zinc-200 dark:border-zinc-700 rounded-lg">
-                        <flux:icon name="layout-grid" class="h-10 w-10 text-zinc-400"></flux:icon>
-                        <flux:text class="mt-4">{{ __('This page has no content yet.') }}</flux:text>
-                        <flux:text variant="subtle">{{ __('Add a block from the library to get started.') }}</flux:text>
-                    </div>
-                @endforelse
-            </div>
-        </main>
-        <aside class="w-[450px] bg-white dark:bg-zinc-800 border-l border-zinc-200 dark:border-zinc-700 overflow-y-auto shrink-0">
-            <div class="p-6 space-y-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-x-4">
-                        <flux:button
-                            href="{{ route('pages.show', $page) }}"
-                            target="_blank"
-                            icon="eye"
-                            variant="subtle"
-                        >
-                            {{ __('View Page') }}
-                        </flux:button>
-                    </div>
-                    <flux:button
-                        wire:click="savePageDetails"
-                        variant="primary"
-                    >
-                        {{ __('messages.page_manager.save_page') }}
-                    </flux:button>
-                </div>
-                <flux:tab.group>
-                    <flux:tabs wire:model.live="activeSidebarTab" class="grid grid-cols-3">
-                        <flux:tab name="settings" class="flex justify-center" icon="cog-6-tooth">
-                            <flux:tooltip content="Page title, slug, and general settings">
-                                Settings
-                            </flux:tooltip>
-                        </flux:tab>
-                        <flux:tab name="add" class="flex justify-center"  icon="plus">
-                            <flux:tooltip content="Add new content blocks to your page">
-                                Add
-                            </flux:tooltip>
-                        </flux:tab>
-                        <flux:tab name="edit" class="flex justify-center"  icon="pencil-square" :disabled="!$editingBlockId">
-                            <flux:tooltip content="Edit the selected content block">
-                                Edit
-                            </flux:tooltip>
-                        </flux:tab>
-                    </flux:tabs>
+        <!-- Center Panel: Canvas -->
+        <div class="flex-1 flex flex-col">
+            <x-page-builder.page-canvas 
+                :blocks="$this->blocks" 
+                :editingBlockId="$editingBlockId" 
+                :editingBlockState="$editingBlockState" 
+                :blockManager="$this->blockManager"
+            />
+        </div>
 
-                    <flux:tab.panel name="settings">
-                        <div class="flex flex-col gap-y-6 p-4">
-                            <div class="flex items-center justify-between">
-                                <flux:field label="{{ __('Status') }}" variant="inline">
+        <!-- Right Panel: Properties -->
+        <div class="w-[400px] bg-white dark:bg-zinc-800 border-l border-zinc-200 dark:border-zinc-700 overflow-y-auto shrink-0">
+            <div class="p-6">
+                @if($editingBlockId)
+                    <div class="space-y-4">
+                        <!-- Block Header -->
+                        <div class="flex justify-between items-center">
+                            @php
+                                $block = \App\Models\ContentBlock::find($editingBlockId);
+                                $blockClass = $block ? $this->blockManager->find($block->type) : null;
+                            @endphp
+                            <flux:heading size="sm">
+                                {{ $blockClass ? 'Editing: ' . $blockClass->getName() : 'Editing Block' }}
+                            </flux:heading>
+                            <div class="flex items-center gap-4">
+                                <flux:field :label="__('messages.page_manager.visibility')" variant="inline">
                                     <flux:switch
-                                        wire:model.live="isPublished"
+                                        wire:model.live="editingBlockVisible"
                                     />
                                 </flux:field>
-
                                 <flux:badge
-                                    :color="$isPublished ? 'lime' : 'zinc'"
+                                    :color="$editingBlockVisible ? 'lime' : 'zinc'"
                                     variant="solid"
                                 >
-                                   {{ $isPublished ? __('Published') : __('Draft') }}
+                                   {{ $editingBlockVisible ? __('messages.page_manager.visible') : __('messages.page_manager.hidden') }}
                                 </flux:badge>
                             </div>
-
-                            <flux:input
-                                wire:model.live="title.{{ $this->activeLocale }}"
-                                label="{{ __('messages.page_manager.title_label') }}"
-                                description="{{ __('messages.page_manager.title_help') }}"
-                            />
-
-                            <flux:field>
-                                <x-slot name="label">
-                                    <div class="flex items-center gap-x-2">
-                                        <flux:label>{{ __('messages.page_manager.slug_label') }}</flux:label>
-                                        <flux:tooltip toggleable>
-                                            <flux:button icon="information-circle" size="sm" variant="ghost" />
-                                            <flux:tooltip.content class="max-w-[20rem]">
-                                                {{ __('messages.page_manager.slug_tooltip') }}
-                                            </flux:tooltip.content>
-                                        </flux:tooltip>
-                                    </div>
-                                </x-slot>
-                                <flux:field>
-                                <flux:input.group>
-                                    <flux:input wire:model.live="slug" />
-                                        <flux:button tooltip="{{__('messages.page_manager.generate_slug_tooltip')}}"
-                                                x-on:click.prevent="$wire.generateSlug()">
-                                                {{ __('messages.page_manager.generate_slug_button') }}
-                                                </flux:button>
-                                </flux:input.group>
-                                </flux:field>
-                            </flux:field>
-
-                            <hr class="dark:border-zinc-700" />
-
-                            <div>
-                                <flux:heading size="lg">SEO</flux:heading>
-                                <div class="mt-4 space-y-6">
-                                    <flux:input
-                                        wire:model.live="meta_title.{{ $this->activeLocale }}"
-                                        label="{{ __('Meta Title') }}"
-                                    />
-                                    <flux:textarea
-                                        wire:model.live="meta_description.{{ $this->activeLocale }}"
-                                        label="{{ __('Meta Description') }}"
-                                    />
-                                    <div class="flex items-center gap-x-2">
-                                        <flux:switch
-                                            wire:model.live="no_index"
-                                            label="{{ __('messages.page_manager.no_index_label') }}"
-                                        />
-                                        <flux:tooltip toggleable>
-                                            <flux:button icon="information-circle" size="sm" variant="ghost" />
-                                            <flux:tooltip.content class="max-w-[20rem]">
-                                                {{ __('messages.page_manager.visibility_tooltip') }}
-                                            </flux:tooltip.content>
-                                        </flux:tooltip>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-                    </flux:tab.panel>
 
-                    <flux:tab.panel name="add">
-                        <div class="space-y-2">
-                            <h3 class="text-sm font-medium text-zinc-900 dark:text-white">{{ __('messages.page_manager.block_library') }}</h3>
-                            <div class="space-y-1 p-1">
-                                @foreach($this->blockManager->getAvailableBlocks() as $block)
-                                    <button wire:click="createBlock('{{ $block->getType() }}')" type="button" class="w-full text-left p-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg hover:bg-zinc-50 dark:hover:bg-zinc-700/50 text-sm">
-                                        <div class="flex items-center">
-                                            <flux:icon name="{{ $block->getIcon() }}" class="h-4 w-4 mr-2"></flux:icon>
-                                            {{ $block->getName() }}
-                                        </div>
-                                    </button>
-                                @endforeach
+                        <!-- Block Form -->
+                        @if($blockClass)
+                            <div class="overflow-y-auto max-h-[calc(100vh-300px)]">
+                                @include($blockClass->getAdminView(), [
+                                    'alpine' => true, 
+                                    'state' => $editingBlockState,
+                                    'editingBlock' => $block
+                                ])
                             </div>
-                        </div>
-                    </flux:tab.panel>
+                        @endif
 
-                    <flux:tab.panel name="edit">
-                        <livewire:admin.block-editor :state="$editingBlockState" :active-locale="$activeLocale" />
-                    </flux:tab.panel>
-                </flux:tab.group>
+                        <!-- Block Actions -->
+                        <div class="flex justify-end gap-2 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                            <flux:button type="button" wire:click="cancelBlockEdit" variant="subtle" size="sm">
+                                {{ __('buttons.cancel') }}
+                            </flux:button>
+                        </div>
+                    </div>
+                @else
+                    <div class="flex flex-col items-center justify-center py-12 text-center">
+                        <flux:icon name="pencil-square" class="w-12 h-12 text-zinc-400 mb-4" />
+                        <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">{{ __('messages.page_manager.no_block_selected') }}</flux:heading>
+                        <flux:text variant="subtle" class="text-sm">{{ __('messages.page_manager.select_block_to_edit') }}</flux:text>
+                    </div>
+                @endif
             </div>
-        </aside>
+        </div>
     </div>
 </div>

@@ -50,11 +50,15 @@ class ContentBlock extends Model implements HasMedia, Sortable
         'page_id',
         'data',
         'settings',
-        'status',
+        'draft_data',
+        'draft_settings',
+        'visible',
+        'draft_visible',
         'order',
+        'last_draft_at',
     ];
 
-    public array $translatable = ['data'];
+    public array $translatable = ['data', 'draft_data'];
 
     public array $sortable = [
         'order_column_name' => 'order',
@@ -66,6 +70,112 @@ class ContentBlock extends Model implements HasMedia, Sortable
         return Attribute::make(
             get: fn () => app(BlockManager::class)->find($this->type),
         );
+    }
+
+    public function getTranslatedData(string $locale = null): array
+    {
+        // Ensure we have a valid locale
+        if ($locale === null) {
+            $locale = app()->getLocale() ?: config('app.fallback_locale', 'en');
+        }
+        
+        $data = $this->getTranslation('data', $locale);
+        
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        return is_array($data) ? $data : [];
+    }
+
+    public function getDraftTranslatedData(string $locale = null): array
+    {
+        // Ensure we have a valid locale
+        if ($locale === null) {
+            $locale = app()->getLocale() ?: config('app.fallback_locale', 'en');
+        }
+        
+        $data = $this->getTranslation('draft_data', $locale);
+        
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        return is_array($data) ? $data : [];
+    }
+
+    public function getSettingsArray(): array
+    {
+        $settings = $this->settings;
+        
+        if (is_string($settings)) {
+            $decoded = json_decode($settings, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        return is_array($settings) ? $settings : [];
+    }
+
+    public function getDraftSettingsArray(): array
+    {
+        $settings = $this->draft_settings;
+        
+        if (is_string($settings)) {
+            $decoded = json_decode($settings, true);
+            return is_array($decoded) ? $decoded : [];
+        }
+        
+        return is_array($settings) ? $settings : [];
+    }
+
+    public function hasDraftChanges(): bool
+    {
+        $visibilityChanged = $this->draft_visible !== null && $this->draft_visible !== $this->visible;
+        return !empty($this->draft_data) || !empty($this->draft_settings) || $visibilityChanged;
+    }
+
+    public function isVisible(): bool
+    {
+        $value = $this->draft_visible !== null
+            ? $this->getAttribute('draft_visible')
+            : $this->getAttribute('visible');
+        return (bool) $value;
+    }
+
+    public function publishDraft(): void
+    {
+        $hasChanges = $this->hasDraftChanges();
+        
+        // Only handle visibility changes if draft_visible is explicitly set
+        if ($this->draft_visible !== null) {
+            $this->visible = (bool) $this->draft_visible;
+            $hasChanges = true;
+        }
+        
+        if ($hasChanges) {
+            // Copy draft data to published data
+            $this->data = $this->draft_data;
+            $this->settings = $this->draft_settings;
+            
+            // Clear draft data
+            $this->draft_data = null;
+            $this->draft_settings = null;
+            $this->draft_visible = null;
+            $this->last_draft_at = null;
+            
+            $this->save();
+        }
+    }
+
+    public function discardDraft(): void
+    {
+        $this->draft_data = null;
+        $this->draft_settings = null;
+        $this->draft_visible = null;
+        $this->last_draft_at = null;
+        $this->save();
     }
 
     public function buildSortQuery(): \Illuminate\Database\Eloquent\Builder
@@ -81,9 +191,13 @@ class ContentBlock extends Model implements HasMedia, Sortable
     protected function casts(): array
     {
         return [
-            'status' => \App\Enums\ContentBlockStatus::class,
             'data' => 'array',
             'settings' => 'array',
+            'draft_data' => 'array',
+            'draft_settings' => 'array',
+            'visible' => 'boolean',
+            'draft_visible' => 'boolean',
+            'last_draft_at' => 'datetime',
         ];
     }
 }

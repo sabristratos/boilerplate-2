@@ -1,5 +1,5 @@
 <div
-    class="flex h-screen bg-zinc-100 dark:bg-zinc-900 font-sans"
+    class="flex flex-col h-screen bg-zinc-100 dark:bg-zinc-900 font-sans"
     x-data="{
         handleDrop(event) {
             const type = event.dataTransfer.getData('type');
@@ -9,6 +9,7 @@
         }
     }"
 >
+<<<<<<< HEAD
     <!-- Left Panel: Toolbox & Settings -->
     <div class="w-80 bg-white dark:bg-zinc-800/50 border-e border-zinc-200 dark:border-zinc-700/50 flex flex-col">
         <x-form-builder.header :form="$form" />
@@ -40,10 +41,51 @@
         :selectedElement="$this->selectedElement" 
         :selectedElementIndex="$this->selectedElementIndex" 
         :selectedElementId="$selectedElementId"
+=======
+    <!-- Unified Header -->
+    <x-form-builder.header 
+        :form="$form" 
+>>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
         :activeBreakpoint="$activeBreakpoint" 
-        :availableValidationRules="$this->availableValidationRules" 
-        :availableIcons="$this->availableIcons" 
+        :isPreviewMode="$isPreviewMode" 
+        :hasUnsavedChanges="$this->hasUnsavedChanges"
     />
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Left Panel: Toolbox & Settings -->
+        <div class="w-80 bg-white dark:bg-zinc-800/50 border-e border-zinc-200 dark:border-zinc-700/50 flex flex-col">
+            <x-form-builder.toolbox 
+                :elementTypes="$elementTypes" 
+                :availablePrebuiltForms="$this->availablePrebuiltForms" 
+                :settings="$settings" 
+                :tab="$tab" 
+            />
+        </div>
+
+        <!-- Center Panel: Canvas -->
+        <div class="flex-1 flex flex-col">
+            <x-form-builder.form-canvas 
+                :elements="$elements" 
+                :activeBreakpoint="$activeBreakpoint" 
+                :isPreviewMode="$isPreviewMode" 
+                :form="$form" 
+                :renderedElements="$renderedElements" 
+                :previewElements="$previewElements" 
+                :selectedElementId="$selectedElementId"
+            />
+        </div>
+
+        <!-- Right Panel: Properties -->
+        <x-form-builder.properties-panel 
+            :selectedElement="$this->selectedElement" 
+            :selectedElementIndex="$this->selectedElementIndex" 
+            :selectedElementId="$selectedElementId"
+            :activeBreakpoint="$activeBreakpoint" 
+            :availableValidationRules="$this->availableValidationRules" 
+            :availableIcons="$this->availableIcons" 
+        />
+    </div>
     <style>
 /* Sortable styles */
 .sortable-ghost {

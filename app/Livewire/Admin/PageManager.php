@@ -4,9 +4,13 @@ namespace App\Livewire\Admin;
 
 use App\Actions\Content\CreateContentBlockAction;
 use App\Actions\Content\DeleteContentBlockAction;
+use App\Actions\Content\SaveDraftContentBlockAction;
+use App\Actions\Content\SaveDraftPageDetailsAction;
 use App\Actions\Content\UpdateBlockOrderAction;
 use App\Actions\Content\UpdatePageDetailsAction;
+use App\Enums\ContentBlockStatus;
 use App\Enums\PublishStatus;
+use App\Models\ContentBlock;
 use App\Models\Page;
 use App\Services\BlockManager;
 use App\Traits\WithConfirmationModal;
@@ -22,74 +26,33 @@ class PageManager extends Component
 
     public Page $page;
 
+    // Page-level properties (draft versions)
     public array $title = [];
-
     public ?string $slug = '';
-
-    public PublishStatus $status;
-
     public array $meta_title = [];
-
     public array $meta_description = [];
-
     public bool $no_index = false;
 
+    // Locale management
     public string $activeLocale;
-
     public array $availableLocales = [];
-
-    public array $editingBlockState = [];
-
-    public ?int $editingBlockId = null;
-
-    public string $activeSidebarTab = 'settings';
-
     public ?string $switchLocale = null;
 
-    public bool $isPublished;
+    // Block editing state
+    public ?int $editingBlockId = null;
+    public array $editingBlockState = [];
+    public bool $editingBlockVisible = true;
+    public $editingBlockImageUpload;
+
+    // UI state
+    public string $tab = 'settings';
+
+    // Block library filtering
+    public string $blockSearch = '';
+    public string $selectedCategory = '';
+    public string $selectedComplexity = '';
 
     protected BlockManager $blockManager;
-
-    protected $listeners = [
-        'blockEditCancelled' => 'onBlockEditCancelled',
-        'block-was-updated' => 'onBlockEditFinished',
-        'block-state-updated' => 'onBlockStateUpdate',
-        'changePageStatus' => 'onStatusConfirmed',
-        'block-status-updated' => '$refresh',
-    ];
-
-    #[On('deleteBlockConfirmed')]
-    public function deleteBlock(int $blockId): void
-    {
-        if ($blockId === 0) {
-            return;
-        }
-
-        app(DeleteContentBlockAction::class)->execute($blockId);
-        $this->showSuccessToast(__('messages.page_manager.block_deleted_text'));
-        $this->dispatch('$refresh');
-    }
-
-    public function onBlockEditFinished(): void
-    {
-        $this->editingBlockId = null;
-        $this->editingBlockState = [];
-        $this->activeSidebarTab = 'settings';
-        $this->dispatch('$refresh');
-    }
-
-    public function onBlockEditCancelled(): void
-    {
-        $this->editingBlockId = null;
-        $this->editingBlockState = [];
-        $this->activeSidebarTab = 'settings';
-    }
-
-    public function onBlockStateUpdate(int $id, array $state): void
-    {
-        $this->editingBlockId = $id;
-        $this->editingBlockState = $state;
-    }
 
     public function boot(BlockManager $blockManager): void
     {
@@ -98,32 +61,46 @@ class PageManager extends Component
 
     public function mount(Page $page): void
     {
+        $this->authorize('update', $page);
+        
         $this->page = $page;
         $this->initializeLocale();
         $this->loadPageTranslations();
-        $this->status = $this->page->status;
-        $this->isPublished = $this->page->status === PublishStatus::PUBLISHED;
-        $this->meta_title = $this->page->getTranslations('meta_title');
-        $this->meta_description = $this->page->getTranslations('meta_description');
-        $this->no_index = $this->page->no_index;
     }
 
     protected function initializeLocale(): void
     {
         $this->availableLocales = $this->getAvailableLocales();
-        $this->activeLocale = request()->query('locale', config('app.fallback_locale'));
-
-        if (! array_key_exists($this->activeLocale, $this->availableLocales)) {
-            $this->activeLocale = config('app.fallback_locale');
+        $requestedLocale = request()->query('locale', config('app.fallback_locale'));
+        
+        // Validate locale format (2-3 character language code)
+        if (!preg_match('/^[a-z]{2,3}$/', $requestedLocale)) {
+            $requestedLocale = config('app.fallback_locale');
         }
+        
+        $this->activeLocale = array_key_exists($requestedLocale, $this->availableLocales) 
+            ? $requestedLocale 
+            : config('app.fallback_locale');
+            
         $this->switchLocale = $this->activeLocale;
         app()->setLocale($this->activeLocale);
     }
 
     protected function loadPageTranslations(): void
     {
-        $this->title = $this->page->getTranslations('title');
-        $this->slug = $this->page->slug;
+        // Load draft data if available, otherwise fall back to published data
+        $draftTitle = $this->page->getTranslations('draft_title');
+        $this->title = !empty($draftTitle) ? $draftTitle : $this->page->getTranslations('title');
+        
+        $this->slug = $this->page->draft_slug ?? $this->page->slug;
+        
+        $draftMetaTitle = $this->page->getTranslations('draft_meta_title');
+        $this->meta_title = !empty($draftMetaTitle) ? $draftMetaTitle : $this->page->getTranslations('meta_title');
+        
+        $draftMetaDescription = $this->page->getTranslations('draft_meta_description');
+        $this->meta_description = !empty($draftMetaDescription) ? $draftMetaDescription : $this->page->getTranslations('meta_description');
+        
+        $this->no_index = $this->page->draft_no_index !== null ? $this->page->draft_no_index : $this->page->no_index;
     }
 
     protected function getAvailableLocales(): array
@@ -145,10 +122,112 @@ class PageManager extends Component
         return $this->page->contentBlocks()->ordered()->get();
     }
 
+    public function getFilteredBlocksProperty()
+    {
+        $blocks = $this->blockManager->getAvailableBlocks();
+
+        // Filter by search
+        if (!empty($this->blockSearch)) {
+            $blocks = $blocks->filter(function ($block) {
+                return str_contains(strtolower($block->getName()), strtolower($this->blockSearch)) ||
+                       str_contains(strtolower($block->getDescription()), strtolower($this->blockSearch)) ||
+                       collect($block->getTags())->contains(function ($tag) {
+                           return str_contains(strtolower($tag), strtolower($this->blockSearch));
+                       });
+            });
+        }
+
+        // Filter by category
+        if (!empty($this->selectedCategory)) {
+            $blocks = $blocks->filter(function ($block) {
+                return $block->getCategory() === $this->selectedCategory;
+            });
+        }
+
+        // Filter by complexity
+        if (!empty($this->selectedComplexity)) {
+            $blocks = $blocks->filter(function ($block) {
+                return $block->getComplexity() === $this->selectedComplexity;
+            });
+        }
+
+        return $blocks;
+    }
+
+    public function getAvailableCategoriesProperty()
+    {
+        return $this->blockManager->getAvailableBlocks()
+            ->pluck('category')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    public function getAvailableComplexitiesProperty()
+    {
+        return $this->blockManager->getAvailableBlocks()
+            ->pluck('complexity')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
     public function editBlock(int $blockId): void
     {
-        $this->activeSidebarTab = 'edit';
-        $this->dispatch('editBlock', $blockId);
+        $block = ContentBlock::find($blockId);
+        
+        if (!$block) {
+            $this->showWarningToast(
+                __('messages.block_editor.block_not_found_text'),
+                __('messages.block_editor.block_not_found_title')
+            );
+            return;
+        }
+
+        $this->editingBlockId = $blockId;
+        $this->editingBlockVisible = $block->isVisible();
+        $this->editingBlockImageUpload = null;
+
+        // Load block data - prefer draft data if available, otherwise use published data
+        $blockClass = $this->blockManager->find($block->type);
+        $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
+        
+        // Use draft data if available, otherwise fall back to published data
+        $blockData = $block->hasDraftChanges() 
+            ? $block->getDraftTranslatedData($this->activeLocale)
+            : $block->getTranslatedData($this->activeLocale);
+            
+        $blockSettings = $block->hasDraftChanges()
+            ? $block->getDraftSettingsArray()
+            : $block->getSettingsArray();
+        
+        // Merge in the correct order: defaults -> data -> settings (settings override everything)
+        $this->editingBlockState = array_merge($defaultData, $blockData, $blockSettings);
+    }
+
+    public function cancelBlockEdit(): void
+    {
+        $this->editingBlockId = null;
+        $this->editingBlockState = [];
+        $this->editingBlockVisible = true;
+        $this->editingBlockImageUpload = null;
+    }
+
+    public function updatedEditingBlockState(): void
+    {
+        // Auto-save draft changes as the user types
+        if ($this->editingBlockId) {
+            $this->saveCurrentBlockDraft();
+        }
+    }
+
+    public function updatedEditingBlockVisible(bool $value): void
+    {
+        // Auto-save visibility changes
+        if ($this->editingBlockId) {
+            $this->saveCurrentBlockDraft();
+            $this->dispatch('$refresh');
+        }
     }
 
     public function createBlock(string $type, CreateContentBlockAction $createContentBlockAction): void
@@ -159,7 +238,7 @@ class PageManager extends Component
                 __('messages.page_manager.block_created_text', ['blockName' => $block->blockClass->getName()]),
                 __('messages.page_manager.block_created_title')
             );
-            $this->editBlock($block->id);
+            $this->dispatch('$refresh');
         } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.invalid_block_type_text'),
@@ -190,6 +269,18 @@ class PageManager extends Component
         $this->confirmDelete($blockId, 'deleteBlockConfirmed');
     }
 
+    #[On('deleteBlockConfirmed')]
+    public function deleteBlock(int $blockId): void
+    {
+        if ($blockId === 0) {
+            return;
+        }
+
+        app(DeleteContentBlockAction::class)->execute($blockId);
+        $this->showSuccessToast(__('messages.page_manager.block_deleted_text'));
+        $this->dispatch('$refresh');
+    }
+
     public function generateSlug(): void
     {
         $fallbackLocale = config('app.fallback_locale');
@@ -197,45 +288,59 @@ class PageManager extends Component
         $this->slug = Str::slug($title);
     }
 
-    public function savePageDetails(UpdatePageDetailsAction $updatePageDetailsAction): void
+    public function savePage(): void
     {
-        $updatePageDetailsAction->execute($this->page, [
+        // Save page draft details first
+        app(SaveDraftPageDetailsAction::class)->execute($this->page, [
             'title' => $this->title,
             'slug' => $this->slug,
-            'status' => $this->status,
             'meta_title' => $this->meta_title,
             'meta_description' => $this->meta_description,
             'no_index' => $this->no_index,
         ]);
 
-        $this->showSuccessToast(__('messages.page_manager.page_details_saved_text'));
+        // Save the currently editing block if any
+        if ($this->editingBlockId) {
+            $this->saveCurrentBlockDraft();
+        }
+
+        // Publish all drafts to make them live
+        $this->page->publishDraft();
+
+        $this->showSuccessToast(__('messages.page_manager.page_published_text'));
+        $this->dispatch('$refresh');
     }
 
-    public function getIsPublishedProperty(): bool
+    protected function saveCurrentBlockDraft(): void
     {
-        return $this->status === PublishStatus::PUBLISHED;
-    }
+        if (!$this->editingBlockId) {
+            return;
+        }
 
-    public function updatedIsPublished(bool $value): void
-    {
-        $this->isPublished = ! $value;
+        $block = ContentBlock::find($this->editingBlockId);
+        if (!$block) {
+            return;
+        }
 
-        $title = $value ? __('messages.page_manager.publish_confirmation_title') : __('messages.page_manager.unpublish_confirmation_title');
-        $message = $value ? __('messages.page_manager.publish_confirmation_text') : __('messages.page_manager.unpublish_confirmation_text');
+        // Validate block data
+        $blockClass = $this->blockManager->find($block->type);
+        if ($blockClass instanceof \App\Blocks\Block) {
+            $rules = collect($blockClass->validationRules())
+                ->mapWithKeys(fn ($rule, $key) => ['editingBlockState.'.$key => $rule])
+                ->all();
 
-        $this->confirmAction(
-            title: $title,
-            message: $message,
-            action: 'changePageStatus',
-            data: ['newStatus' => $value]
+            $this->validate($rules);
+        }
+
+        // Save to draft
+        app(SaveDraftContentBlockAction::class)->execute(
+            $block,
+            $this->editingBlockState,
+            $this->activeLocale,
+            $this->editingBlockVisible,
+            $this->editingBlockImageUpload,
+            $this->blockManager
         );
-    }
-
-    public function onStatusConfirmed(array $data): void
-    {
-        $this->isPublished = $data['newStatus'];
-        $this->status = $this->isPublished ? PublishStatus::PUBLISHED : PublishStatus::DRAFT;
-        $this->savePageDetails(app(\App\Actions\Content\UpdatePageDetailsAction::class));
     }
 
     public function render()

@@ -42,4 +42,12 @@ class Testimonial extends Model implements HasMedia, Sortable
             'order' => 'integer',
         ];
     }
+
+    /**
+     * Register media collections for the model.
+     */
+    public function registerMediaCollections(): void
+    {
+        $this->addMediaCollection('avatar')->singleFile();
+    }
 }

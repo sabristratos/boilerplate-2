@@ -42,6 +42,7 @@ return [
         'GB' => 'GB',
         'TB' => 'TB',
     ],
+    'unsaved_model_warning' => 'Please save the model first before uploading media.',
     'uploader' => [
         'remove_failed' => 'Failed to remove media: :message',
         'remove_failed\', [\'message\' => $e->getMessage()]), variant: \'danger' => 'media.uploader.remove_failed\', [\'message\' => $e->getMessage()]), variant: \'danger',

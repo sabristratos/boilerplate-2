@@ -27,6 +27,13 @@ class User extends Authenticatable implements HasMedia
         'email',
         'password',
         'locale',
+        // Social login fields
+        'google_id',
+        'google_token',
+        'google_refresh_token',
+        'facebook_id',
+        'facebook_token',
+        'facebook_refresh_token',
     ];
 
     /**
@@ -37,6 +44,10 @@ class User extends Authenticatable implements HasMedia
     protected $hidden = [
         'password',
         'remember_token',
+        'google_token',
+        'google_refresh_token',
+        'facebook_token',
+        'facebook_refresh_token',
     ];
 
     /**
@@ -70,6 +81,22 @@ class User extends Authenticatable implements HasMedia
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Check if the user has a social login account
+     */
+    public function hasSocialLogin(): bool
+    {
+        return !empty($this->google_id) || !empty($this->facebook_id);
+    }
+
+    /**
+     * Check if the user has a password set
+     */
+    public function hasPassword(): bool
+    {
+        return !empty($this->password);
     }
 
     public function forms(): HasMany

@@ -75,7 +75,17 @@
                 <flux:select.option value="50">{{ __('labels.per_page', ['count' => 50]) }}</flux:select.option>
                 <flux:select.option value="100">{{ __('labels.per_page', ['count' => 100]) }}</flux:select.option>
             </flux:select>
-            <flux:button wire:click="createPage" :tooltip="__('buttons.create_item', ['item' => __('navigation.pages')])">{{ __('buttons.create_item', ['item' => __('navigation.pages')]) }}</flux:button>
+            <flux:button
+                href="{{ route('admin.import-export.index') }}?tab=export&type=pages"
+                variant="outline"
+                icon="arrow-down-tray"
+            >
+                {{ __('buttons.export') }}
+            </flux:button>
+
+            <flux:button wire:click="createPage" variant="primary" icon="plus" :tooltip="__('buttons.create_item', ['item' => __('navigation.pages')])">
+                {{ __('buttons.create_item', ['item' => __('navigation.pages')]) }}
+            </flux:button>
         </div>
     </div>
     <div class="rounded-lg overflow-hidden py-2">

@@ -6,9 +6,12 @@ use App\Enums\SettingGroupKey;
 use App\Models\ContentBlock;
 use App\Models\Form;
 use App\Models\FormSubmission;
+use App\Models\Page;
+use App\Policies\BackupPolicy;
 use App\Policies\ContentBlockPolicy;
 use App\Policies\FormPolicy;
 use App\Policies\FormSubmissionPolicy;
+use App\Policies\PagePolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -23,6 +26,7 @@ class AuthServiceProvider extends ServiceProvider
         ContentBlock::class => ContentBlockPolicy::class,
         Form::class => FormPolicy::class,
         FormSubmission::class => FormSubmissionPolicy::class,
+        Page::class => PagePolicy::class,
     ];
 
     /**

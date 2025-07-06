@@ -1,0 +1,25 @@
+<?php
+
+return [
+    'create_backup' => 'Créer une sauvegarde de la base de données',
+    'create_backup_description' => 'Créer une sauvegarde complète de votre base de données. Ce processus peut prendre quelques instants.',
+    'creating_backup' => 'Création de la sauvegarde...',
+    'backup_history' => 'Historique des sauvegardes',
+    'backup_history_description' => 'Afficher et gérer vos sauvegardes de base de données existantes.',
+    'filename' => 'Nom du fichier',
+    'size' => 'Taille',
+    'created_at' => 'Créé le',
+    'download' => 'Télécharger',
+    'delete' => 'Supprimer',
+    'no_backups_found' => 'Aucune sauvegarde trouvée',
+    'no_backups_found_description' => 'Aucune sauvegarde de base de données n\'a encore été créée. Créez votre première sauvegarde en utilisant le bouton ci-dessus.',
+    'delete_confirm_title' => 'Supprimer la sauvegarde',
+    'delete_confirm_text' => 'Êtes-vous sûr de vouloir supprimer la sauvegarde ":filename" ? Cette action ne peut pas être annulée.',
+    'created_successfully' => 'Sauvegarde de la base de données créée avec succès !',
+    'creation_failed' => 'Échec de la création de la sauvegarde de la base de données',
+    'deleted_successfully' => 'Sauvegarde supprimée avec succès !',
+    'deletion_failed' => 'Échec de la suppression de la sauvegarde',
+    'file_not_found' => 'Fichier de sauvegarde introuvable',
+    'mysql_not_supported' => 'La sauvegarde de base de données n\'est pas prise en charge sur ce système. Les outils de sauvegarde MySQL (mysqldump) ne sont pas disponibles. Cette fonctionnalité fonctionnera lors du déploiement sur un serveur avec les outils MySQL appropriés installés.',
+    'postgresql_not_supported' => 'La sauvegarde de base de données n\'est pas prise en charge sur ce système. Les outils de sauvegarde PostgreSQL (pg_dump) ne sont pas disponibles. Cette fonctionnalité fonctionnera lors du déploiement sur un serveur avec les outils PostgreSQL appropriés installés.',
+]; 

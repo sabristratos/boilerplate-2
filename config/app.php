@@ -69,6 +69,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Default Hero Background Image
+    |--------------------------------------------------------------------------
+    |
+    | This value is the default background image URL for hero sections
+    | when no specific image is provided.
+    |
+    */
+    'default_hero_background' => env('DEFAULT_HERO_BACKGROUND', 'https://images.unsplash.com/photo-1543393716-375f47996a77?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

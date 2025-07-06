@@ -37,7 +37,7 @@ class PageSeeder extends Seeder
             ],
         ]);
 
-        Settings::set('general.homepage', $home->id);
+        // Note: homepage setting will be set during settings sync after pages exist
 
         // About Us page
         $aboutTitle = [

@@ -4,7 +4,7 @@
         @include('partials.head')
     </head>
     <body class="min-h-screen bg-white dark:bg-zinc-800">
-        <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900">
+        <flux:sidebar sticky stashable class="border-e border-zinc-200 bg-zinc-50 dark:border-zinc-700 dark:bg-zinc-900 w-80">
             <flux:sidebar.toggle class="lg:hidden" icon="x-mark" />
 
             <!-- Brand/Logo -->
@@ -13,7 +13,7 @@
             </a>
 
             <!-- Search -->
-            <flux:input as="button" variant="filled" placeholder="{{ __('navigation.search') }}..." icon="magnifying-glass" />
+            @livewire('sidebar-search')
 
             <!-- Main Navigation -->
             <flux:navlist variant="outline">
@@ -118,6 +118,24 @@
                     </flux:navlist.item>
                     
                     <flux:navlist.item 
+                        icon="server-stack" 
+                        :href="route('admin.backup.index')" 
+                        :current="request()->routeIs('admin.backup.*')" 
+                        wire:navigate
+                    >
+                        {{ __('navigation.database_backup') }}
+                    </flux:navlist.item>
+                    
+                    <flux:navlist.item 
+                        icon="arrow-up-tray" 
+                        :href="route('admin.import-export.index')" 
+                        :current="request()->routeIs('admin.import-export.*')" 
+                        wire:navigate
+                    >
+                        {{ __('navigation.import_export') }}
+                    </flux:navlist.item>
+                    
+                    <flux:navlist.item 
                         icon="question-mark-circle" 
                         :href="route('admin.help.index')" 
                         :current="request()->routeIs('admin.help.*')" 
@@ -166,6 +184,21 @@
         @persist('toast')
         <flux:toast position="bottom right" />
         @endpersist
+        
+        <!-- Global Search Shortcut -->
+        <script>
+        document.addEventListener('keydown', function(event) {
+            // Ctrl+K or Cmd+K to focus search
+            if ((event.ctrlKey || event.metaKey) && event.key === 'k') {
+                event.preventDefault();
+                const searchInput = document.querySelector('[wire\\:model*="search"]');
+                if (searchInput) {
+                    searchInput.focus();
+                }
+            }
+        });
+        </script>
+        
         @fluxScripts
     </body>
 </html>

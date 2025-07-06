@@ -110,7 +110,9 @@ class SettingsPage extends Component
                 $value = is_array($value) ? $value : [];
             }
 
-            data_set($this->state, $key, $value);
+            // Extract the field name from the full key (remove group prefix)
+            $fieldName = str_replace($this->group . '.', '', $key);
+            data_set($this->state, $this->group . '.' . $fieldName, $value);
         }
     }
 
@@ -130,7 +132,7 @@ class SettingsPage extends Component
                 $fullKey = $this->group.'.'.$key;
                 if (isset($settingsConfig[$fullKey]['warning'])) {
                     $label = $settingsConfig[$fullKey]['label'];
-                    $labelText = is_array($label) ? ($label[app()->getLocale()] ?? $label['en']) : $label;
+                    $labelText = is_array($label) ? ($label[app()->getLocale() ?? 'en'] ?? $label['en']) : $label;
                     $warnings[$labelText] = $settingsConfig[$fullKey]['warning'];
                 }
             }
@@ -167,6 +169,9 @@ class SettingsPage extends Component
             foreach ($currentState as $key => $value) {
                 if (data_get($initialState, $key) != $value) {
                     $fullKey = $this->group.'.'.$key;
+
+
+
                     $changedData[$fullKey] = $value;
 
                     if (isset($settings[$fullKey]['rules'])) {
@@ -317,13 +322,25 @@ class SettingsPage extends Component
             } else {
                 $settingData['key'] = $key;
                 $settingData['value'] = Settings::get($key);
-                $settingData['label'] = is_array($settingData['label']) ? ($settingData['label'][app()->getLocale()] ?? $settingData['label']['en']) : $settingData['label'];
-                $settingData['description'] = isset($settingData['description']) ? (is_array($settingData['description']) ? ($settingData['description'][app()->getLocale()] ?? $settingData['description']['en']) : $settingData['description']) : null;
+                $settingData['label'] = is_array($settingData['label']) ? ($settingData['label'][app()->getLocale() ?? 'en'] ?? $settingData['label']['en']) : $settingData['label'];
+                $settingData['description'] = isset($settingData['description']) ? (is_array($settingData['description']) ? ($settingData['description'][app()->getLocale() ?? 'en'] ?? $settingData['description']['en']) : $settingData['description']) : null;
+                
+                // Process subfields for repeaters
+                if (isset($settingData['subfields']) && is_array($settingData['subfields'])) {
+                    foreach ($settingData['subfields'] as $subfieldKey => $subfield) {
+                        if (isset($subfield['label'])) {
+                            $settingData['subfields'][$subfieldKey]['label'] = is_array($subfield['label']) 
+                                ? ($subfield['label'][app()->getLocale() ?? 'en'] ?? $subfield['label']['en']) 
+                                : $subfield['label'];
+                        }
+                    }
+                }
+                
                 if (isset($settingData['options']) && is_callable($settingData['options'])) {
                     $settingData['options'] = call_user_func($settingData['options']);
                 }
                 if (isset($settingData['callout']['text'])) {
-                    $settingData['callout']['text'] = is_array($settingData['callout']['text']) ? ($settingData['callout']['text'][app()->getLocale()] ?? $settingData['callout']['text']['en']) : $settingData['callout']['text'];
+                    $settingData['callout']['text'] = is_array($settingData['callout']['text']) ? ($settingData['callout']['text'][app()->getLocale() ?? 'en'] ?? $settingData['callout']['text']['en']) : $settingData['callout']['text'];
                 }
                 $setting = (object) $settingData;
             }
@@ -368,6 +385,7 @@ class SettingsPage extends Component
         $this->loadSettings();
     }
 
+    #[On('repeater-updated')]
     public function onRepeaterUpdate(array $data): void
     {
         data_set($this->state, $data['model'], $data['items']);

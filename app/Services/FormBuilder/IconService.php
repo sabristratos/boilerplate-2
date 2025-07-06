@@ -2,12 +2,20 @@
 
 namespace App\Services\FormBuilder;
 
+/**
+ * Service for managing icons used in form elements.
+ */
 class IconService
 {
+    /** @var array */
     private array $availableIcons;
 
+    /** @var array */
     private array $categories;
 
+    /**
+     * IconService constructor.
+     */
     public function __construct()
     {
         $this->availableIcons = config('forms.icons.available');
@@ -15,7 +23,9 @@ class IconService
     }
 
     /**
-     * Get all available icons for form elements
+     * Get all available icons for form elements.
+     *
+     * @return array
      */
     public function getAvailableIcons(): array
     {
@@ -23,7 +33,10 @@ class IconService
     }
 
     /**
-     * Check if an icon exists
+     * Check if an icon exists.
+     *
+     * @param string $iconName
+     * @return bool
      */
     public function iconExists(string $iconName): bool
     {
@@ -31,7 +44,10 @@ class IconService
     }
 
     /**
-     * Get icon label by name
+     * Get icon label by name.
+     *
+     * @param string $iconName
+     * @return string|null
      */
     public function getIconLabel(string $iconName): ?string
     {
@@ -39,7 +55,9 @@ class IconService
     }
 
     /**
-     * Get icons grouped by category
+     * Get icons grouped by category.
+     *
+     * @return array
      */
     public function getIconsByCategory(): array
     {

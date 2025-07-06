@@ -32,6 +32,6 @@
         @endforeach
     </div>
     <div class="mt-4">
-        <flux:button wire:click="addRepeaterRow('{{ $field->getName() }}')">Add {{ Str::singular($field->getLabel()) }}</flux:button>
+        <flux:button wire:click="addRepeaterRow('{{ $field->getName() }}')" variant="outline" icon="plus">Add {{ Str::singular($field->getLabel()) }}</flux:button>
     </div>
 </div> 

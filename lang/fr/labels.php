@@ -41,4 +41,6 @@ return [
     'elements' => 'Éléments',
     'submissions' => 'Soumissions',
     'draft' => 'Brouillon',
+    'select_homepage' => 'Sélectionner la page d\'accueil',
+    'heading' => 'labels.heading',
 ];

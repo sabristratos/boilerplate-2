@@ -13,11 +13,21 @@ use App\Services\FormBuilder\Renderers\RadioRenderer;
 use App\Services\FormBuilder\Renderers\SelectRenderer;
 use App\Services\FormBuilder\Renderers\TextareaRenderer;
 use Illuminate\Support\Str;
+use App\Services\FormBuilder\ElementDTO;
 
+/**
+ * Factory for creating and rendering form elements.
+ */
 class ElementFactory
 {
+    /**
+     * @var ElementRendererInterface[]
+     */
     private array $renderers;
 
+    /**
+     * ElementFactory constructor.
+     */
     public function __construct()
     {
         $this->renderers = [
@@ -34,9 +44,12 @@ class ElementFactory
     }
 
     /**
-     * Create a new element with default structure
+     * Create a new element with default structure.
+     *
+     * @param string $type
+     * @return ElementDTO
      */
-    public function createElement(string $type): array
+    public function createElement(string $type): ElementDTO
     {
         $renderer = $this->getRenderer($type);
 
@@ -44,32 +57,21 @@ class ElementFactory
             throw new \InvalidArgumentException("No renderer found for element type: {$type}");
         }
 
-        return [
+        return new ElementDTO([
             'id' => (string) Str::uuid(),
             'type' => $type,
             'order' => 0, // Will be set by caller
             'properties' => $renderer->getDefaultProperties(),
             'styles' => $renderer->getDefaultStyles(),
             'validation' => $renderer->getDefaultValidation(),
-        ];
+        ]);
     }
 
     /**
-     * Render an element as HTML
-     */
-    public function renderElement(array $element): string
-    {
-        $renderer = $this->getRenderer($element['type']);
-
-        if (! $renderer) {
-            throw new \InvalidArgumentException("No renderer found for element type: {$element['type']}");
-        }
-
-        return $renderer->render($element);
-    }
-
-    /**
-     * Get the appropriate renderer for an element type
+     * Get the renderer for a specific element type.
+     *
+     * @param string $type
+     * @return ElementRendererInterface|null
      */
     public function getRenderer(string $type): ?ElementRendererInterface
     {
@@ -83,7 +85,33 @@ class ElementFactory
     }
 
     /**
-     * Get all available renderers
+     * Render an element as HTML.
+     *
+     * @param array|ElementDTO $element
+     * @param string $mode
+     * @param string|null $fieldName
+     * @return string
+     */
+    public function renderElement(array|ElementDTO $element, string $mode = 'edit', ?string $fieldName = null): string
+    {
+        // Convert array to ElementDTO if needed
+        if (is_array($element)) {
+            $element = new ElementDTO($element);
+        }
+
+        $renderer = $this->getRenderer($element->type);
+
+        if (! $renderer) {
+            throw new \InvalidArgumentException("No renderer found for element type: {$element->type}");
+        }
+
+        return $renderer->render($element, $mode, $fieldName);
+    }
+
+    /**
+     * Get all available renderers.
+     *
+     * @return ElementRendererInterface[]
      */
     public function getRenderers(): array
     {
@@ -91,7 +119,9 @@ class ElementFactory
     }
 
     /**
-     * Get supported element types
+     * Get supported element types.
+     *
+     * @return string[]
      */
     public function getSupportedTypes(): array
     {

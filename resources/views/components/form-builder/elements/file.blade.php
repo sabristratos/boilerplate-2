@@ -1,6 +1,11 @@
-@props(['element', 'properties', 'fluxProps'])
+@props(['element', 'properties', 'fluxProps', 'mode' => 'edit', 'fieldName' => null])
 
 @php
+    $hasIcon = $fluxProps['icon'] ?? false;
+    $hasIconTrailing = $fluxProps['iconTrailing'] ?? false;
+    $isPreview = $mode === 'preview';
+    $wireModel = $isPreview && $fieldName ? "previewFormData.{$fieldName}" : null;
+    $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
     $multiple = $properties['multiple'] ?? false;
     $accept = $properties['accept'] ?? '';
     $maxSize = $properties['maxSize'] ?? '';
@@ -46,6 +51,7 @@
     }
 }" class="file-upload-container">
     
+<<<<<<< HEAD
     <flux:input 
         type="file"
         label="{{ $properties['label'] ?? '' }}" 
@@ -54,11 +60,84 @@
         {!! $attributesString !!}
         @change="handleFileSelect($event)"
     />
+=======
+    @if($hasIcon && $hasIconTrailing)
+        <flux:input 
+            type="file"
+            label="{{ $properties['label'] }}" 
+            placeholder="{{ $properties['placeholder'] }}"
+            :clearable="$fluxProps['clearable'] ?? false"
+            :copyable="$fluxProps['copyable'] ?? false"
+            :viewable="$fluxProps['viewable'] ?? false"
+            icon="{{ $fluxProps['icon'] }}"
+            :wire:model="$wireModel"
+            :required="$required"
+            :multiple="$multiple"
+            :accept="$accept"
+        >
+            <x-slot name="icon:trailing">
+                <flux:icon name="{{ $fluxProps['iconTrailing'] }}" />
+            </x-slot>
+        </flux:input>
+    @elseif($hasIcon)
+        <flux:input 
+            type="file"
+            label="{{ $properties['label'] }}" 
+            placeholder="{{ $properties['placeholder'] }}"
+            :clearable="$fluxProps['clearable'] ?? false"
+            :copyable="$fluxProps['copyable'] ?? false"
+            :viewable="$fluxProps['viewable'] ?? false"
+            icon="{{ $fluxProps['icon'] }}"
+            :wire:model="$wireModel"
+            :required="$required"
+            :multiple="$multiple"
+            :accept="$accept"
+        />
+    @elseif($hasIconTrailing)
+        <flux:input 
+            type="file"
+            label="{{ $properties['label'] }}" 
+            placeholder="{{ $properties['placeholder'] }}"
+            :clearable="$fluxProps['clearable'] ?? false"
+            :copyable="$fluxProps['copyable'] ?? false"
+            :viewable="$fluxProps['viewable'] ?? false"
+            :wire:model="$wireModel"
+            :required="$required"
+            :multiple="$multiple"
+            :accept="$accept"
+        >
+            <x-slot name="icon:trailing">
+                <flux:icon name="{{ $fluxProps['iconTrailing'] }}" />
+            </x-slot>
+        </flux:input>
+    @else
+        <flux:input 
+            type="file"
+            label="{{ $properties['label'] }}" 
+            placeholder="{{ $properties['placeholder'] }}"
+            :clearable="$fluxProps['clearable'] ?? false"
+            :copyable="$fluxProps['copyable'] ?? false"
+            :viewable="$fluxProps['viewable'] ?? false"
+            :wire:model="$wireModel"
+            :required="$required"
+            :multiple="$multiple"
+            :accept="$accept"
+        />
+    @endif
+>>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
 
     @if($maxSize)
-        <flux:text size="sm" variant="subtle" class="mt-1">
+        <div class="mt-2 text-sm text-zinc-500">
+            <flux:icon name="information-circle" class="size-4 inline mr-1" />
             Maximum file size: {{ $maxSize }}
-        </flux:text>
+        </div>
+    @endif
+
+    @if($accept)
+        <div class="mt-1 text-sm text-zinc-500">
+            <flux:icon name="document-text" class="size-4 inline mr-1" />
+            Accepted formats: {{ $accept }}
+        </div>
     @endif
 
     @if($showPreview)
@@ -94,5 +173,11 @@
                 </template>
             </div>
         </div>
+    @endif
+
+    @if($isPreview && $fieldName)
+        @error("previewFormData.{$fieldName}")
+            <flux:error>{{ $message }}</flux:error>
+        @enderror
     @endif
 </div> 
