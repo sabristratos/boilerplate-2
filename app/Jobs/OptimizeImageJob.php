@@ -15,6 +15,7 @@ class OptimizeImageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $timeout = 300; // 5 minutes
+
     public $tries = 3;
 
     /**
@@ -30,22 +31,22 @@ class OptimizeImageJob implements ShouldQueue
     public function handle(OptimizerChain $optimizerChain): void
     {
         $path = $this->media->getPath();
-        
-        if (!file_exists($path)) {
+
+        if (! file_exists($path)) {
             return;
         }
 
         // Only optimize image files
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        
-        if (!in_array($extension, $imageExtensions)) {
+
+        if (! in_array($extension, $imageExtensions)) {
             return;
         }
 
         try {
             $optimizerChain->optimize($path);
-            
+
             // Log the optimization
             \Log::info('Image optimized', [
                 'media_id' => $this->media->id,
@@ -58,7 +59,7 @@ class OptimizeImageJob implements ShouldQueue
                 'file_name' => $this->media->file_name,
                 'error' => $e->getMessage(),
             ]);
-            
+
             throw $e;
         }
     }
@@ -74,4 +75,4 @@ class OptimizeImageJob implements ShouldQueue
             'error' => $exception->getMessage(),
         ]);
     }
-} 
+}

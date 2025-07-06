@@ -31,4 +31,4 @@ class TemporaryMediaFactory extends Factory
             'collection_name' => 'avatar',
         ];
     }
-} 
+}

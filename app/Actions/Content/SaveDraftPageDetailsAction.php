@@ -12,14 +12,14 @@ class SaveDraftPageDetailsAction
         // Save draft title translations
         if (isset($data['title'])) {
             foreach ($data['title'] as $locale => $title) {
-                if (!empty($title)) {
+                if (! empty($title)) {
                     $page->setTranslation('draft_title', $locale, $title);
                 }
             }
         }
 
         // Save draft slug
-        if (isset($data['slug']) && !empty($data['slug'])) {
+        if (isset($data['slug']) && ! empty($data['slug'])) {
             $page->draft_slug = $data['slug'];
         }
 
@@ -31,7 +31,7 @@ class SaveDraftPageDetailsAction
         // Save draft meta translations
         if (isset($data['meta_title'])) {
             foreach ($data['meta_title'] as $locale => $metaTitle) {
-                if (!empty($metaTitle)) {
+                if (! empty($metaTitle)) {
                     $page->setTranslation('draft_meta_title', $locale, $metaTitle);
                 }
             }
@@ -39,7 +39,7 @@ class SaveDraftPageDetailsAction
 
         if (isset($data['meta_description'])) {
             foreach ($data['meta_description'] as $locale => $metaDescription) {
-                if (!empty($metaDescription)) {
+                if (! empty($metaDescription)) {
                     $page->setTranslation('draft_meta_description', $locale, $metaDescription);
                 }
             }
@@ -67,4 +67,4 @@ class SaveDraftPageDetailsAction
 
         return $page->refresh();
     }
-} 
+}

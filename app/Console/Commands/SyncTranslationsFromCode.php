@@ -29,7 +29,9 @@ class SyncTranslationsFromCode extends Command
     protected $description = 'Scan the codebase for translation keys and add missing ones to language files.';
 
     protected array $foundLiterals = [];
+
     protected array $foundKeys = [];
+
     protected array $modifiedFiles = [];
 
     public function __construct(protected Filesystem $disk)
@@ -49,14 +51,15 @@ class SyncTranslationsFromCode extends Command
         }
 
         $translationKeys = $this->findTranslationKeys();
-        
+
         if (empty($translationKeys)) {
             $this->info('No translation keys found in the codebase.');
+
             return self::SUCCESS;
         }
 
-        $this->info("Found " . count($translationKeys) . " unique translation keys.");
-        
+        $this->info('Found '.count($translationKeys).' unique translation keys.');
+
         $this->syncKeysToLanguageFiles($translationKeys);
 
         if ($this->foundLiterals !== []) {
@@ -69,8 +72,8 @@ class SyncTranslationsFromCode extends Command
             $this->info('Dry run completed. No files were modified.');
         } else {
             $this->info('Translation key sync completed successfully.');
-            if (!empty($this->modifiedFiles)) {
-                $this->info('Modified files: ' . implode(', ', $this->modifiedFiles));
+            if (! empty($this->modifiedFiles)) {
+                $this->info('Modified files: '.implode(', ', $this->modifiedFiles));
             }
         }
 
@@ -88,13 +91,13 @@ class SyncTranslationsFromCode extends Command
 
         foreach ($files as $file) {
             $content = $file->getContents();
-            
+
             // Find translation keys with dot notation
             $this->extractTranslationKeys($content, $keys);
-            
+
             // Find string literals for reporting
             $this->extractStringLiterals($content);
-            
+
             $progressBar->advance();
         }
 
@@ -141,7 +144,7 @@ class SyncTranslationsFromCode extends Command
         foreach ($patterns as $pattern) {
             if (preg_match_all($pattern, $content, $matches)) {
                 foreach ($matches[1] as $match) {
-                    if (!Str::contains($match, '.') && !in_array($match, $this->foundLiterals)) {
+                    if (! Str::contains($match, '.') && ! in_array($match, $this->foundLiterals)) {
                         $this->foundLiterals[] = $match;
                     }
                 }
@@ -152,7 +155,7 @@ class SyncTranslationsFromCode extends Command
     protected function isValidTranslationKey(string $key): bool
     {
         // Must contain at least one dot and valid characters
-        if (!Str::contains($key, '.') || Str::startsWith($key, '.') || Str::endsWith($key, '.')) {
+        if (! Str::contains($key, '.') || Str::startsWith($key, '.') || Str::endsWith($key, '.')) {
             return false;
         }
 
@@ -178,16 +181,18 @@ class SyncTranslationsFromCode extends Command
         ];
 
         $files = collect($paths)->flatMap(function ($path) {
-            if (!$this->disk->exists($path)) {
+            if (! $this->disk->exists($path)) {
                 $this->warn("Path does not exist: {$path}");
+
                 return collect();
             }
+
             return $this->disk->allFiles($path);
         });
 
         return $files->filter(function (SplFileInfo $file) use ($excludePaths) {
             // Check file extension
-            if (!in_array($file->getExtension(), ['php', 'blade.php', 'js', 'vue'])) {
+            if (! in_array($file->getExtension(), ['php', 'blade.php', 'js', 'vue'])) {
                 return false;
             }
 
@@ -209,7 +214,8 @@ class SyncTranslationsFromCode extends Command
         $locales = $this->disk->directories(lang_path());
 
         if (empty($locales)) {
-            $this->error('No locale directories found in ' . lang_path());
+            $this->error('No locale directories found in '.lang_path());
+
             return;
         }
 
@@ -231,19 +237,19 @@ class SyncTranslationsFromCode extends Command
         $translationsByGroup = [];
 
         foreach ($keys as $key) {
-            if (!$this->isValidTranslationKey($key)) {
+            if (! $this->isValidTranslationKey($key)) {
                 continue;
             }
 
             $parts = explode('.', $key);
             $group = $parts[0];
             $translationKey = implode('.', array_slice($parts, 1));
-            
+
             if ($translationKey === '' || $translationKey === '0') {
                 continue;
             }
 
-            if (!isset($translationsByGroup[$group])) {
+            if (! isset($translationsByGroup[$group])) {
                 $translationsByGroup[$group] = [];
             }
             $translationsByGroup[$group][$key] = $translationKey;
@@ -258,12 +264,14 @@ class SyncTranslationsFromCode extends Command
         if ($this->disk->exists($filePath)) {
             try {
                 $existingTranslations = require $filePath;
-                if (!is_array($existingTranslations)) {
+                if (! is_array($existingTranslations)) {
                     $this->error("Failed to load translations from {$filePath}. File does not return an array. Skipping.");
+
                     return;
                 }
             } catch (\Throwable $e) {
                 $this->error("Failed to load translations from {$filePath}: {$e->getMessage()}. Skipping.");
+
                 return;
             }
         }
@@ -272,7 +280,7 @@ class SyncTranslationsFromCode extends Command
         $missingKeys = [];
 
         foreach ($keys as $fullKey => $translationKey) {
-            if (!Arr::has($existingTranslations, $translationKey)) {
+            if (! Arr::has($existingTranslations, $translationKey)) {
                 $missingKeys[] = $translationKey;
                 Arr::set($existingTranslations, $translationKey, $this->generatePlaceholderValue($translationKey, $locale));
                 $addedKeys = true;
@@ -281,7 +289,7 @@ class SyncTranslationsFromCode extends Command
 
         if ($addedKeys) {
             if ($this->option('dry-run')) {
-                $this->line("  <fg=blue>-> Would add " . count($missingKeys) . " missing keys to '{$group}' group:</>");
+                $this->line('  <fg=blue>-> Would add '.count($missingKeys)." missing keys to '{$group}' group:</>");
                 foreach ($missingKeys as $key) {
                     $this->line("    - {$key}");
                 }
@@ -292,8 +300,8 @@ class SyncTranslationsFromCode extends Command
 
                 $this->writeTranslationsToFile($filePath, $existingTranslations);
                 $this->modifiedFiles[] = basename($filePath);
-                
-                $this->line("  <fg=yellow>-> Added " . count($missingKeys) . " missing keys to '{$group}' group.</>");
+
+                $this->line('  <fg=yellow>-> Added '.count($missingKeys)." missing keys to '{$group}' group.</>");
             }
         }
     }
@@ -303,7 +311,7 @@ class SyncTranslationsFromCode extends Command
         // Generate a meaningful placeholder based on the key
         $parts = explode('.', $key);
         $lastPart = end($parts);
-        
+
         // Convert camelCase or snake_case to readable text
         $readable = Str::of($lastPart)
             ->replace('_', ' ')
@@ -316,15 +324,15 @@ class SyncTranslationsFromCode extends Command
 
     protected function createBackup(string $filePath): void
     {
-        $backupPath = $filePath . '.backup.' . date('Y-m-d-H-i-s');
+        $backupPath = $filePath.'.backup.'.date('Y-m-d-H-i-s');
         $this->disk->copy($filePath, $backupPath);
-        $this->line("  <fg=green>-> Created backup: " . basename($backupPath) . "</>");
+        $this->line('  <fg=green>-> Created backup: '.basename($backupPath).'</>');
     }
 
     protected function writeTranslationsToFile(string $filePath, array $translations)
     {
         try {
-            $content = "<?php\n\nreturn " . $this->arrayToPhpString($translations) . ";\n";
+            $content = "<?php\n\nreturn ".$this->arrayToPhpString($translations).";\n";
             $this->disk->put($filePath, $content);
         } catch (\Throwable $e) {
             $this->error("Failed to write translations to {$filePath}: {$e->getMessage()}");
@@ -335,17 +343,17 @@ class SyncTranslationsFromCode extends Command
     {
         $indent = str_repeat('    ', $level + 1);
         $result = "[\n";
-        
+
         foreach ($array as $key => $value) {
-            $result .= "{$indent}'" . addslashes($key) . "' => ";
-            
+            $result .= "{$indent}'".addslashes($key)."' => ";
+
             if (is_array($value)) {
-                $result .= $this->arrayToPhpString($value, $level + 1) . ",\n";
+                $result .= $this->arrayToPhpString($value, $level + 1).",\n";
             } else {
-                $result .= "'" . addslashes((string) $value) . "',\n";
+                $result .= "'".addslashes((string) $value)."',\n";
             }
         }
 
-        return $result . (str_repeat('    ', $level) . ']');
+        return $result.(str_repeat('    ', $level).']');
     }
 }

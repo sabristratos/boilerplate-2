@@ -16,12 +16,12 @@ return new class extends Migration
             $table->string('google_id')->nullable()->unique();
             $table->string('google_token')->nullable();
             $table->string('google_refresh_token')->nullable();
-            
+
             // Facebook OAuth fields
             $table->string('facebook_id')->nullable()->unique();
             $table->string('facebook_token')->nullable();
             $table->string('facebook_refresh_token')->nullable();
-            
+
             // Make password nullable for social login users
             $table->string('password')->nullable()->change();
         });
@@ -41,7 +41,7 @@ return new class extends Migration
                 'facebook_token',
                 'facebook_refresh_token',
             ]);
-            
+
             // Make password required again
             $table->string('password')->nullable(false)->change();
         });

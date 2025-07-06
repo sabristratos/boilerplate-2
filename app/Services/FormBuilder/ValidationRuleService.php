@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
 use App\Enums\FormElementType;
@@ -29,14 +31,14 @@ class ValidationRuleService
     {
         $allRules = $this->getAllRules();
         $fieldRules = $this->getFieldTypeRules($fieldType);
-        
+
         $relevantRules = [];
         foreach ($fieldRules as $ruleKey) {
             if (isset($allRules[$ruleKey])) {
                 $relevantRules[$ruleKey] = $allRules[$ruleKey];
             }
         }
-        
+
         return $relevantRules;
     }
 
@@ -47,12 +49,12 @@ class ValidationRuleService
     {
         $relevantRules = $this->getRelevantRules($fieldType);
         $groupedRules = [];
-        
+
         foreach ($relevantRules as $ruleKey => $rule) {
             $category = $rule['category'] ?? 'Other';
             $groupedRules[$category][$ruleKey] = $rule;
         }
-        
+
         return $groupedRules;
     }
 
@@ -62,6 +64,7 @@ class ValidationRuleService
     public function getAvailableCategories(string $fieldType): array
     {
         $groupedRules = $this->getRelevantRulesByCategory($fieldType);
+
         return array_keys($groupedRules);
     }
 
@@ -72,34 +75,34 @@ class ValidationRuleService
     {
         return match ($fieldType) {
             FormElementType::TEXT->value => [
-                'required', 'min', 'max', 'alpha', 'alpha_num', 'alpha_dash', 'regex', 'url'
+                'required', 'min', 'max', 'alpha', 'alpha_num', 'alpha_dash', 'regex', 'url',
             ],
             FormElementType::TEXTAREA->value => [
-                'required', 'min', 'max'
+                'required', 'min', 'max',
             ],
             FormElementType::EMAIL->value => [
-                'required', 'email', 'max'
+                'required', 'email', 'max',
             ],
             FormElementType::SELECT->value => [
-                'required'
+                'required',
             ],
             FormElementType::CHECKBOX->value => [
-                'required'
+                'required',
             ],
             FormElementType::RADIO->value => [
-                'required'
+                'required',
             ],
             FormElementType::DATE->value => [
-                'required', 'date', 'date_after', 'date_before'
+                'required', 'date', 'date_after', 'date_before',
             ],
             FormElementType::NUMBER->value => [
-                'required', 'numeric', 'min_value', 'max_value'
+                'required', 'numeric', 'min_value', 'max_value',
             ],
             FormElementType::PASSWORD->value => [
-                'required', 'min', 'max', 'confirmed'
+                'required', 'min', 'max', 'confirmed',
             ],
             FormElementType::FILE->value => [
-                'required', 'file', 'image', 'mimes', 'max_file_size'
+                'required', 'file', 'image', 'mimes', 'max_file_size',
             ],
             default => ['required']
         };
@@ -123,7 +126,7 @@ class ValidationRuleService
 
                 // Add value if the rule requires it
                 if (($rule['has_value'] ?? false) && isset($ruleValues[$ruleKey])) {
-                    $ruleString .= ':' . $ruleValues[$ruleKey];
+                    $ruleString .= ':'.$ruleValues[$ruleKey];
                 }
 
                 $rules[] = $ruleString;
@@ -152,7 +155,7 @@ class ValidationRuleService
                 $fieldName = $element['properties']['label'] ?? 'field';
 
                 // Use custom message if provided, otherwise generate default
-                if (isset($customMessages[$ruleKey]) && !empty($customMessages[$ruleKey])) {
+                if (isset($customMessages[$ruleKey]) && ! empty($customMessages[$ruleKey])) {
                     $messages[$ruleKey] = $customMessages[$ruleKey];
                 } else {
                     // Generate default message
@@ -170,16 +173,16 @@ class ValidationRuleService
     private function generateDefaultMessage(array $rule, string $fieldName, ?string $value = null, array $defaultMessages = []): string
     {
         $fieldName = strtolower($fieldName);
-        
+
         // Try to get localized message first
         $localizedMessage = __("forms.validation.{$rule['rule']}", ['field' => $fieldName, 'value' => $value]);
-        
+
         // Fall back to config message if no localization found
         if ($localizedMessage === "forms.validation.{$rule['rule']}") {
             $message = $defaultMessages[$rule['rule']] ?? 'The :field field is invalid.';
             $localizedMessage = str_replace([':field', ':value'], [$fieldName, $value], $message);
         }
-        
+
         return $localizedMessage;
     }
-} 
+}

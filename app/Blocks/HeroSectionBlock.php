@@ -1,39 +1,83 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Blocks;
 
+/**
+ * Hero Section Block for creating eye-catching hero sections.
+ *
+ * This block creates prominent hero sections typically used at the top
+ * of landing pages. It supports background images, overlay effects,
+ * customizable text alignment, and multiple call-to-action buttons.
+ */
 class HeroSectionBlock extends Block
 {
+    /**
+     * Get the human-readable name of the block.
+     *
+     * @return string The display name of the block
+     */
     public function getName(): string
     {
         return 'Hero Section';
     }
 
+    /**
+     * Get a description of what this block does.
+     *
+     * @return string A description of the block's functionality
+     */
     public function getDescription(): string
     {
         return 'Create an eye-catching hero section with heading, subheading, and call-to-action buttons.';
     }
 
+    /**
+     * Get the category this block belongs to.
+     *
+     * @return string The category name
+     */
     public function getCategory(): string
     {
         return 'layout';
     }
 
+    /**
+     * Get tags associated with this block.
+     *
+     * @return array<string> Array of tag strings
+     */
     public function getTags(): array
     {
         return ['hero', 'cta', 'landing', 'banner'];
     }
 
+    /**
+     * Get the complexity level of this block.
+     *
+     * @return string The complexity level
+     */
     public function getComplexity(): string
     {
         return 'basic';
     }
 
+    /**
+     * Get the icon name for this block.
+     *
+     * @return string The icon name
+     */
     public function getIcon(): string
     {
         return 'photo';
     }
 
+    /**
+     * Get the default data for this block.
+     *
+     * @return array<string, mixed> Default data array
+     */
     public function getDefaultData(): array
     {
         return [
@@ -60,11 +104,21 @@ class HeroSectionBlock extends Block
         ];
     }
 
+    /**
+     * Get the fields that should be translatable.
+     *
+     * @return array<string> Array of field names that are translatable
+     */
     public function getTranslatableFields(): array
     {
         return ['overline', 'heading', 'subheading', 'background_image', 'buttons'];
     }
 
+    /**
+     * Get validation rules for the block's data fields.
+     *
+     * @return array<string, string> Laravel validation rules
+     */
     public function validationRules(): array
     {
         return [

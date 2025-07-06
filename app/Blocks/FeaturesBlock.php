@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Blocks;
 
 class FeaturesBlock extends Block
@@ -83,4 +85,4 @@ class FeaturesBlock extends Block
             'features.*.color' => 'required|string|in:blue,green,yellow,red,purple,indigo,pink,orange',
         ];
     }
-} 
+}

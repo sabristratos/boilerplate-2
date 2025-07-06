@@ -29,8 +29,8 @@ class MediaFactory extends Factory
             'model_id' => 1,
             'uuid' => $this->faker->uuid(),
             'collection_name' => 'avatar',
-            'name' => $this->faker->word() . '.jpg',
-            'file_name' => $this->faker->word() . '.jpg',
+            'name' => $this->faker->word().'.jpg',
+            'file_name' => $this->faker->word().'.jpg',
             'mime_type' => 'image/jpeg',
             'disk' => 'public',
             'conversions_disk' => 'public',
@@ -50,8 +50,8 @@ class MediaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'mime_type' => 'image/jpeg',
-            'name' => $this->faker->word() . '.jpg',
-            'file_name' => $this->faker->word() . '.jpg',
+            'name' => $this->faker->word().'.jpg',
+            'file_name' => $this->faker->word().'.jpg',
         ]);
     }
 
@@ -62,8 +62,8 @@ class MediaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'mime_type' => 'application/pdf',
-            'name' => $this->faker->word() . '.pdf',
-            'file_name' => $this->faker->word() . '.pdf',
+            'name' => $this->faker->word().'.pdf',
+            'file_name' => $this->faker->word().'.pdf',
         ]);
     }
-} 
+}

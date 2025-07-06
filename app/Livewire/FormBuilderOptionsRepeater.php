@@ -7,33 +7,35 @@ use Livewire\Component;
 class FormBuilderOptionsRepeater extends Component
 {
     public array $options = [];
+
     public string $elementIndex;
+
     public string $propertyPath;
 
     public function mount(string $elementIndex, string $propertyPath = 'options', array $options = []): void
     {
         $this->elementIndex = $elementIndex;
         $this->propertyPath = $propertyPath;
-        
+
         // Ensure options is always an array
-        if (!is_array($options)) {
+        if (! is_array($options)) {
             $this->options = [
                 [
                     'value' => '',
                     'label' => '',
-                ]
+                ],
             ];
         } else {
             $this->options = $options;
         }
-        
+
         // If options is empty, add at least one empty option
         if (empty($this->options)) {
             $this->options = [
                 [
                     'value' => '',
                     'label' => '',
-                ]
+                ],
             ];
         }
     }
@@ -59,22 +61,22 @@ class FormBuilderOptionsRepeater extends Component
     public function hydrate(): void
     {
         // Ensure options is always an array when component is hydrated
-        if (!is_array($this->options)) {
+        if (! is_array($this->options)) {
             $this->options = [
                 [
                     'value' => '',
                     'label' => '',
-                ]
+                ],
             ];
         }
-        
+
         // If options is empty, add at least one empty option
         if (empty($this->options)) {
             $this->options = [
                 [
                     'value' => '',
                     'label' => '',
-                ]
+                ],
             ];
         }
     }
@@ -89,13 +91,13 @@ class FormBuilderOptionsRepeater extends Component
         // Convert options array to string format for backward compatibility
         $optionsString = '';
         foreach ($this->options as $option) {
-            if (!empty($option['value']) || !empty($option['label'])) {
+            if (! empty($option['value']) || ! empty($option['label'])) {
                 $value = $option['value'] ?: $option['label'];
                 $label = $option['label'] ?: $option['value'];
                 if ($value === $label) {
-                    $optionsString .= $value . "\n";
+                    $optionsString .= $value."\n";
                 } else {
-                    $optionsString .= $value . '|' . $label . "\n";
+                    $optionsString .= $value.'|'.$label."\n";
                 }
             }
         }
@@ -113,4 +115,4 @@ class FormBuilderOptionsRepeater extends Component
     {
         return view('livewire.form-builder-options-repeater');
     }
-} 
+}

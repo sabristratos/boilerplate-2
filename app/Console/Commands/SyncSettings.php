@@ -123,11 +123,11 @@ class SyncSettings extends Command
     {
         try {
             $homepageSetting = Settings::get('general.homepage');
-            
+
             // If homepage setting is not set, try to set it to the first page
             if (empty($homepageSetting)) {
                 $firstPage = \App\Models\Page::orderBy('id')->first();
-                
+
                 if ($firstPage) {
                     Settings::set('general.homepage', $firstPage->id);
                     $this->info("Homepage setting set to page: {$firstPage->title}");

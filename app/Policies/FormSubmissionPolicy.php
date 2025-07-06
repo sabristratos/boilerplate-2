@@ -46,4 +46,4 @@ class FormSubmissionPolicy
     {
         return $user->hasPermissionTo('delete form submissions');
     }
-} 
+}

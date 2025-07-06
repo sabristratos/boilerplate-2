@@ -11,6 +11,7 @@ use Livewire\Component;
 class SubmissionDetails extends Component
 {
     public Form $form;
+
     public FormSubmission $submission;
 
     public function mount(Form $form, FormSubmission $submission)
@@ -27,6 +28,6 @@ class SubmissionDetails extends Component
     public function render()
     {
         return view('livewire.admin.forms.submission-details')
-            ->title(__('forms.submission_details') . ' - ' . $this->form->getTranslation('name', app()->getLocale()));
+            ->title(__('forms.submission_details').' - '.$this->form->getTranslation('name', app()->getLocale()));
     }
-} 
+}

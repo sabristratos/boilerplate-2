@@ -1,23 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
-<<<<<<< HEAD
-use App\Services\FormBuilder\ElementFactory;
-
-=======
 /**
  * Manages operations on form elements (add, update, delete, reorder, etc.).
+ *
+ * @property ElementFactory $factory
+ *
+ * @method void addElement(array &$elements, string $type)
+ * @method void updateElement(array &$elements, string $elementId, array $updates)
+ * @method void deleteElement(array &$elements, string $elementId)
+ * @method void reorderElements(array &$elements, array $orderedOrders)
+ * @method void updateElementWidth(array &$elements, string $elementId, string $breakpoint, string $width)
+ * @method int|null findElementIndex(array $elements, string $elementId)
+ * @method array|null findElement(array $elements, string $elementId)
  */
->>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
 class ElementManager
 {
     private ElementFactory $factory;
 
     /**
      * ElementManager constructor.
-     *
-     * @param ElementFactory $factory
      */
     public function __construct(ElementFactory $factory)
     {
@@ -26,10 +31,6 @@ class ElementManager
 
     /**
      * Add a new element to the elements array.
-     *
-     * @param array $elements
-     * @param string $type
-     * @return void
      */
     public function addElement(array &$elements, string $type): void
     {
@@ -40,11 +41,6 @@ class ElementManager
 
     /**
      * Update an existing element.
-     *
-     * @param array $elements
-     * @param string $elementId
-     * @param array $updates
-     * @return void
      */
     public function updateElement(array &$elements, string $elementId, array $updates): void
     {
@@ -56,10 +52,6 @@ class ElementManager
 
     /**
      * Delete an element from the elements array.
-     *
-     * @param array $elements
-     * @param string $elementId
-     * @return void
      */
     public function deleteElement(array &$elements, string $elementId): void
     {
@@ -69,10 +61,6 @@ class ElementManager
 
     /**
      * Reorder elements based on new order.
-     *
-     * @param array $elements
-     * @param array $orderedOrders
-     * @return void
      */
     public function reorderElements(array &$elements, array $orderedOrders): void
     {
@@ -83,6 +71,7 @@ class ElementManager
             ->values()
             ->map(function ($element, $index) {
                 $element['order'] = $index;
+
                 return $element;
             })
             ->all();
@@ -90,12 +79,6 @@ class ElementManager
 
     /**
      * Update element width for a specific breakpoint.
-     *
-     * @param array $elements
-     * @param string $elementId
-     * @param string $breakpoint
-     * @param string $width
-     * @return void
      */
     public function updateElementWidth(array &$elements, string $elementId, string $breakpoint, string $width): void
     {
@@ -119,10 +102,6 @@ class ElementManager
 
     /**
      * Find element by ID and return its index.
-     *
-     * @param array $elements
-     * @param string $elementId
-     * @return int|null
      */
     public function findElementIndex(array $elements, string $elementId): ?int
     {
@@ -137,10 +116,6 @@ class ElementManager
 
     /**
      * Find element by ID.
-     *
-     * @param array $elements
-     * @param string $elementId
-     * @return array|null
      */
     public function findElement(array $elements, string $elementId): ?array
     {
@@ -151,8 +126,6 @@ class ElementManager
 
     /**
      * Get default styles structure.
-     *
-     * @return array
      */
     private function getDefaultStyles(): array
     {

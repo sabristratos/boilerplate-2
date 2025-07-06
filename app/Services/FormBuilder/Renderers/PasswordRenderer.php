@@ -9,9 +9,6 @@ class PasswordRenderer extends BaseElementRenderer
 {
     /**
      * Check if this renderer supports the given element type.
-     *
-     * @param string $type
-     * @return bool
      */
     public function supports(string $type): bool
     {
@@ -20,8 +17,6 @@ class PasswordRenderer extends BaseElementRenderer
 
     /**
      * Get the default label for this element type.
-     *
-     * @return string
      */
     protected function getDefaultLabel(): string
     {
@@ -30,8 +25,6 @@ class PasswordRenderer extends BaseElementRenderer
 
     /**
      * Get the view name for this element type.
-     *
-     * @return string
      */
     protected function getViewName(): string
     {
@@ -57,4 +50,4 @@ class PasswordRenderer extends BaseElementRenderer
 
         return $properties;
     }
-} 
+}

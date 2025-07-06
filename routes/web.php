@@ -17,17 +17,19 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 // Sitemap routes
 Route::get('sitemap.xml', function () {
     $path = public_path('sitemap.xml');
-    if (!file_exists($path)) {
+    if (! file_exists($path)) {
         \Artisan::call('sitemap:generate');
     }
+
     return response()->file($path, ['Content-Type' => 'application/xml']);
 })->name('sitemap.xml');
 
 Route::get('sitemap.txt', function () {
     $path = public_path('sitemap.txt');
-    if (!file_exists($path)) {
+    if (! file_exists($path)) {
         \Artisan::call('sitemap:generate', ['--format' => 'txt']);
     }
+
     return response()->file($path, ['Content-Type' => 'text/plain']);
 })->name('sitemap.txt');
 
@@ -41,6 +43,7 @@ Route::get('admin', function () {
     if (auth()->check()) {
         return redirect()->route('dashboard');
     }
+
     return redirect()->route('login');
 })->name('admin');
 

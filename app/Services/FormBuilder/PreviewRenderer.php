@@ -39,8 +39,8 @@ class PreviewRenderer
     {
         $renderer = $this->getRenderer($element['type']);
 
-        if (!$renderer) {
-            return '<div class="text-red-500">Unsupported element type: ' . $element['type'] . '</div>';
+        if (! $renderer) {
+            return '<div class="text-red-500">Unsupported element type: '.$element['type'].'</div>';
         }
 
         return $this->renderPreviewInput($element, $fieldName, $renderer);
@@ -74,33 +74,33 @@ class PreviewRenderer
             case 'text':
             case 'email':
                 return $this->renderTextInput($fieldName, $properties, $element['type']);
-            
+
             case 'textarea':
                 return $this->renderTextarea($fieldName, $properties);
-            
+
             case 'select':
                 return $this->renderSelect($fieldName, $properties);
-            
+
             case 'checkbox':
                 return $this->renderCheckbox($fieldName, $properties);
-            
+
             case 'radio':
                 return $this->renderRadio($fieldName, $properties);
-            
+
             case 'date':
                 return $this->renderDatePicker($fieldName, $properties);
-            
+
             case 'number':
                 return $this->renderNumberInput($fieldName, $properties);
-            
+
             case 'password':
                 return $this->renderPasswordInput($fieldName, $properties);
-            
+
             case 'file':
                 return $this->renderFileInput($fieldName, $properties);
-            
+
             default:
-                return '<div class="text-red-500">Unsupported element type: ' . $element['type'] . '</div>';
+                return '<div class="text-red-500">Unsupported element type: '.$element['type'].'</div>';
         }
     }
 
@@ -109,7 +109,7 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'Text Input';
         $placeholder = $properties['placeholder'] ?? '';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
-        
+
         return view('components.form-builder.preview.text-input', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -125,7 +125,7 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'Text Area';
         $placeholder = $properties['placeholder'] ?? '';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
-        
+
         return view('components.form-builder.preview.textarea', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -141,10 +141,10 @@ class PreviewRenderer
         $placeholder = $properties['placeholder'] ?? 'Choose an option...';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $options = $properties['options'] ?? '';
-        
+
         // Parse options with value|label format
         $optionArray = $this->parseOptions($options);
-        
+
         return view('components.form-builder.preview.select', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -160,10 +160,10 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'Checkbox';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $options = $properties['options'] ?? '';
-        
+
         // Parse options with value|label format
         $optionArray = $this->parseOptions($options);
-        
+
         return view('components.form-builder.preview.checkbox', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -178,10 +178,10 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'Radio';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $options = $properties['options'] ?? '';
-        
+
         // Parse options with value|label format
         $optionArray = $this->parseOptions($options);
-        
+
         return view('components.form-builder.preview.radio', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -196,7 +196,7 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'Date Picker';
         $placeholder = $properties['placeholder'] ?? 'Select a date...';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
-        
+
         return view('components.form-builder.preview.date-picker', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -214,7 +214,7 @@ class PreviewRenderer
         $min = $properties['min'] ?? '';
         $max = $properties['max'] ?? '';
         $step = $properties['step'] ?? '';
-        
+
         return view('components.form-builder.preview.number-input', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -232,7 +232,7 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'Password';
         $placeholder = $properties['placeholder'] ?? '';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
-        
+
         return view('components.form-builder.preview.password-input', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -247,7 +247,7 @@ class PreviewRenderer
         $label = $properties['label'] ?? 'File Upload';
         $required = in_array('required', $properties['validation']['rules'] ?? []);
         $multiple = $properties['multiple'] ?? false;
-        
+
         return view('components.form-builder.preview.file-input', [
             'fieldName' => $fieldName,
             'label' => $label,
@@ -266,9 +266,10 @@ class PreviewRenderer
         if (is_array($options)) {
             return $options;
         }
-        
+
         // If options is a string, parse it using the OptionParserService
         $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
+
         return $optionParser->parseOptions($options);
     }
-} 
+}

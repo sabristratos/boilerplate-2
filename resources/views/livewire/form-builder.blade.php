@@ -9,43 +9,9 @@
         }
     }"
 >
-<<<<<<< HEAD
-    <!-- Left Panel: Toolbox & Settings -->
-    <div class="w-80 bg-white dark:bg-zinc-800/50 border-e border-zinc-200 dark:border-zinc-700/50 flex flex-col">
-        <x-form-builder.header :form="$form" />
-        <x-form-builder.toolbox 
-            :elementTypes="$elementTypes" 
-            :settings="$settings" 
-            :tab="$tab" 
-        />
-    </div>
-
-    <!-- Center Panel: Canvas -->
-    <div class="flex-1 flex flex-col">
-        <x-form-builder.canvas-toolbar 
-            :activeBreakpoint="$activeBreakpoint" 
-            :isPreviewMode="$isPreviewMode" 
-        />
-        <x-form-builder.form-canvas 
-            :elements="$elements" 
-            :activeBreakpoint="$activeBreakpoint" 
-            :isPreviewMode="$isPreviewMode" 
-            :form="$form" 
-            :renderedElements="$renderedElements" 
-            :selectedElementId="$selectedElementId"
-        />
-    </div>
-
-    <!-- Right Panel: Properties -->
-    <x-form-builder.properties-panel 
-        :selectedElement="$this->selectedElement" 
-        :selectedElementIndex="$this->selectedElementIndex" 
-        :selectedElementId="$selectedElementId"
-=======
     <!-- Unified Header -->
     <x-form-builder.header 
         :form="$form" 
->>>>>>> 3d646ebc8597a7b3e698f9f41fc701b941fde20d
         :activeBreakpoint="$activeBreakpoint" 
         :isPreviewMode="$isPreviewMode" 
         :hasUnsavedChanges="$this->hasUnsavedChanges"
@@ -57,7 +23,7 @@
         <div class="w-80 bg-white dark:bg-zinc-800/50 border-e border-zinc-200 dark:border-zinc-700/50 flex flex-col">
             <x-form-builder.toolbox 
                 :elementTypes="$elementTypes" 
-                :availablePrebuiltForms="$this->availablePrebuiltForms" 
+                :availablePrebuiltForms="$availablePrebuiltForms" 
                 :settings="$settings" 
                 :tab="$tab" 
             />
@@ -71,7 +37,6 @@
                 :isPreviewMode="$isPreviewMode" 
                 :form="$form" 
                 :renderedElements="$renderedElements" 
-                :previewElements="$previewElements" 
                 :selectedElementId="$selectedElementId"
             />
         </div>

@@ -30,7 +30,7 @@ class OptimizeImagesCommand extends Command
         $this->info('Starting image optimization...');
 
         $query = Media::query();
-        
+
         // Only process image files
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $query->whereIn('extension', $imageExtensions);
@@ -41,9 +41,10 @@ class OptimizeImagesCommand extends Command
         }
 
         $mediaItems = $query->get();
-        
+
         if ($mediaItems->isEmpty()) {
             $this->info('No images found to optimize.');
+
             return Command::SUCCESS;
         }
 
@@ -57,7 +58,7 @@ class OptimizeImagesCommand extends Command
 
         foreach ($mediaItems as $media) {
             try {
-                if ($this->option('force') || !file_exists($media->getPath())) {
+                if ($this->option('force') || ! file_exists($media->getPath())) {
                     OptimizeImageJob::dispatch($media)->onQueue('image-optimization');
                     $optimizedCount++;
                 }
@@ -72,9 +73,9 @@ class OptimizeImagesCommand extends Command
         $bar->finish();
         $this->newLine(2);
 
-        $this->info("Optimization complete!");
+        $this->info('Optimization complete!');
         $this->info("Successfully queued: {$optimizedCount} images");
-        
+
         if ($failedCount > 0) {
             $this->warn("Failed to queue: {$failedCount} images");
         }
@@ -83,4 +84,4 @@ class OptimizeImagesCommand extends Command
 
         return Command::SUCCESS;
     }
-} 
+}

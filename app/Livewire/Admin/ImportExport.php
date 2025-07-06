@@ -12,21 +12,29 @@ use Livewire\WithFileUploads;
 #[Layout('components.layouts.app')]
 class ImportExport extends Component
 {
-    use WithToastNotifications, WithFileUploads;
+    use WithFileUploads, WithToastNotifications;
 
     public string $activeTab = 'export';
+
     public string $selectedType = 'resources';
+
     public string $selectedResource = '';
+
     public array $selectedIds = [];
+
     public bool $includeMedia = true;
-    
+
     // Import properties
     public $importFile;
+
     public bool $overwriteExisting = false;
+
     public array $importResults = [];
+
     public bool $showImportResults = false;
 
     protected ImportExportService $importExportService;
+
     protected ResourceManager $resourceManager;
 
     public function boot(ImportExportService $importExportService, ResourceManager $resourceManager)
@@ -39,15 +47,15 @@ class ImportExport extends Component
     {
         // Handle URL parameters for pre-selection
         $request = request();
-        
+
         if ($request->has('tab')) {
             $this->activeTab = $request->get('tab');
         }
-        
+
         if ($request->has('type')) {
             $this->selectedType = $request->get('type');
         }
-        
+
         if ($request->has('resource')) {
             $this->selectedResource = $request->get('resource');
         }
@@ -63,6 +71,7 @@ class ImportExport extends Component
         if ($this->selectedType === 'resources' && $this->selectedResource) {
             $resource = new $this->selectedResource;
             $model = $resource::$model;
+
             return $model::all()->map(function ($item) {
                 return [
                     'id' => $item->id,
@@ -108,18 +117,19 @@ class ImportExport extends Component
 
             if (empty($exportData['data'])) {
                 $this->showErrorToast('No data to export', 'Export failed');
+
                 return;
             }
-            
+
             // Create ZIP file if media is included
             if ($this->includeMedia) {
                 $zipPath = $this->importExportService->createExportZip($exportData, $this->selectedType);
-                
+
                 return response()->download($zipPath)->deleteFileAfterSend();
             } else {
                 // Return JSON file
-                $filename = "export_{$this->selectedType}_" . now()->format('Y-m-d_H-i-s') . '.json';
-                
+                $filename = "export_{$this->selectedType}_".now()->format('Y-m-d_H-i-s').'.json';
+
                 return response()->streamDownload(function () use ($exportData) {
                     echo json_encode($exportData, JSON_PRETTY_PRINT);
                 }, $filename, [
@@ -144,14 +154,14 @@ class ImportExport extends Component
 
             if ($this->importFile->getClientOriginalExtension() === 'zip') {
                 $tempPath = $this->importFile->store('temp');
-                $extracted = $this->importExportService->extractImportFile(storage_path('app/' . $tempPath));
+                $extracted = $this->importExportService->extractImportFile(storage_path('app/'.$tempPath));
                 $data = $extracted['data'];
                 $tempDir = $extracted['temp_dir'];
             } else {
                 $data = json_decode($this->importFile->get(), true);
             }
 
-            if (!$data) {
+            if (! $data) {
                 throw new \Exception('Invalid import file format');
             }
 
@@ -181,8 +191,8 @@ class ImportExport extends Component
             $this->reset('importFile');
 
             $message = "Import completed: {$results['imported']} imported, {$results['skipped']} skipped";
-            if (!empty($results['errors'])) {
-                $message .= ", " . count($results['errors']) . " errors";
+            if (! empty($results['errors'])) {
+                $message .= ', '.count($results['errors']).' errors';
             }
 
             $this->showSuccessToast($message, 'Import completed');
@@ -218,4 +228,4 @@ class ImportExport extends Component
         return view('livewire.admin.import-export')
             ->title(__('messages.import_export.title'));
     }
-} 
+}

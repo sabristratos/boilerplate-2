@@ -1,19 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
 use App\Enums\FormElementType;
 
 /**
- * Service for providing field-specific validation rules and categories.
+ * Service for providing field-specific validation rules and categories for form elements.
  */
 class FieldValidationService
 {
     /**
      * Get relevant validation rules for a specific field type.
-     *
-     * @param string $fieldType
-     * @return array
      */
     public function getRelevantRules(string $fieldType): array
     {
@@ -34,8 +33,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for text input fields.
-     *
-     * @return array
      */
     private function getTextRules(): array
     {
@@ -109,8 +106,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for textarea fields.
-     *
-     * @return array
      */
     private function getTextareaRules(): array
     {
@@ -144,8 +139,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for email fields.
-     *
-     * @return array
      */
     private function getEmailRules(): array
     {
@@ -179,8 +172,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for select fields.
-     *
-     * @return array
      */
     private function getSelectRules(): array
     {
@@ -198,8 +189,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for checkbox fields.
-     *
-     * @return array
      */
     private function getCheckboxRules(): array
     {
@@ -217,8 +206,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for radio fields.
-     *
-     * @return array
      */
     private function getRadioRules(): array
     {
@@ -236,8 +223,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for date fields.
-     *
-     * @return array
      */
     private function getDateRules(): array
     {
@@ -295,8 +280,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for number fields.
-     *
-     * @return array
      */
     private function getNumberRules(): array
     {
@@ -362,8 +345,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for password fields.
-     *
-     * @return array
      */
     private function getPasswordRules(): array
     {
@@ -405,8 +386,6 @@ class FieldValidationService
 
     /**
      * Get validation rules for file fields.
-     *
-     * @return array
      */
     private function getFileRules(): array
     {
@@ -456,8 +435,6 @@ class FieldValidationService
 
     /**
      * Get default validation rules (fallback).
-     *
-     * @return array
      */
     private function getDefaultRules(): array
     {
@@ -475,9 +452,6 @@ class FieldValidationService
 
     /**
      * Get validation rules grouped by category for a field type.
-     *
-     * @param string $fieldType
-     * @return array
      */
     public function getRelevantRulesByCategory(string $fieldType): array
     {
@@ -494,9 +468,6 @@ class FieldValidationService
 
     /**
      * Get available categories for a field type.
-     *
-     * @param string $fieldType
-     * @return array
      */
     public function getAvailableCategories(string $fieldType): array
     {
@@ -505,11 +476,11 @@ class FieldValidationService
 
         foreach ($rules as $rule) {
             $category = $rule['category'] ?? 'Other';
-            if (!in_array($category, $categories)) {
+            if (! in_array($category, $categories)) {
                 $categories[] = $category;
             }
         }
 
         return $categories;
     }
-} 
+}

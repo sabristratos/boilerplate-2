@@ -47,7 +47,7 @@ class GenerateSitemap extends Command
 
         foreach ($pages as $page) {
             $sitemap->add(
-                Url::create('/' . $page->slug)
+                Url::create('/'.$page->slug)
                     ->setLastModificationDate($page->updated_at)
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                     ->setPriority(0.8)
@@ -69,7 +69,7 @@ class GenerateSitemap extends Command
         }
 
         $this->info("Sitemap generated successfully at: {$path}");
-        $this->info("Total URLs: " . count($sitemap->getTags()));
+        $this->info('Total URLs: '.count($sitemap->getTags()));
 
         return Command::SUCCESS;
     }
@@ -125,4 +125,4 @@ class GenerateSitemap extends Command
 
         file_put_contents($path, implode("\n", $urls));
     }
-} 
+}

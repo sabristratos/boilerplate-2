@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder\PrebuiltForms;
 
 class ContactForm implements PrebuiltFormInterface
@@ -72,4 +74,4 @@ class ContactForm implements PrebuiltFormInterface
             'defaultFont' => 'system-ui',
         ];
     }
-} 
+}

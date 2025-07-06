@@ -60,9 +60,10 @@ class Login extends Component
     {
         try {
             $socialLoginService = app(SocialLoginService::class);
-            
-            if (!$socialLoginService->isProviderEnabled($provider)) {
+
+            if (! $socialLoginService->isProviderEnabled($provider)) {
                 $this->showErrorToast('Social login is not enabled for this provider.');
+
                 return;
             }
 
@@ -79,6 +80,7 @@ class Login extends Component
     {
         try {
             $socialLoginService = app(SocialLoginService::class);
+
             return $socialLoginService->getEnabledProviders();
         } catch (\Exception $e) {
             return [];

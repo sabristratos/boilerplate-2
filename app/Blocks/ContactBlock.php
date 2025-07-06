@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Blocks;
 
 class ContactBlock extends Block
@@ -71,4 +73,4 @@ class ContactBlock extends Block
             'contact_info.address' => 'nullable|string|max:500',
         ];
     }
-} 
+}

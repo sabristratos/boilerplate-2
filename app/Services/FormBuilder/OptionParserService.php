@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
 class OptionParserService
@@ -19,7 +21,9 @@ class OptionParserService
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line)) continue;
+            if (empty($line)) {
+                continue;
+            }
 
             if (str_contains($line, '|')) {
                 [$value, $label] = explode('|', $line, 2);
@@ -51,10 +55,10 @@ class OptionParserService
                 [
                     'value' => '',
                     'label' => '',
-                ]
+                ],
             ];
         }
 
         return $parsedOptions;
     }
-} 
+}

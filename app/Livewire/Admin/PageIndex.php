@@ -72,7 +72,7 @@ class PageIndex extends Component
     public function createPage(): void
     {
         $this->authorize('create', Page::class);
-        
+
         $defaultLocale = config('app.fallback_locale');
         $title = __('messages.page_index.new_page_title');
         $baseSlug = Str::slug($title);
@@ -81,7 +81,7 @@ class PageIndex extends Component
 
         // Ensure slug uniqueness
         while (Page::where('slug', $slug)->exists()) {
-            $slug = $baseSlug . '-' . $counter;
+            $slug = $baseSlug.'-'.$counter;
             $counter++;
         }
 

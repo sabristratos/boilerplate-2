@@ -58,4 +58,4 @@ class SaveDraftContentBlockAction
 
         return $contentBlock->refresh();
     }
-} 
+}

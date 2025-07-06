@@ -71,9 +71,9 @@ class MediaUploader extends Component
     {
         $this->model = $model;
         $this->collection = $collection;
-        
+
         // Initialize temporary media if model is not saved
-        if (!$this->model->exists) {
+        if (! $this->model->exists) {
             $this->initializeTemporaryMedia();
         }
     }
@@ -87,14 +87,14 @@ class MediaUploader extends Component
             $sessionId = session()->getId();
             $fieldName = $this->collection;
             $modelType = get_class($this->model);
-            
+
             $this->temporaryMedia = TemporaryMedia::getForSession($sessionId, $fieldName);
-            
-            if (!$this->temporaryMedia) {
+
+            if (! $this->temporaryMedia) {
                 $this->temporaryMedia = TemporaryMedia::createForSession(
-                    $sessionId, 
-                    $fieldName, 
-                    $modelType, 
+                    $sessionId,
+                    $fieldName,
+                    $modelType,
                     $this->collection
                 );
             }
@@ -141,25 +141,26 @@ class MediaUploader extends Component
                 $media = $this->addMediaToModel($this->model);
             } else {
                 // Model is not saved, use temporary media
-                if (!$this->temporaryMedia) {
+                if (! $this->temporaryMedia) {
                     $this->initializeTemporaryMedia();
                 }
-                
-                if (!$this->temporaryMedia) {
+
+                if (! $this->temporaryMedia) {
                     Flux::toast('Failed to initialize temporary media storage.', variant: 'danger');
+
                     return;
                 }
-                
+
                 $this->temporaryMedia->clearMediaCollection('temp');
                 $media = $this->addMediaToModel($this->temporaryMedia, 'temp');
             }
 
             // The component now only needs to know about the model.
             // The parent component is responsible for handling what happens after.
-            $this->dispatch('media-updated', 
-                modelId: $this->model->exists ? $this->model->id : null, 
+            $this->dispatch('media-updated',
+                modelId: $this->model->exists ? $this->model->id : null,
                 collection: $this->collection,
-                isTemporary: !$this->model->exists
+                isTemporary: ! $this->model->exists
             );
 
             $this->reset(['file', 'url', 'selectedMediaId']);
@@ -176,10 +177,10 @@ class MediaUploader extends Component
     /**
      * Add media to a model (either actual model or temporary media).
      */
-    protected function addMediaToModel($targetModel, string $collection = null): ?Media
+    protected function addMediaToModel($targetModel, ?string $collection = null): ?Media
     {
         $collection = $collection ?? $this->collection;
-        
+
         if ($this->file) {
             return $targetModel->addMedia($this->file->getRealPath())
                 ->usingName($this->file->getClientOriginalName())
@@ -189,9 +190,10 @@ class MediaUploader extends Component
                 ->toMediaCollection($collection);
         } elseif ($this->selectedMediaId) {
             $selectedMedia = Media::findOrFail($this->selectedMediaId);
+
             return $selectedMedia->copy($targetModel, $collection);
         }
-        
+
         return null;
     }
 
@@ -255,22 +257,23 @@ class MediaUploader extends Component
                 $this->model->clearMediaCollection($this->collection);
             } else {
                 // Ensure temporary media is initialized
-                if (!$this->temporaryMedia) {
+                if (! $this->temporaryMedia) {
                     $this->initializeTemporaryMedia();
                 }
-                
-                if (!$this->temporaryMedia) {
+
+                if (! $this->temporaryMedia) {
                     Flux::toast('Failed to initialize temporary media storage.', variant: 'danger');
+
                     return;
                 }
-                
+
                 $this->temporaryMedia->clearMediaCollection('temp');
             }
-            
-            $this->dispatch('media-updated', 
-                modelId: $this->model->exists ? $this->model->id : null, 
+
+            $this->dispatch('media-updated',
+                modelId: $this->model->exists ? $this->model->id : null,
                 collection: $this->collection,
-                isTemporary: !$this->model->exists
+                isTemporary: ! $this->model->exists
             );
             Flux::toast('Media removed successfully.', variant: 'success');
         } catch (\Exception $e) {
@@ -284,10 +287,10 @@ class MediaUploader extends Component
     public function render()
     {
         // Ensure temporary media is initialized for unsaved models
-        if (!$this->model->exists && !$this->temporaryMedia) {
+        if (! $this->model->exists && ! $this->temporaryMedia) {
             $this->initializeTemporaryMedia();
         }
-        
+
         $query = Media::query();
 
         if ($this->search) {

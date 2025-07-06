@@ -1,4 +1,4 @@
-@props(['elementTypes', 'settings', 'tab'])
+@props(['elementTypes', 'settings', 'tab', 'availablePrebuiltForms'])
 <div class="flex-1 overflow-y-auto p-4">
     <flux:tab.group wire:model.live="tab">
         <flux:tabs>

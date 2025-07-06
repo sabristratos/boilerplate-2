@@ -22,4 +22,4 @@ return [
     'file_not_found' => 'Backup file not found',
     'mysql_not_supported' => 'Database backup is not supported on this system. MySQL backup tools (mysqldump) are not available. This feature will work when deployed to a server with proper MySQL tools installed.',
     'postgresql_not_supported' => 'Database backup is not supported on this system. PostgreSQL backup tools (pg_dump) are not available. This feature will work when deployed to a server with proper PostgreSQL tools installed.',
-]; 
+];

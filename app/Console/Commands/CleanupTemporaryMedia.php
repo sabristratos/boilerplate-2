@@ -27,10 +27,11 @@ class CleanupTemporaryMedia extends Command
     public function handle()
     {
         $query = TemporaryMedia::where('created_at', '<', now()->subDay());
-        
+
         if ($this->option('dry-run')) {
             $count = $query->count();
             $this->info("Would delete {$count} temporary media records older than 24 hours.");
+
             return Command::SUCCESS;
         }
 

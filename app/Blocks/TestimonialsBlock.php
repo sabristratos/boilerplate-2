@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Blocks;
 
 class TestimonialsBlock extends Block
@@ -91,4 +93,4 @@ class TestimonialsBlock extends Block
             'testimonials.*.avatar' => 'nullable|string',
         ];
     }
-} 
+}

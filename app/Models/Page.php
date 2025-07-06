@@ -58,8 +58,8 @@ class Page extends Model implements HasMedia
     ];
 
     public array $translatable = [
-        'title', 
-        'meta_title', 
+        'title',
+        'meta_title',
         'meta_description',
         'meta_keywords',
         'og_title',
@@ -106,10 +106,10 @@ class Page extends Model implements HasMedia
 
     public function hasDraftChanges(): bool
     {
-        return !empty($this->draft_title) || 
-               !empty($this->draft_slug) || 
-               !empty($this->draft_meta_title) || 
-               !empty($this->draft_meta_description) ||
+        return ! empty($this->draft_title) ||
+               ! empty($this->draft_slug) ||
+               ! empty($this->draft_meta_title) ||
+               ! empty($this->draft_meta_description) ||
                $this->contentBlocks()->whereNotNull('draft_data')
                    ->orWhereNotNull('draft_settings')
                    ->orWhereNotNull('draft_visible')
@@ -134,7 +134,7 @@ class Page extends Model implements HasMedia
             $this->twitter_card_type = $this->draft_twitter_card_type ?? $this->twitter_card_type;
             $this->canonical_url = $this->draft_canonical_url ?? $this->canonical_url;
             $this->structured_data = $this->draft_structured_data ?? $this->structured_data;
-            
+
             // Handle boolean fields properly
             if ($this->draft_no_index !== null) {
                 $this->no_index = $this->draft_no_index;

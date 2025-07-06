@@ -4,11 +4,11 @@ namespace App\Services;
 
 use App\Models\Setting;
 use App\Models\SettingGroup;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Auth\Access\AuthorizationException;
 
 class SettingsManager
 {
@@ -53,11 +53,11 @@ class SettingsManager
     public function getTranslation(string $key, string $locale, mixed $default = null): mixed
     {
         $setting = $this->get($key, $default);
-        
+
         if (is_array($setting) && isset($setting[$locale])) {
             return $setting[$locale];
         }
-        
+
         return $default;
     }
 
@@ -69,14 +69,14 @@ class SettingsManager
         // Use direct array access instead of dot notation to handle keys with dots
         $settingsConfig = Config::get('settings.settings', []);
         $settingConfig = $settingsConfig[$key] ?? null;
-        
-        if (!$settingConfig) {
+
+        if (! $settingConfig) {
             throw new \InvalidArgumentException("Setting configuration not found for key: {$key}");
         }
 
         // Validate permissions if specified
         if (isset($settingConfig['permission'])) {
-            if (!auth()->user() || !auth()->user()->can($settingConfig['permission'])) {
+            if (! auth()->user() || ! auth()->user()->can($settingConfig['permission'])) {
                 throw new AuthorizationException('Insufficient permissions to modify this setting.');
             }
         }
@@ -127,11 +127,11 @@ class SettingsManager
     public function setTranslation(string $key, string $locale, mixed $value): void
     {
         $currentValue = $this->get($key, []);
-        
-        if (!is_array($currentValue)) {
+
+        if (! is_array($currentValue)) {
             $currentValue = [];
         }
-        
+
         $currentValue[$locale] = $value;
         $this->set($key, $currentValue);
     }
@@ -142,13 +142,13 @@ class SettingsManager
     public function getAll(): array
     {
         $cacheKey = $this->getCacheKey();
-        
+
         if ($this->supportsCacheTags()) {
             return Cache::tags(['settings'])->remember($cacheKey, now()->addMinutes(30), function () {
                 return $this->loadSettingsFromDatabase();
             });
         }
-        
+
         return Cache::remember($cacheKey, now()->addMinutes(30), function () {
             return $this->loadSettingsFromDatabase();
         });
@@ -213,7 +213,7 @@ class SettingsManager
                 case 'json':
                     $value = is_string($value) ? json_decode($value, true) : $value;
                     break;
-                // Add more casts as needed
+                    // Add more casts as needed
             }
             $result[$setting->key] = [
                 'value' => $value,
@@ -244,9 +244,10 @@ class SettingsManager
     {
         if (is_string($options) && str_starts_with($options, 'dynamic:')) {
             $dynamicKey = substr($options, 8); // Remove 'dynamic:' prefix
+
             return $this->getDynamicOptions($dynamicKey);
         }
-        
+
         return $options;
     }
 
@@ -257,16 +258,17 @@ class SettingsManager
     {
         $settings = $this->getAll();
         $setting = $settings[$key] ?? null;
-        
-        if (!$setting) {
+
+        if (! $setting) {
             // Try to get from config if not in database
             $settingConfig = Config::get("settings.settings.{$key}");
             if ($settingConfig && isset($settingConfig['options'])) {
                 return $this->processOptions($settingConfig['options'], $key);
             }
+
             return [];
         }
-        
+
         return $this->processOptions($setting['options'], $key);
     }
 
@@ -277,7 +279,7 @@ class SettingsManager
     {
         switch ($key) {
             case 'general.homepage':
-                return \App\Models\Page::orderBy('title->' . app()->getLocale(), 'asc')
+                return \App\Models\Page::orderBy('title->'.app()->getLocale(), 'asc')
                     ->pluck('title', 'id')
                     ->map(function ($title, $id) {
                         return is_array($title) ? ($title[app()->getLocale()] ?? $title['en'] ?? 'Untitled') : $title;
@@ -295,6 +297,7 @@ class SettingsManager
     {
         try {
             $store = Cache::getStore();
+
             return method_exists($store, 'tags');
         } catch (\Exception $e) {
             return false;

@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
-     * 
+     *
      * Required environment variables:
      * - ADMIN_NAME: The name of the super admin user
      * - ADMIN_EMAIL: The email address of the super admin user
@@ -50,9 +50,9 @@ class DatabaseSeeder extends Seeder
         $adminPassword = env('ADMIN_PASSWORD');
 
         // Validate that all required environment variables are set
-        if (!$adminName || !$adminEmail || !$adminPassword) {
+        if (! $adminName || ! $adminEmail || ! $adminPassword) {
             throw new \Exception(
-                'Missing required environment variables for admin user. ' .
+                'Missing required environment variables for admin user. '.
                 'Please set ADMIN_NAME, ADMIN_EMAIL, and ADMIN_PASSWORD in your .env file.'
             );
         }

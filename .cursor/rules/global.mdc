@@ -1,0 +1,132 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Laravel Development Guidelines
+This document outlines the development standards, architecture, and best practices for this project. Adherence to these guidelines is mandatory to ensure a consistent, maintainable, and high-quality codebase.
+
+1. Core Philosophy & Architecture
+1.1. Code Standards
+Strict Typing: All PHP files MUST start with declare(strict_types=1);.
+
+Docblocks: All classes, methods, and properties MUST have comprehensive Docblocks explaining their purpose, parameters (@param), and return types (@return).
+
+Code Style: We follow the PSR-12 coding standard. Use Laravel Pint (./vendor/bin/pint) to automatically format code before every commit.
+
+1.2. Application Architecture
+Service Layer: All business logic MUST reside in dedicated Service classes. Services are the core of the application logic.
+
+Livewire Components: Livewire components replace traditional controllers for user-facing interactions. Their methods should be lean, primarily acting as a bridge to call Service classes.
+
+Data Transfer Objects (DTOs): Use DTOs for structured, type-safe data transfer between application layers (e.g., from a Livewire component to a Service).
+
+Models: Models MUST be lean. Their sole responsibilities are defining Eloquent properties: relationships, attribute casting, $fillable/$guarded arrays, and model-specific accessors/mutators. No business logic in models.
+
+Enums: Use PHP enums for any fixed set of values (e.g., statuses, types, roles). This is preferred over constants or strings.
+
+1.3. Service Container & Dependency Injection
+Dependency Injection: Always use constructor injection to resolve dependencies (Services, Repositories, etc.).
+
+No app() helper: Do not use the app() or resolve() helpers for dependency resolution in application code. Rely on automatic resolution by the service container.
+
+2. Frontend Development
+2.1. Tailwind CSS
+Configuration: We use Tailwind CSS v4. All configuration MUST be done within the app.css file, not in a tailwind.config.js file.
+
+2.2. Blade & Views
+Blade Partials: Break down complex views into smaller, reusable Blade partials using @include. Store these in resources/views/partials/.
+
+Blade Components: Create reusable UI elements (buttons, cards, modals) as anonymous Blade Components. Store them in resources/views/components/.
+
+2.3. UI Components
+Flux Components: Build the primary UI using Flux Components.
+
+Props & Events: Use props for parent-to-child data flow and events for child-to-parent communication.
+
+3. Livewire
+3.1. Component Nesting & Communication
+Component Choice: Use standard Blade components for non-interactive partials. Only create a nested Livewire component if it requires its own dynamic functionality.
+
+Parent-to-Child (Props): Pass data to child components via :prop="$data". Make props reactive by adding the #[Reactive] attribute to the child's public property.
+
+Child-to-Parent (Events):
+
+Listen for events in the parent using #[On('event-name')] on a public method.
+
+Always prefer client-side event dispatching to reduce network requests: wire:click="$dispatch('event-name', { param: 'value' })".
+
+Child-to-Parent (Direct Access): As an alternative to events, call a parent method directly from the child's Blade view: wire:click="$parent.methodName(param)".
+
+Two-Way Binding (wire:model):
+
+To bind a parent's property to a child component, use wire:model on the child component tag.
+
+In the child component, add the #[Modelable] attribute to the target public property.
+
+Loops & Dynamic Components:
+
+When rendering components in a loop or using <livewire:dynamic-component>, providing a unique :key is mandatory.
+
+To force a child component to re-initialize, change its :key value.
+
+4. Alpine.js
+4.1. Usage
+Purpose: Use Alpine.js for client-side interactivity that does not require a server roundtrip (e.g., toggling modals, dropdowns, tabs).
+
+The $wire Object: Use the $wire magic object as the primary way to interact with the Livewire component from Alpine.
+
+Read Property: <span x-text="$wire.property"></span>
+
+Set Property: x-on:click="$wire.property = 'value'"
+
+Call Method: x-on:click="$wire.method()"
+
+Refresh Component: x-on:click="$wire.$refresh()"
+
+State Synchronization:
+
+Avoid $wire.entangle(). Prefer direct property access via $wire.
+
+Do not use the deprecated @entangle Blade directive.
+
+Passing Blade Variables: When passing a non-integer Blade variable (e.g., a UUID) to a $wire method, you must wrap it in quotes to form a valid JavaScript string.
+
+Correct: x-on:click="$wire.delete('{{ $model->uuid }}')"
+
+Incorrect: x-on:click="$wire.delete({{ $model->uuid }})"
+
+5. Key Packages & Conventions
+5.1. spatie/laravel-medialibrary
+Define all media collections and conversions directly on the associated Model.
+
+5.2. spatie/laravel-permission
+Name permissions using the action.model convention (e.g., posts.create, users.delete).
+
+Define all core roles and permissions in database seeders.
+
+5.3. spatie/laravel-sortable
+Implement the Sortable interface on models that require manual ordering.
+
+5.4. spatie/laravel-activitylog
+Configure logging options on the model via the getActivitylogOptions() method.
+
+Provide clear, translatable log messages using setDescriptionForEvent().
+
+6. General Rules & Best Practices
+6.1. Validation
+Use Livewire's real-time validation, defining rules in public properties or methods. For complex validation shared across the application, rules can be extracted into Livewire Form classes and referenced from the Livewire component.
+
+6.2. Configuration
+Read configuration values using config('key.name'). Never use env() outside of config/*.php files.
+
+6.3. Database
+Use Eloquent for all database interactions. Use the Query Builder only when an Eloquent query is impractical. Avoid raw SQL.
+
+6.4. Translations
+All user-facing strings MUST be translatable.
+
+Use Laravel's translation helpers (__('key'), @lang('key')).
+
+
+Use a structured, dot-notation key convention for clarity. Example: pages.posts.index.title, validation.posts.title_required.

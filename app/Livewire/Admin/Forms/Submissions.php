@@ -3,7 +3,6 @@
 namespace App\Livewire\Admin\Forms;
 
 use App\Models\Form;
-use App\Models\FormSubmission;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -65,8 +64,8 @@ class Submissions extends Component
         $submissions = $this->form->submissions()
             ->when($this->search, function ($query, $search) {
                 $query->where(function ($q) use ($search) {
-                    $q->where('ip_address', 'like', '%' . $search . '%')
-                        ->orWhere('user_agent', 'like', '%' . $search . '%')
+                    $q->where('ip_address', 'like', '%'.$search.'%')
+                        ->orWhere('user_agent', 'like', '%'.$search.'%')
                         ->orWhereRaw("JSON_EXTRACT(data, '$.*') LIKE ?", ["%{$search}%"]);
                 });
             })
@@ -77,4 +76,4 @@ class Submissions extends Component
             'submissions' => $submissions,
         ])->title(__('forms.submissions_for', ['name' => $this->form->getTranslation('name', app()->getLocale())]));
     }
-} 
+}

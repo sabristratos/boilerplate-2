@@ -111,8 +111,8 @@ class SettingsPage extends Component
             }
 
             // Extract the field name from the full key (remove group prefix)
-            $fieldName = str_replace($this->group . '.', '', $key);
-            data_set($this->state, $this->group . '.' . $fieldName, $value);
+            $fieldName = str_replace($this->group.'.', '', $key);
+            data_set($this->state, $this->group.'.'.$fieldName, $value);
         }
     }
 
@@ -169,8 +169,6 @@ class SettingsPage extends Component
             foreach ($currentState as $key => $value) {
                 if (data_get($initialState, $key) != $value) {
                     $fullKey = $this->group.'.'.$key;
-
-
 
                     $changedData[$fullKey] = $value;
 
@@ -324,18 +322,18 @@ class SettingsPage extends Component
                 $settingData['value'] = Settings::get($key);
                 $settingData['label'] = is_array($settingData['label']) ? ($settingData['label'][app()->getLocale() ?? 'en'] ?? $settingData['label']['en']) : $settingData['label'];
                 $settingData['description'] = isset($settingData['description']) ? (is_array($settingData['description']) ? ($settingData['description'][app()->getLocale() ?? 'en'] ?? $settingData['description']['en']) : $settingData['description']) : null;
-                
+
                 // Process subfields for repeaters
                 if (isset($settingData['subfields']) && is_array($settingData['subfields'])) {
                     foreach ($settingData['subfields'] as $subfieldKey => $subfield) {
                         if (isset($subfield['label'])) {
-                            $settingData['subfields'][$subfieldKey]['label'] = is_array($subfield['label']) 
-                                ? ($subfield['label'][app()->getLocale() ?? 'en'] ?? $subfield['label']['en']) 
+                            $settingData['subfields'][$subfieldKey]['label'] = is_array($subfield['label'])
+                                ? ($subfield['label'][app()->getLocale() ?? 'en'] ?? $subfield['label']['en'])
                                 : $subfield['label'];
                         }
                     }
                 }
-                
+
                 if (isset($settingData['options']) && is_callable($settingData['options'])) {
                     $settingData['options'] = call_user_func($settingData['options']);
                 }

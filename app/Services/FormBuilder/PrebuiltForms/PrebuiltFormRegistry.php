@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder\PrebuiltForms;
 
 class PrebuiltFormRegistry
@@ -10,7 +12,7 @@ class PrebuiltFormRegistry
     public static function all(): array
     {
         return [
-            new ContactForm(),
+            new ContactForm,
             // Add new prebuilt forms here
         ];
     }
@@ -22,6 +24,7 @@ class PrebuiltFormRegistry
                 return $form;
             }
         }
+
         return null;
     }
-} 
+}

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
 use App\Services\FormBuilder\Contracts\ElementRendererInterface;
@@ -13,7 +15,6 @@ use App\Services\FormBuilder\Renderers\RadioRenderer;
 use App\Services\FormBuilder\Renderers\SelectRenderer;
 use App\Services\FormBuilder\Renderers\TextareaRenderer;
 use Illuminate\Support\Str;
-use App\Services\FormBuilder\ElementDTO;
 
 /**
  * Factory for creating and rendering form elements.
@@ -45,9 +46,6 @@ class ElementFactory
 
     /**
      * Create a new element with default structure.
-     *
-     * @param string $type
-     * @return ElementDTO
      */
     public function createElement(string $type): ElementDTO
     {
@@ -69,9 +67,6 @@ class ElementFactory
 
     /**
      * Get the renderer for a specific element type.
-     *
-     * @param string $type
-     * @return ElementRendererInterface|null
      */
     public function getRenderer(string $type): ?ElementRendererInterface
     {
@@ -86,11 +81,6 @@ class ElementFactory
 
     /**
      * Render an element as HTML.
-     *
-     * @param array|ElementDTO $element
-     * @param string $mode
-     * @param string|null $fieldName
-     * @return string
      */
     public function renderElement(array|ElementDTO $element, string $mode = 'edit', ?string $fieldName = null): string
     {

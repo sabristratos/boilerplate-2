@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Blocks;
 
 class CallToActionBlock extends Block
@@ -74,4 +76,4 @@ class CallToActionBlock extends Block
             'buttons.*.url' => 'required|string',
         ];
     }
-} 
+}

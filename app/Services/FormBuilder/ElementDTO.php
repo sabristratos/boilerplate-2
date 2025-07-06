@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
 /**
@@ -16,21 +18,24 @@ class ElementDTO
 {
     /** @var string */
     public $id;
+
     /** @var string */
     public $type;
+
     /** @var int */
     public $order;
+
     /** @var array */
     public $properties;
+
     /** @var array */
     public $styles;
+
     /** @var array */
     public $validation;
 
     /**
      * ElementDTO constructor.
-     *
-     * @param array $data
      */
     public function __construct(array $data)
     {
@@ -44,9 +49,6 @@ class ElementDTO
 
     /**
      * Fill the DTO with new data.
-     *
-     * @param array $data
-     * @return void
      */
     public function fill(array $data): void
     {
@@ -59,8 +61,6 @@ class ElementDTO
 
     /**
      * Convert the DTO to an array.
-     *
-     * @return array
      */
     public function toArray(): array
     {
@@ -73,4 +73,4 @@ class ElementDTO
             'validation' => $this->validation,
         ];
     }
-} 
+}

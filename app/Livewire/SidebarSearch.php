@@ -3,13 +3,15 @@
 namespace App\Livewire;
 
 use App\Models\Page;
-use Livewire\Component;
 use Illuminate\Support\Collection;
+use Livewire\Component;
 
 class SidebarSearch extends Component
 {
     public string $search = '';
+
     public bool $showResults = false;
+
     public Collection $searchResults;
 
     public function mount()
@@ -22,6 +24,7 @@ class SidebarSearch extends Component
         if (strlen($this->search) < 2) {
             $this->searchResults = collect();
             $this->showResults = false;
+
             return;
         }
 
@@ -161,7 +164,7 @@ class SidebarSearch extends Component
     {
         if ($this->searchResults->has($index)) {
             $item = $this->searchResults->get($index);
-            
+
             if ($item['external']) {
                 // Open in new tab for external links
                 $this->dispatch('open-external-link', url: $item['url']);
@@ -169,7 +172,7 @@ class SidebarSearch extends Component
                 // Navigate to internal page
                 $this->dispatch('navigate-to', url: $item['url']);
             }
-            
+
             $this->clearSearch();
         }
     }
@@ -185,4 +188,4 @@ class SidebarSearch extends Component
     {
         return view('livewire.sidebar-search');
     }
-} 
+}

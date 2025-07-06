@@ -14,7 +14,7 @@ Route::middleware('guest')->group(function (): void {
     Route::get('register', Register::class)->name('register');
     Route::get('forgot-password', ForgotPassword::class)->name('password.request');
     Route::get('reset-password/{token}', ResetPassword::class)->name('password.reset');
-    
+
     // Social login routes
     Route::get('auth/{provider}/redirect', [\App\Http\Controllers\Auth\SocialLoginController::class, 'redirect'])
         ->name('social.redirect')

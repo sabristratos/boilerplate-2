@@ -69,4 +69,4 @@ return [
      */
     'binary_path' => '',
 
-]; 
+];

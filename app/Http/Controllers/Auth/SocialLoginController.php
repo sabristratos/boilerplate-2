@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Services\SocialLoginService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class SocialLoginController extends Controller
@@ -23,9 +22,9 @@ class SocialLoginController extends Controller
         } catch (\Exception $e) {
             Log::error('Social login redirect failed in controller', [
                 'provider' => $provider,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return redirect()->route('login')
                 ->withErrors(['email' => 'Unable to connect to social login provider. Please try again.']);
         }
@@ -41,11 +40,11 @@ class SocialLoginController extends Controller
         } catch (\Exception $e) {
             Log::error('Social login callback failed in controller', [
                 'provider' => $provider,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
-            
+
             return redirect()->route('login')
                 ->withErrors(['email' => 'Social login failed. Please try again or use your email and password.']);
         }
     }
-} 
+}

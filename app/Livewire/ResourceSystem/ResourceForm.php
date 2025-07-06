@@ -174,7 +174,7 @@ class ResourceForm extends Component
             );
 
             // Redirect to resource index after success
-            $this->redirectRoute('admin.' . $this->getResourceInstance()::uriKey() . '.index', navigate: true);
+            $this->redirectRoute('admin.'.$this->getResourceInstance()::uriKey().'.index', navigate: true);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -193,18 +193,18 @@ class ResourceForm extends Component
         // Get all temporary media for this session and model type
         $sessionId = session()->getId();
         $modelType = get_class($model);
-        
+
         $temporaryMediaRecords = \App\Models\TemporaryMedia::where('session_id', $sessionId)
             ->where('model_type', $modelType)
             ->get();
-        
+
         foreach ($temporaryMediaRecords as $tempMedia) {
             $media = $tempMedia->getFirstMedia('temp');
-            
+
             if ($media) {
                 // Copy the media to the actual model
                 $media->copy($model, $tempMedia->collection_name);
-                
+
                 // Delete the temporary media record and its media
                 $tempMedia->delete();
             }

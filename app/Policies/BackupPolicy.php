@@ -37,4 +37,4 @@ class BackupPolicy
     {
         return $user->hasPermissionTo('backup.view');
     }
-} 
+}

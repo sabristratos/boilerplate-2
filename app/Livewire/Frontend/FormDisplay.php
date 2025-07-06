@@ -12,8 +12,11 @@ class FormDisplay extends Component
     use WithFileUploads;
 
     public Form $form;
+
     public array $formData = [];
+
     public bool $submitted = false;
+
     public string $successMessage = '';
 
     private ElementFactory $elementFactory;
@@ -32,7 +35,7 @@ class FormDisplay extends Component
     private function initializeFormData()
     {
         $this->formData = [];
-        
+
         if ($this->form->elements) {
             foreach ($this->form->elements as $element) {
                 $fieldName = $this->generateFieldName($element);
@@ -44,6 +47,7 @@ class FormDisplay extends Component
     private function generateFieldName($element): string
     {
         $fieldNameGenerator = app(\App\Services\FormBuilder\FieldNameGeneratorService::class);
+
         return $fieldNameGenerator->generateFieldName($element);
     }
 
@@ -51,32 +55,30 @@ class FormDisplay extends Component
     {
         $errorHandler = app(\App\Services\FormBuilder\FormSubmissionErrorHandler::class);
         $result = $errorHandler->handleSubmission($this->form, $this->formData);
-        
+
         if ($result['success']) {
             $this->submitted = true;
             $this->successMessage = $result['message'];
             $this->initializeFormData();
         } else {
             // Handle validation errors
-            if (!empty($result['errors'])) {
+            if (! empty($result['errors'])) {
                 foreach ($result['errors'] as $field => $messages) {
                     foreach ($messages as $message) {
                         $this->addError($field, $message);
                     }
                 }
             }
-            
+
             // Show error message
             $this->addError('general', $result['message']);
         }
     }
 
-
-
     public function render()
     {
         $renderedElements = [];
-        
+
         if ($this->form->elements) {
             foreach ($this->form->elements as $element) {
                 $fieldName = $this->generateFieldName($element);
@@ -88,4 +90,4 @@ class FormDisplay extends Component
             'renderedElements' => $renderedElements,
         ]);
     }
-} 
+}

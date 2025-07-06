@@ -88,7 +88,7 @@ class User extends Authenticatable implements HasMedia
      */
     public function hasSocialLogin(): bool
     {
-        return !empty($this->google_id) || !empty($this->facebook_id);
+        return ! empty($this->google_id) || ! empty($this->facebook_id);
     }
 
     /**
@@ -96,7 +96,7 @@ class User extends Authenticatable implements HasMedia
      */
     public function hasPassword(): bool
     {
-        return !empty($this->password);
+        return ! empty($this->password);
     }
 
     public function forms(): HasMany

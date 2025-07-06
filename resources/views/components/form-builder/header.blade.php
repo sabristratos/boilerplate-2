@@ -25,6 +25,13 @@
     
     <!-- Right Section: Controls -->
     <div class="flex items-center gap-4">
+        <!-- Draft Status Indicator -->
+        @if($this->hasDraftChanges)
+            <flux:badge color="blue" icon="document-text" class="text-xs">
+                {{ __('messages.forms.form_builder_interface.draft_changes') }}
+            </flux:badge>
+        @endif
+
         <!-- Submissions Button -->
         <flux:button 
             href="{{ route('admin.forms.submissions', $form) }}" 
@@ -44,11 +51,51 @@
             </flux:badge>
         @endif
 
-        <!-- Save Button -->
+        <!-- Draft Controls -->
+        <div class="flex items-center gap-2">
+            <!-- Save Draft Button -->
+            <flux:button 
+                wire:click="saveDraft" 
+                icon="document-text"
+                variant="ghost"
+                size="sm"
+                :tooltip="__('messages.forms.form_builder_interface.save_draft_tooltip')"
+            >
+                {{ __('messages.forms.form_builder_interface.save_draft') }}
+            </flux:button>
+
+            <!-- Publish Button -->
+            @if($this->hasDraftChanges)
+                <flux:button 
+                    wire:click="publishDraft" 
+                    icon="check-circle"
+                    variant="primary"
+                    size="sm"
+                    :tooltip="__('messages.forms.form_builder_interface.publish_tooltip')"
+                >
+                    {{ __('messages.forms.form_builder_interface.publish') }}
+                </flux:button>
+            @endif
+
+            <!-- Discard Draft Button -->
+            @if($this->hasDraftChanges)
+                <flux:button 
+                    wire:click="confirmDiscardDraft" 
+                    icon="trash"
+                    variant="danger"
+                    size="sm"
+                    :tooltip="__('messages.forms.form_builder_interface.discard_draft_tooltip')"
+                >
+                    {{ __('messages.forms.form_builder_interface.discard_draft') }}
+                </flux:button>
+            @endif
+        </div>
+
+        <!-- Legacy Save Button (for backward compatibility) -->
         <flux:button 
             wire:click="save" 
             icon="check"
-            variant="primary"
+            variant="ghost"
             size="sm"
             :tooltip="__('messages.forms.form_builder_interface.save_tooltip')"
         >

@@ -2,7 +2,7 @@
 
 return [
     'welcome_message' => 'Bienvenue dans votre panneau d\'administration ! Ce guide vous aidera à comprendre et utiliser toutes les fonctionnalités disponibles pour gérer votre site web.',
-    
+
     'quick_start' => [
         'title' => 'Guide de démarrage rapide',
         'description' => 'Nouveau dans le panneau d\'administration ? Commencez ici pour vous familiariser avec les bases :',
@@ -268,4 +268,4 @@ return [
             'description' => 'Avant de contacter le support, essayez d\'utiliser la fonction de recherche de cette page d\'aide ou vérifiez si votre question est répondue dans les tutoriels étape par étape ci-dessus. La plupart des problèmes courants peuvent être résolus rapidement !',
         ],
     ],
-]; 
+];

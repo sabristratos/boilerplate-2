@@ -15,7 +15,7 @@ class MediaObserver
         // Only optimize image files
         $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $extension = strtolower(pathinfo($media->file_name, PATHINFO_EXTENSION));
-        
+
         if (in_array($extension, $imageExtensions)) {
             // Dispatch the optimization job
             OptimizeImageJob::dispatch($media)->onQueue('image-optimization');
@@ -31,7 +31,7 @@ class MediaObserver
         if ($media->wasChanged('file_name')) {
             $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
             $extension = strtolower(pathinfo($media->file_name, PATHINFO_EXTENSION));
-            
+
             if (in_array($extension, $imageExtensions)) {
                 OptimizeImageJob::dispatch($media)->onQueue('image-optimization');
             }
@@ -45,4 +45,4 @@ class MediaObserver
     {
         // Clean up any optimization-related data if needed
     }
-} 
+}

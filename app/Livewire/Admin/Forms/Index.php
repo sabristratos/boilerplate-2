@@ -3,12 +3,12 @@
 namespace App\Livewire\Admin\Forms;
 
 use App\Models\Form;
+use App\Services\FormBuilder\PrebuiltForms\PrebuiltFormRegistry;
 use Flux\Flux;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
-use App\Services\FormBuilder\PrebuiltForms\PrebuiltFormRegistry;
-use Illuminate\Support\Str;
 
 #[Layout('components.layouts.app')]
 class Index extends Component
@@ -60,7 +60,7 @@ class Index extends Component
             if ($prebuilt) {
                 $elements = $prebuilt->getElements();
                 foreach ($elements as $i => &$element) {
-                    if (!isset($element['id'])) {
+                    if (! isset($element['id'])) {
                         $element['id'] = (string) Str::uuid();
                     }
                     $element['order'] = $i;

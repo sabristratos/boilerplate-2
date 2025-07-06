@@ -19,7 +19,7 @@ class PageFactory extends Factory
     public function definition(): array
     {
         $title = $this->faker->sentence(3);
-        
+
         return [
             'title' => [
                 'en' => $title,
@@ -55,4 +55,4 @@ class PageFactory extends Factory
             'no_index' => true,
         ]);
     }
-} 
+}

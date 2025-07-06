@@ -22,4 +22,4 @@ return [
     'file_not_found' => 'Fichier de sauvegarde introuvable',
     'mysql_not_supported' => 'La sauvegarde de base de données n\'est pas prise en charge sur ce système. Les outils de sauvegarde MySQL (mysqldump) ne sont pas disponibles. Cette fonctionnalité fonctionnera lors du déploiement sur un serveur avec les outils MySQL appropriés installés.',
     'postgresql_not_supported' => 'La sauvegarde de base de données n\'est pas prise en charge sur ce système. Les outils de sauvegarde PostgreSQL (pg_dump) ne sont pas disponibles. Cette fonctionnalité fonctionnera lors du déploiement sur un serveur avec les outils PostgreSQL appropriés installés.',
-]; 
+];

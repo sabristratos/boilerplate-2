@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services\FormBuilder;
 
 /**
@@ -7,10 +9,8 @@ namespace App\Services\FormBuilder;
  */
 class IconService
 {
-    /** @var array */
     private array $availableIcons;
 
-    /** @var array */
     private array $categories;
 
     /**
@@ -24,8 +24,6 @@ class IconService
 
     /**
      * Get all available icons for form elements.
-     *
-     * @return array
      */
     public function getAvailableIcons(): array
     {
@@ -34,9 +32,6 @@ class IconService
 
     /**
      * Check if an icon exists.
-     *
-     * @param string $iconName
-     * @return bool
      */
     public function iconExists(string $iconName): bool
     {
@@ -45,9 +40,6 @@ class IconService
 
     /**
      * Get icon label by name.
-     *
-     * @param string $iconName
-     * @return string|null
      */
     public function getIconLabel(string $iconName): ?string
     {
@@ -56,8 +48,6 @@ class IconService
 
     /**
      * Get icons grouped by category.
-     *
-     * @return array
      */
     public function getIconsByCategory(): array
     {

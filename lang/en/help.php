@@ -2,7 +2,7 @@
 
 return [
     'welcome_message' => 'Welcome to your admin panel! This guide will help you understand and use all the features available to manage your website.',
-    
+
     'quick_start' => [
         'title' => 'Quick Start Guide',
         'description' => 'New to the admin panel? Start here to get familiar with the basics:',
@@ -268,4 +268,4 @@ return [
             'description' => 'Before contacting support, try using the search function in this help page or check if your question is answered in the step-by-step tutorials above. Most common issues can be resolved quickly!',
         ],
     ],
-]; 
+];

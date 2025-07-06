@@ -65,4 +65,4 @@ class TemporaryMedia extends Model implements HasMedia
     {
         return static::where('created_at', '<', now()->subDay())->delete();
     }
-} 
+}

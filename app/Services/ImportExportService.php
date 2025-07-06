@@ -4,12 +4,10 @@ namespace App\Services;
 
 use App\Models\Form;
 use App\Models\Page;
-use App\Models\User;
 use App\Services\ResourceSystem\Resource;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -25,7 +23,7 @@ class ImportExportService
         $model = $resource::$model;
         $query = $model::query();
 
-        if (!empty($ids)) {
+        if (! empty($ids)) {
             $query->whereIn('id', $ids);
         }
 
@@ -34,7 +32,7 @@ class ImportExportService
 
         foreach ($records as $record) {
             $data = $record->toArray();
-            
+
             // Handle media files - get all collections
             if (method_exists($record, 'media') && $record->media !== null) {
                 $mediaData = [];
@@ -51,25 +49,25 @@ class ImportExportService
                         'responsive_images' => $media->responsive_images,
                         'file_path' => $media->getPath(),
                     ];
-                    
+
                     // Try to get the full path using different methods
                     try {
                         // Method 1: Use Storage facade
                         $mediaInfo['full_path'] = Storage::disk($media->disk)->path($media->getPath());
-                        
+
                         // Method 2: If that doesn't work, try getting the absolute path
-                        if (!File::exists($mediaInfo['full_path'])) {
-                            $mediaInfo['full_path'] = storage_path('app/public/' . $media->getPath());
+                        if (! File::exists($mediaInfo['full_path'])) {
+                            $mediaInfo['full_path'] = storage_path('app/public/'.$media->getPath());
                         }
-                        
+
                         // Method 3: Try the original file path
-                        if (!File::exists($mediaInfo['full_path'])) {
+                        if (! File::exists($mediaInfo['full_path'])) {
                             $mediaInfo['full_path'] = $media->getPath();
                         }
                     } catch (\Exception $e) {
                         $mediaInfo['full_path'] = null;
                     }
-                    
+
                     $mediaData[] = $mediaInfo;
                 }
                 $data['_media'] = $mediaData;
@@ -110,7 +108,7 @@ class ImportExportService
     {
         $query = Page::query();
 
-        if (!empty($ids)) {
+        if (! empty($ids)) {
             $query->whereIn('id', $ids);
         }
 
@@ -119,7 +117,7 @@ class ImportExportService
 
         foreach ($pages as $page) {
             $data = $page->toArray();
-            
+
             // Include content blocks
             $data['content_blocks'] = $page->contentBlocks->map(function ($block) {
                 return $block->toArray();
@@ -141,25 +139,25 @@ class ImportExportService
                         'responsive_images' => $media->responsive_images,
                         'file_path' => $media->getPath(),
                     ];
-                    
+
                     // Try to get the full path using different methods
                     try {
                         // Method 1: Use Storage facade
                         $mediaInfo['full_path'] = Storage::disk($media->disk)->path($media->getPath());
-                        
+
                         // Method 2: If that doesn't work, try getting the absolute path
-                        if (!File::exists($mediaInfo['full_path'])) {
-                            $mediaInfo['full_path'] = storage_path('app/public/' . $media->getPath());
+                        if (! File::exists($mediaInfo['full_path'])) {
+                            $mediaInfo['full_path'] = storage_path('app/public/'.$media->getPath());
                         }
-                        
+
                         // Method 3: Try the original file path
-                        if (!File::exists($mediaInfo['full_path'])) {
+                        if (! File::exists($mediaInfo['full_path'])) {
                             $mediaInfo['full_path'] = $media->getPath();
                         }
                     } catch (\Exception $e) {
                         $mediaInfo['full_path'] = null;
                     }
-                    
+
                     $mediaData[] = $mediaInfo;
                 }
             }
@@ -183,7 +181,7 @@ class ImportExportService
     {
         $query = Form::query();
 
-        if (!empty($ids)) {
+        if (! empty($ids)) {
             $query->whereIn('id', $ids);
         }
 
@@ -192,7 +190,7 @@ class ImportExportService
 
         foreach ($forms as $form) {
             $data = $form->toArray();
-            
+
             // Include submissions
             $data['submissions'] = $form->submissions->map(function ($submission) {
                 return $submission->toArray();
@@ -214,25 +212,25 @@ class ImportExportService
                         'responsive_images' => $media->responsive_images,
                         'file_path' => $media->getPath(),
                     ];
-                    
+
                     // Try to get the full path using different methods
                     try {
                         // Method 1: Use Storage facade
                         $mediaInfo['full_path'] = Storage::disk($media->disk)->path($media->getPath());
-                        
+
                         // Method 2: If that doesn't work, try getting the absolute path
-                        if (!File::exists($mediaInfo['full_path'])) {
-                            $mediaInfo['full_path'] = storage_path('app/public/' . $media->getPath());
+                        if (! File::exists($mediaInfo['full_path'])) {
+                            $mediaInfo['full_path'] = storage_path('app/public/'.$media->getPath());
                         }
-                        
+
                         // Method 3: Try the original file path
-                        if (!File::exists($mediaInfo['full_path'])) {
+                        if (! File::exists($mediaInfo['full_path'])) {
                             $mediaInfo['full_path'] = $media->getPath();
                         }
                     } catch (\Exception $e) {
                         $mediaInfo['full_path'] = null;
                     }
-                    
+
                     $mediaData[] = $mediaInfo;
                 }
             }
@@ -260,8 +258,9 @@ class ImportExportService
             'errors' => [],
         ];
 
-        if (!isset($data['resource_class']) || !class_exists($data['resource_class'])) {
+        if (! isset($data['resource_class']) || ! class_exists($data['resource_class'])) {
             $results['errors'][] = 'Invalid resource class';
+
             return $results;
         }
 
@@ -274,7 +273,7 @@ class ImportExportService
             foreach ($data['data'] as $recordData) {
                 $mediaData = $recordData['_media'] ?? [];
                 $relationships = $recordData['_relationships'] ?? [];
-                
+
                 // Remove special fields
                 unset($recordData['_media'], $recordData['_relationships'], $recordData['id'], $recordData['created_at'], $recordData['updated_at']);
 
@@ -286,8 +285,9 @@ class ImportExportService
                     $existingRecord = $model::where('slug', $recordData['slug'])->first();
                 }
 
-                if ($existingRecord && !$overwrite) {
+                if ($existingRecord && ! $overwrite) {
                     $results['skipped']++;
+
                     continue;
                 }
 
@@ -346,15 +346,16 @@ class ImportExportService
             foreach ($data['data'] as $pageData) {
                 $contentBlocks = $pageData['content_blocks'] ?? [];
                 $mediaData = $pageData['_media'] ?? [];
-                
+
                 // Remove special fields
                 unset($pageData['content_blocks'], $pageData['_media'], $pageData['id'], $pageData['created_at'], $pageData['updated_at']);
 
                 // Check if page exists
                 $existingPage = Page::where('slug', $pageData['slug'])->first();
 
-                if ($existingPage && !$overwrite) {
+                if ($existingPage && ! $overwrite) {
                     $results['skipped']++;
+
                     continue;
                 }
 
@@ -410,20 +411,21 @@ class ImportExportService
         try {
             foreach ($data['data'] as $formData) {
                 $submissions = $formData['submissions'] ?? [];
-                
+
                 // Remove special fields
                 unset($formData['submissions'], $formData['id'], $formData['created_at'], $formData['updated_at']);
 
                 // Check if form exists (by name)
                 $formName = $formData['name'] ?? null;
                 $existingForm = null;
-                
+
                 if ($formName) {
                     $existingForm = Form::where('name->en', $formName)->first();
                 }
 
-                if ($existingForm && !$overwrite) {
+                if ($existingForm && ! $overwrite) {
                     $results['skipped']++;
+
                     continue;
                 }
 
@@ -460,15 +462,15 @@ class ImportExportService
      */
     public function createExportZip(array $exportData, string $type): string
     {
-        $zip = new ZipArchive();
-        $filename = "export_{$type}_" . now()->format('Y-m-d_H-i-s') . '.zip';
-        $zipPath = storage_path('app/temp/' . $filename);
+        $zip = new ZipArchive;
+        $filename = "export_{$type}_".now()->format('Y-m-d_H-i-s').'.zip';
+        $zipPath = storage_path('app/temp/'.$filename);
 
-        if (!File::exists(dirname($zipPath))) {
+        if (! File::exists(dirname($zipPath))) {
             File::makeDirectory(dirname($zipPath), 0755, true);
         }
 
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== TRUE) {
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
             throw new \Exception('Could not create ZIP file');
         }
 
@@ -482,7 +484,7 @@ class ImportExportService
                 foreach ($item['_media'] as $media) {
                     // Try multiple path options
                     $filePath = null;
-                    
+
                     // First try full_path
                     if (isset($media['full_path']) && File::exists($media['full_path'])) {
                         $filePath = $media['full_path'];
@@ -498,11 +500,11 @@ class ImportExportService
                     elseif (isset($media['file_path']) && File::exists($media['file_path'])) {
                         $filePath = $media['file_path'];
                     }
-                    
+
                     if ($filePath) {
                         $mediaFiles[] = [
                             'path' => $filePath,
-                            'name' => $media['file_name'] ?? basename($filePath)
+                            'name' => $media['file_name'] ?? basename($filePath),
                         ];
                     }
                 }
@@ -511,7 +513,7 @@ class ImportExportService
 
         // Add media files to ZIP
         foreach ($mediaFiles as $mediaFile) {
-            $zip->addFile($mediaFile['path'], 'media/' . $mediaFile['name']);
+            $zip->addFile($mediaFile['path'], 'media/'.$mediaFile['name']);
         }
 
         $zip->close();
@@ -524,25 +526,25 @@ class ImportExportService
      */
     public function extractImportFile(string $filePath): array
     {
-        $zip = new ZipArchive();
-        
-        if ($zip->open($filePath) !== TRUE) {
+        $zip = new ZipArchive;
+
+        if ($zip->open($filePath) !== true) {
             throw new \Exception('Could not open ZIP file');
         }
 
-        $tempDir = storage_path('app/temp/import_' . uniqid());
+        $tempDir = storage_path('app/temp/import_'.uniqid());
         File::makeDirectory($tempDir, 0755, true);
 
         $zip->extractTo($tempDir);
         $zip->close();
 
-        $jsonPath = $tempDir . '/export.json';
-        if (!File::exists($jsonPath)) {
+        $jsonPath = $tempDir.'/export.json';
+        if (! File::exists($jsonPath)) {
             throw new \Exception('Export file not found in ZIP');
         }
 
         $data = json_decode(File::get($jsonPath), true);
-        if (!$data) {
+        if (! $data) {
             throw new \Exception('Invalid JSON data');
         }
 
@@ -561,4 +563,4 @@ class ImportExportService
             File::deleteDirectory($tempDir);
         }
     }
-} 
+}
