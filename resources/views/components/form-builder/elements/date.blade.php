@@ -32,40 +32,24 @@
     $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';
 @endphp
 
-<flux:date-picker 
+<x-forms.date-picker 
     label="{{ $properties['label'] }}" 
     placeholder="{{ $properties['placeholder'] }}"
     mode="{{ $mode }}"
-    :months="$months"
-    :description:trailing="$descriptionTrailing"
-    size="{{ $size }}"
-    :week-numbers="$weekNumbers"
-    :selectable-header="$selectableHeader"
-    :with-today="$withToday"
-    :with-inputs="$withInputs"
-    :with-confirmation="$withConfirmation"
-    :with-presets="$withPresets"
+    :weekNumbers="$weekNumbers"
+    :selectableHeader="$selectableHeader"
+    :withToday="$withToday"
+    :withInputs="$withInputs"
+    :withConfirmation="$withConfirmation"
+    :withPresets="$withPresets"
     :clearable="$clearable"
     :disabled="$disabled"
-    :invalid="$invalid"
-    locale="{{ $locale }}"
-    :wire:model="$wireModel"
+    wireModel="{{ $wireModel }}"
     :required="$required"
-    :min-range="$isPreview && $minRange ? $minRange : null"
-    :max-range="$isPreview && $maxRange ? $maxRange : null"
-    :min="$isPreview && $min ? $min : null"
-    :max="$isPreview && $max ? $max : null"
-    :description="$isPreview && $description ? $description : null"
-    :badge="$isPreview && $badge ? $badge : null"
-    :presets="$isPreview && $presets ? $presets : null"
->
-    <x-slot name="trigger">
-        <flux:date-picker.input />
-    </x-slot>
-</flux:date-picker>
-
-@if($isPreview && $fieldName)
-    @error("formData.{$fieldName}")
-        <flux:error>{{ $message }}</flux:error>
-    @enderror
-@endif 
+    min="{{ $min }}"
+    max="{{ $max }}"
+    description="{{ $description }}"
+    badge="{{ $badge }}"
+    presets="{{ $presets }}"
+    :error="$isPreview && $fieldName ? $errors->first("formData.{$fieldName}") : null"
+/> 

@@ -16,27 +16,22 @@
 @endphp
 
 @if($isPreview && !empty($optionArray))
-    <flux:radio.group 
-        :wire:model="$wireModel"
-        :label="$properties['label']"
+    <x-forms.radio-group 
+        wireModel="{{ $wireModel }}"
+        label="{{ $properties['label'] }}"
         :required="$required"
+        variant="{{ $fluxProps['variant'] ?? 'default' }}"
+        :error="$errors->first("formData.{$fieldName}")"
     >
         @foreach($optionArray as $option)
-            <flux:radio value="{{ $option }}" label="{{ $option }}" />
+            <x-forms.radio value="{{ $option }}" label="{{ $option }}" />
         @endforeach
-    </flux:radio.group>
+    </x-forms.radio-group>
 @else
-    <flux:field variant="inline">
-        <flux:radio 
-            :wire:model="$wireModel"
-            :required="$required"
-        />
-        <flux:label>{{ $properties['label'] }}</flux:label>
-    </flux:field>
-@endif
-
-@if($isPreview && $fieldName)
-    @error("formData.{$fieldName}")
-        <flux:error>{{ $message }}</flux:error>
-    @enderror
+    <x-forms.radio 
+        wireModel="{{ $wireModel }}"
+        :required="$required"
+        label="{{ $properties['label'] }}"
+        :error="$errors->first("formData.{$fieldName}")"
+    />
 @endif

@@ -334,8 +334,16 @@ class SettingsPage extends Component
                     }
                 }
 
-                if (isset($settingData['options']) && is_callable($settingData['options'])) {
-                    $settingData['options'] = call_user_func($settingData['options']);
+                // Process options - handle both callable functions and dynamic options
+                if (isset($settingData['options'])) {
+                    if (is_callable($settingData['options'])) {
+                        $settingData['options'] = call_user_func($settingData['options']);
+                    } elseif (is_string($settingData['options']) && str_starts_with($settingData['options'], 'dynamic:')) {
+                        // Handle dynamic options like 'dynamic:general.homepage'
+                        $dynamicKey = substr($settingData['options'], 8); // Remove 'dynamic:' prefix
+                        $settingData['options'] = app(\App\Services\SettingsManager::class)->getDynamicOptions($dynamicKey);
+                    }
+                    // If options is already an array, leave it as is
                 }
                 if (isset($settingData['callout']['text'])) {
                     $settingData['callout']['text'] = is_array($settingData['callout']['text']) ? ($settingData['callout']['text'][app()->getLocale() ?? 'en'] ?? $settingData['callout']['text']['en']) : $settingData['callout']['text'];

@@ -51,69 +51,19 @@
     }
 }" class="file-upload-container">
     
-    @if($hasIcon && $hasIconTrailing)
-        <flux:input 
-            type="file"
-            label="{{ $properties['label'] }}" 
-            placeholder="{{ $properties['placeholder'] }}"
-            :clearable="$fluxProps['clearable'] ?? false"
-            :copyable="$fluxProps['copyable'] ?? false"
-            :viewable="$fluxProps['viewable'] ?? false"
-            icon="{{ $fluxProps['icon'] }}"
-            :wire:model="$wireModel"
-            :required="$required"
-            :multiple="$multiple"
-            :accept="$accept"
-        >
-            <x-slot name="icon:trailing">
-                <flux:icon name="{{ $fluxProps['iconTrailing'] }}" />
-            </x-slot>
-        </flux:input>
-    @elseif($hasIcon)
-        <flux:input 
-            type="file"
-            label="{{ $properties['label'] }}" 
-            placeholder="{{ $properties['placeholder'] }}"
-            :clearable="$fluxProps['clearable'] ?? false"
-            :copyable="$fluxProps['copyable'] ?? false"
-            :viewable="$fluxProps['viewable'] ?? false"
-            icon="{{ $fluxProps['icon'] }}"
-            :wire:model="$wireModel"
-            :required="$required"
-            :multiple="$multiple"
-            :accept="$accept"
-        />
-    @elseif($hasIconTrailing)
-        <flux:input 
-            type="file"
-            label="{{ $properties['label'] }}" 
-            placeholder="{{ $properties['placeholder'] }}"
-            :clearable="$fluxProps['clearable'] ?? false"
-            :copyable="$fluxProps['copyable'] ?? false"
-            :viewable="$fluxProps['viewable'] ?? false"
-            :wire:model="$wireModel"
-            :required="$required"
-            :multiple="$multiple"
-            :accept="$accept"
-        >
-            <x-slot name="icon:trailing">
-                <flux:icon name="{{ $fluxProps['iconTrailing'] }}" />
-            </x-slot>
-        </flux:input>
-    @else
-        <flux:input 
-            type="file"
-            label="{{ $properties['label'] }}" 
-            placeholder="{{ $properties['placeholder'] }}"
-            :clearable="$fluxProps['clearable'] ?? false"
-            :copyable="$fluxProps['copyable'] ?? false"
-            :viewable="$fluxProps['viewable'] ?? false"
-            :wire:model="$wireModel"
-            :required="$required"
-            :multiple="$multiple"
-            :accept="$accept"
-        />
-    @endif
+    <x-forms.file 
+        label="{{ $properties['label'] }}" 
+        placeholder="{{ $properties['placeholder'] }}"
+        wireModel="{{ $wireModel }}"
+        :required="$required"
+        :multiple="$multiple"
+        accept="{{ $accept }}"
+        maxSize="{{ $maxSize }}"
+        :showPreview="$showPreview"
+        icon="{{ $fluxProps['icon'] ?? null }}"
+        iconTrailing="{{ $fluxProps['iconTrailing'] ?? null }}"
+        :error="$isPreview && $fieldName ? $errors->first("formData.{$fieldName}") : null"
+    />
 
     @if($maxSize)
         <div class="mt-2 text-sm text-zinc-500">

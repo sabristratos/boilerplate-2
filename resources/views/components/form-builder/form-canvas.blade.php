@@ -1,7 +1,7 @@
 @props(['form', 'elements', 'selectedElementId', 'activeBreakpoint', 'isPreviewMode', 'renderedElements'])
 
 <div 
-    class="flex-1 p-8 overflow-y-auto" 
+    class="flex-1 p-8 overflow-y-auto form-canvas" 
     @drop.prevent="
         const type = $event.dataTransfer.getData('type');
         if (type) {
@@ -46,18 +46,8 @@
                                 }
                             @endphp
                             <div class="responsive-grid-item" style="grid-column: span {{ $columnSpan }};">
-                                @php
-                                    $fieldName = \Illuminate\Support\Str::slug($element['properties']['label'] ?? 'field', '_') ?: 'field_' . $element['id'];
-                                @endphp
                                 <div data-preview-element-id="{{ $element['id'] }}">
-                                    @include('components.form-builder.preview.' . $element['type'], [
-                                        'fieldName' => $fieldName,
-                                        'label' => $element['properties']['label'] ?? 'Field',
-                                        'placeholder' => $element['properties']['placeholder'] ?? '',
-                                        'required' => in_array('required', $element['validation']['rules'] ?? []),
-                                        'options' => $this->parseOptionsForPreview($element['properties']['options'] ?? ''),
-                                        'properties' => $element['properties'] ?? [],
-                                    ])
+                                    {!! $renderedElements[$index] ?? '<div class="text-red-500">Element not rendered</div>' !!}
                                 </div>
                             </div>
                         @endforeach
@@ -142,17 +132,7 @@
                             />
                         </div>
                         <div class="p-4" data-edit-element-id="{{ $element['id'] }}">
-                            @php
-                                $fieldName = \Illuminate\Support\Str::slug($element['properties']['label'] ?? 'field', '_') ?: 'field_' . $element['id'];
-                            @endphp
-                            @include('components.form-builder.preview.' . $element['type'], [
-                                'fieldName' => $fieldName,
-                                'label' => $element['properties']['label'] ?? 'Field',
-                                'placeholder' => $element['properties']['placeholder'] ?? '',
-                                'required' => in_array('required', $element['validation']['rules'] ?? []),
-                                'options' => $this->parseOptionsForPreview($element['properties']['options'] ?? ''),
-                                'properties' => $element['properties'] ?? [],
-                            ])
+                            {!! $renderedElements[$index] ?? '<div class="text-red-500">Element not rendered</div>' !!}
                         </div>
                     </div>
                 @empty

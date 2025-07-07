@@ -15,22 +15,18 @@
     }
 @endphp
 
-<flux:select 
+<x-forms.select 
     label="{{ $properties['label'] }}" 
     placeholder="{{ $properties['placeholder'] }}"
-    :wire:model="$wireModel"
+    wireModel="{{ $wireModel }}"
     :required="$required"
     :clearable="$fluxProps['clearable'] ?? false"
-    :copyable="$fluxProps['copyable'] ?? false"
-    :viewable="$fluxProps['viewable'] ?? false"
+    :searchable="$fluxProps['searchable'] ?? false"
+    :multiple="$fluxProps['multiple'] ?? false"
+    variant="{{ $fluxProps['variant'] ?? 'default' }}"
+    :error="$isPreview && $fieldName ? $errors->first("formData.{$fieldName}") : null"
 >
     @foreach($optionArray as $option)
-        <flux:select.option>{{ $option }}</flux:select.option>
+        <x-forms.select-option value="{{ $option }}">{{ $option }}</x-forms.select-option>
     @endforeach
-</flux:select>
-
-@if($isPreview && $fieldName)
-    @error("formData.{$fieldName}")
-        <flux:error>{{ $message }}</flux:error>
-    @enderror
-@endif
+</x-forms.select>

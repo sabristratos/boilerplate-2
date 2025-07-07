@@ -30,7 +30,7 @@ class FileRenderer extends BaseElementRenderer
      */
     protected function getViewName(): string
     {
-        return 'components.form-builder.elements.file';
+        return 'components.forms.file';
     }
 
     /**

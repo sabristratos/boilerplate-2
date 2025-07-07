@@ -1,15 +1,18 @@
-<flux:checkbox.group 
-    wire:model="previewFormData.{{ $fieldName }}" 
+@php
+    $error = isset($errors) ? $errors->first("previewFormData.{$fieldName}") : null;
+    $descriptionTrailing = $properties['descriptionTrailing'] ?? false;
+@endphp
+<x-forms.checkbox-group 
+    wireModel="previewFormData.{{ $fieldName }}" 
     label="{{ $label }}{{ $required ? ' *' : '' }}"
-    required="{{ $required ? 'true' : '' }}"
+    required="{{ $required ? 'true' : 'false' }}"
     badge="{{ $properties['badge'] ?? '' }}"
     description="{{ $properties['description'] ?? '' }}"
-    description-trailing="{{ $properties['descriptionTrailing'] ?? false ? 'true' : 'false' }}"
+    descriptionTrailing="{{ $descriptionTrailing ? 'true' : 'false' }}"
+    variant="{{ $properties['fluxProps']['variant'] ?? 'default' }}"
+    error="{{ $error }}"
 >
     @foreach($options as $option)
-        <flux:checkbox value="{{ $option['value'] }}" label="{{ $option['label'] }}" />
+        <x-forms.checkbox value="{{ $option['value'] }}" label="{{ $option['label'] }}" />
     @endforeach
-</flux:checkbox.group>
-@error("previewFormData.{$fieldName}")
-    <flux:error>{{ $message }}</flux:error>
-@enderror 
+</x-forms.checkbox-group> 

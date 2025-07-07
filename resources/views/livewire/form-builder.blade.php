@@ -1,5 +1,5 @@
 <div
-    class="flex flex-col h-screen bg-zinc-100 dark:bg-zinc-900 font-sans"
+    class="flex flex-col h-screen bg-zinc-100 dark:bg-zinc-900 font-sans form-builder"
     x-data="{
         ...formBuilderEditor(),
         
@@ -137,6 +137,26 @@
 
 .responsive-grid-item {
     min-height: 60px;
+}
+
+/* Dropdown overflow fix - allow select dropdowns to break out of containers */
+select {
+    z-index: 10;
+}
+
+/* Ensure dropdowns can overflow their containers */
+.responsive-grid-item select,
+.form-canvas select,
+.form-builder select {
+    position: relative;
+    z-index: 50;
+}
+
+/* When select is focused/open, ensure it's above other elements */
+.responsive-grid-item select:focus,
+.form-canvas select:focus,
+.form-builder select:focus {
+    z-index: 100;
 }
 
 /* Mobile responsive adjustments */

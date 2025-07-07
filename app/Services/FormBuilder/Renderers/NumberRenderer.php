@@ -30,7 +30,7 @@ class NumberRenderer extends BaseElementRenderer
      */
     protected function getViewName(): string
     {
-        return 'components.form-builder.elements.number';
+        return 'components.forms.input';
     }
 
     /**

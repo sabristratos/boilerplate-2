@@ -16,27 +16,22 @@
 @endphp
 
 @if($isPreview && !empty($optionArray))
-    <flux:checkbox.group 
+    <x-forms.checkbox-group 
         label="{{ $properties['label'] }}"
-        :wire:model="$wireModel"
+        wireModel="{{ $wireModel }}"
         :required="$required"
+        variant="{{ $fluxProps['variant'] ?? 'default' }}"
+        :error="$errors->first("formData.{$fieldName}")"
     >
         @foreach($optionArray as $option)
-            <flux:checkbox label="{{ $option }}" value="{{ $option }}" />
+            <x-forms.checkbox label="{{ $option }}" value="{{ $option }}" />
         @endforeach
-    </flux:checkbox.group>
+    </x-forms.checkbox-group>
 @else
-    <flux:field variant="inline">
-        <flux:checkbox 
-            :wire:model="$wireModel"
-            :required="$required"
-        />
-        <flux:label>{{ $properties['label'] }}</flux:label>
-    </flux:field>
-@endif
-
-@if($isPreview && $fieldName)
-    @error("formData.{$fieldName}")
-        <flux:error>{{ $message }}</flux:error>
-    @enderror
+    <x-forms.checkbox 
+        wireModel="{{ $wireModel }}"
+        :required="$required"
+        label="{{ $properties['label'] }}"
+        :error="$errors->first("formData.{$fieldName}")"
+    />
 @endif

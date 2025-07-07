@@ -28,7 +28,7 @@ class PasswordRenderer extends BaseElementRenderer
      */
     protected function getViewName(): string
     {
-        return 'components.form-builder.elements.password';
+        return 'components.forms.input';
     }
 
     /**

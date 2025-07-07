@@ -25,37 +25,27 @@
     $locale = !empty($locale) ? $locale : 'en';
 @endphp
 
-<flux:date-picker 
-    wire:model="previewFormData.{{ $fieldName }}" 
-    label="{{ $label }}"
+<x-forms.date-picker 
+    wireModel="previewFormData.{{ $fieldName }}" 
+    label="{{ $label }}{{ $required ? ' *' : '' }}"
     placeholder="{{ $placeholder }}"
+    required="{{ $required ? 'true' : 'false' }}"
     mode="{{ $mode }}"
-    :months="$months"
-    description-trailing="{{ $descriptionTrailing ? 'true' : 'false' }}"
-    size="{{ $size }}"
-    :week-numbers="$weekNumbers"
-    :selectable-header="$selectableHeader"
-    :with-today="$withToday"
-    :with-inputs="$withInputs"
-    :with-confirmation="$withConfirmation"
-    :with-presets="$withPresets"
-    :clearable="$clearable"
-    :disabled="$disabled"
-    :invalid="$invalid"
-    :min-range="$minRange"
-    :max-range="$maxRange"
-    :min="$min"
-    :max="$max"
-    :description="$description"
-    :badge="$badge"
-    :presets="$presets"
-    locale="{{ $locale }}"
-    required="{{ $required ? 'true' : '' }}"
->
-    <x-slot name="trigger">
-        <flux:date-picker.input />
-    </x-slot>
-</flux:date-picker>
-@error("previewFormData.{$fieldName}")
-    <flux:error>{{ $message }}</flux:error>
-@enderror 
+    weekNumbers="{{ $weekNumbers ? 'true' : 'false' }}"
+    selectableHeader="{{ $selectableHeader ? 'true' : 'false' }}"
+    withToday="{{ $withToday ? 'true' : 'false' }}"
+    withInputs="{{ $withInputs ? 'true' : 'false' }}"
+    withConfirmation="{{ $withConfirmation ? 'true' : 'false' }}"
+    withPresets="{{ $withPresets ? 'true' : 'false' }}"
+    clearable="{{ $clearable ? 'true' : 'false' }}"
+    disabled="{{ $disabled ? 'true' : 'false' }}"
+    min="{{ $min }}"
+    max="{{ $max }}"
+    description="{{ $description }}"
+    badge="{{ $badge }}"
+    presets="{{ $presets }}"
+@php
+    $error = isset($errors) ? $errors->first("previewFormData.{$fieldName}") : null;
+@endphp
+    error="{{ $error }}"
+/> 

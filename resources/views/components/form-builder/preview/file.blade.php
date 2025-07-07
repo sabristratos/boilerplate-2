@@ -1,20 +1,23 @@
 @php
     $icon = !empty($properties['fluxProps']['icon'] ?? '') ? $properties['fluxProps']['icon'] : null;
     $iconTrailing = !empty($properties['fluxProps']['iconTrailing'] ?? '') ? $properties['fluxProps']['iconTrailing'] : null;
+    $error = isset($errors) ? $errors->first("previewFormData.{$fieldName}") : null;
+    $descriptionTrailing = $properties['descriptionTrailing'] ?? false;
+    $multiple = $properties['multiple'] ?? false;
+    $showPreview = $properties['showPreview'] ?? false;
 @endphp
-<flux:input 
-    wire:model="previewFormData.{{ $fieldName }}" 
-    type="file" 
+<x-forms.file 
+    wireModel="previewFormData.{{ $fieldName }}" 
     label="{{ $label }}{{ $required ? ' *' : '' }}"
-    required="{{ $required ? 'true' : '' }}"
-    multiple="{{ $properties['multiple'] ?? false ? 'true' : '' }}"
+    required="{{ $required ? 'true' : 'false' }}"
+    multiple="{{ $multiple ? 'true' : 'false' }}"
     accept="{{ $properties['accept'] ?? '' }}"
     @if($icon) icon="{{ $icon }}" @endif
-    @if($iconTrailing) icon:trailing="{{ $iconTrailing }}" @endif
+    @if($iconTrailing) iconTrailing="{{ $iconTrailing }}" @endif
     badge="{{ $properties['badge'] ?? '' }}"
     description="{{ $properties['description'] ?? '' }}"
-    description-trailing="{{ $properties['descriptionTrailing'] ?? false ? 'true' : 'false' }}"
-/>
-@error("previewFormData.{$fieldName}")
-    <flux:error>{{ $message }}</flux:error>
-@enderror 
+    descriptionTrailing="{{ $descriptionTrailing ? 'true' : 'false' }}"
+    maxSize="{{ $properties['maxSize'] ?? '' }}"
+    showPreview="{{ $showPreview ? 'true' : 'false' }}"
+    error="{{ $error }}"
+/> 

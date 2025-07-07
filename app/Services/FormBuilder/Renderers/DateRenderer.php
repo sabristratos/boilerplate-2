@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\FormBuilder\Renderers;
 
+use App\Services\FormBuilder\ElementDTO;
+
 /**
  * Renderer for date form elements.
  */
@@ -60,5 +62,55 @@ class DateRenderer extends BaseElementRenderer
         $properties['invalid'] = false;
 
         return $properties;
+    }
+
+    /**
+     * Prepare data for the view.
+     */
+    protected function prepareViewData(ElementDTO $element): array
+    {
+        $properties = $element->properties ?? [];
+        $fluxProps = $properties['fluxProps'] ?? [];
+        
+        return [
+            'element' => $element,
+            'properties' => $properties,
+            'fluxProps' => $fluxProps,
+            'mode' => 'preview',
+            'fieldName' => $this->generateFieldName($element),
+        ];
+    }
+
+    /**
+     * Generate a field name for the element.
+     */
+    private function generateFieldName(ElementDTO $element): string
+    {
+        $properties = $element->properties ?? [];
+        $label = $properties['label'] ?? '';
+        $id = $element->id ?? '';
+        
+        // Create a field name from the label or ID
+        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_' . $id;
+        
+        return $fieldName;
+    }
+
+
+
+    /**
+     * Override the render method to use the fieldName parameter.
+     */
+    public function render(ElementDTO $element, string $mode = 'edit', ?string $fieldName = null): string
+    {
+        $data = $this->prepareViewData($element);
+        $data['mode'] = $mode;
+        
+        // Use the provided fieldName if available
+        if ($fieldName) {
+            $data['fieldName'] = $fieldName;
+        }
+        
+        return view($this->getViewName(), $data)->render();
     }
 }

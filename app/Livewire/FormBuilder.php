@@ -798,7 +798,10 @@ class FormBuilder extends Component
 
     public function render()
     {
-        $renderedElements = collect($this->draftElements)->map(fn ($element) => $this->elementFactory->renderElement($element));
+        $renderedElements = collect($this->draftElements)->map(function ($element, $index) {
+            $fieldName = $this->generateFieldName($element);
+            return $this->elementFactory->renderElement($element, 'preview', $fieldName);
+        })->toArray();
 
         return view('livewire.form-builder', [
             'elementTypes' => FormElementType::cases(),
