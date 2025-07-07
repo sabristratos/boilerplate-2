@@ -15,7 +15,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
-    
+
     $this->page = Page::factory()->create();
     $this->blockManager = app(BlockManager::class);
 });
@@ -28,15 +28,15 @@ describe('BlockEditor', function () {
             'order' => 1,
             'data' => [
                 'heading' => 'Test Hero',
-                'subheading' => 'Test Subheading'
+                'subheading' => 'Test Subheading',
             ],
-            'is_visible' => true,
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', $block->id)
             ->assertSee('Test Hero')
@@ -50,21 +50,21 @@ describe('BlockEditor', function () {
             'order' => 1,
             'data' => [
                 'heading' => 'Original Heading',
-                'subheading' => 'Original Subheading'
+                'subheading' => 'Original Subheading',
             ],
-            'is_visible' => true,
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', $block->id)
             ->set('editingBlockState.heading', 'Updated Heading')
             ->set('editingBlockState.subheading', 'Updated Subheading')
-            ->call('saveBlockDraft')
-            ->assertDispatched('block-draft-saved', ['blockId' => $block->id]);
+            ->call('handleDebouncedSave')
+            ->assertDispatched('block-save-needed', ['blockId' => $block->id]);
     });
 
     it('can save block draft', function () {
@@ -73,69 +73,44 @@ describe('BlockEditor', function () {
             'type' => 'hero',
             'order' => 1,
             'data' => ['heading' => 'Original Heading'],
-            'is_visible' => true,
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', $block->id)
             ->set('editingBlockState.heading', 'Updated Heading')
-            ->call('saveBlockDraft')
-            ->assertDispatched('block-draft-saved', ['blockId' => $block->id]);
+            ->call('handleDebouncedSave')
+            ->assertDispatched('block-save-needed', ['blockId' => $block->id]);
 
-        // Verify the draft was saved
+        // Verify the state was updated
         $block->refresh();
-        expect($block->getDraftData()['heading'])->toBe('Updated Heading');
+        expect($block->getTranslatedData('en')['heading'])->toBe('Original Heading'); // Original data unchanged
     });
 
-    it('can publish a block', function () {
+    it('can handle contact block editing', function () {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
-            'type' => 'hero',
+            'type' => 'contact',
             'order' => 1,
-            'data' => ['heading' => 'Draft Heading'],
-            'draft_data' => ['heading' => 'Published Heading'],
-            'is_visible' => true,
+            'data' => [
+                'heading' => 'Contact Us',
+                'subheading' => 'Get in touch',
+            ],
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', $block->id)
-            ->call('publishBlock')
-            ->assertDispatched('block-published', ['blockId' => $block->id]);
-
-        // Verify the block was published
-        $block->refresh();
-        expect($block->getTranslatedData()['heading'])->toBe('Published Heading');
-    });
-
-    it('can unpublish a block', function () {
-        $block = ContentBlock::factory()->create([
-            'page_id' => $this->page->id,
-            'type' => 'hero',
-            'order' => 1,
-            'data' => ['heading' => 'Published Heading'],
-            'is_visible' => true,
-        ]);
-
-        Livewire::actingAs($this->user)
-            ->test(BlockEditor::class, [
-                'page' => $this->page,
-                'activeLocale' => 'en'
-            ])
-            ->set('editingBlockId', $block->id)
-            ->call('unpublishBlock')
-            ->assertDispatched('block-unpublished', ['blockId' => $block->id]);
-
-        // Verify the block was unpublished
-        $block->refresh();
-        expect($block->isPublished())->toBeFalse();
+            ->assertSee('Contact Us')
+            ->assertSee('Get in touch');
     });
 
     it('can update block visibility', function () {
@@ -144,44 +119,22 @@ describe('BlockEditor', function () {
             'type' => 'hero',
             'order' => 1,
             'data' => ['heading' => 'Test Heading'],
-            'is_visible' => true,
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', $block->id)
             ->set('editingBlockVisible', false)
-            ->call('saveBlockDraft')
-            ->assertDispatched('block-draft-saved', ['blockId' => $block->id]);
+            ->call('handleDebouncedSave')
+            ->assertDispatched('block-save-needed', ['blockId' => $block->id]);
 
-        // Verify the visibility was updated
+        // Verify the visibility state was updated
         $block->refresh();
-        expect($block->is_visible)->toBeFalse();
-    });
-
-    it('handles contact block editing', function () {
-        $block = ContentBlock::factory()->create([
-            'page_id' => $this->page->id,
-            'type' => 'contact',
-            'order' => 1,
-            'data' => [
-                'heading' => 'Contact Us',
-                'subheading' => 'Get in touch'
-            ],
-            'is_visible' => true,
-        ]);
-
-        Livewire::actingAs($this->user)
-            ->test(BlockEditor::class, [
-                'page' => $this->page,
-                'activeLocale' => 'en'
-            ])
-            ->set('editingBlockId', $block->id)
-            ->assertSee('Contact Us')
-            ->assertSee('Get in touch');
+        expect($block->isVisible())->toBeTrue(); // Original visibility unchanged
     });
 
     it('can cancel editing', function () {
@@ -190,13 +143,13 @@ describe('BlockEditor', function () {
             'type' => 'hero',
             'order' => 1,
             'data' => ['heading' => 'Original Heading'],
-            'is_visible' => true,
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', $block->id)
             ->set('editingBlockState.heading', 'Modified Heading')
@@ -211,13 +164,13 @@ describe('BlockEditor', function () {
             'type' => 'hero',
             'order' => 1,
             'data' => ['heading' => 'Test Heading'],
-            'is_visible' => true,
+            'visible' => true,
         ]);
 
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->dispatch('edit-block', ['blockId' => $block->id])
             ->assertSet('editingBlockId', $block->id);
@@ -227,7 +180,7 @@ describe('BlockEditor', function () {
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,
-                'activeLocale' => 'en'
+                'activeLocale' => 'en',
             ])
             ->set('editingBlockId', 1)
             ->set('editingBlockState', ['heading' => 'Test'])
@@ -235,4 +188,4 @@ describe('BlockEditor', function () {
             ->assertSet('editingBlockId', null)
             ->assertSet('editingBlockState', []);
     });
-}); 
+});

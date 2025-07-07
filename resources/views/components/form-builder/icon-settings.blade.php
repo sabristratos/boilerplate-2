@@ -6,7 +6,7 @@
             Icon
         </flux:heading>
         <flux:select 
-            wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.icon" 
+            wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.icon" 
             label="Leading Icon"
             placeholder="Choose an icon..."
             variant="listbox"

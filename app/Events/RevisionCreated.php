@@ -32,4 +32,4 @@ class RevisionCreated
     {
         return [];
     }
-} 
+}

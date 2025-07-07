@@ -27,10 +27,10 @@ use Spatie\Translatable\HasTranslations;
 class ContentBlock extends Model implements HasMedia, Sortable
 {
     use HasFactory;
+    use HasRevisions;
     use HasTranslations;
     use InteractsWithMedia;
     use SortableTrait;
-    use HasRevisions;
 
     /**
      * Boot the model and register event listeners.
@@ -48,9 +48,9 @@ class ContentBlock extends Model implements HasMedia, Sortable
         static::updating(function ($block): void {
             // Only log significant changes, not every auto-save
             $changes = $block->getDirty();
-            $significantChanges = array_diff_key($changes, array_flip(['last_draft_at']));
-            
-            if (!empty($significantChanges)) {
+            $significantChanges = array_diff_key($changes, array_flip([]));
+
+            if (! empty($significantChanges)) {
                 Log::info('Updating content block', [
                     'user_id' => auth()->id(),
                     'block_id' => $block->id,
@@ -77,12 +77,8 @@ class ContentBlock extends Model implements HasMedia, Sortable
         'page_id',
         'data',
         'settings',
-        'draft_data',
-        'draft_settings',
         'visible',
-        'draft_visible',
         'order',
-        'last_draft_at',
     ];
 
     /**
@@ -90,7 +86,7 @@ class ContentBlock extends Model implements HasMedia, Sortable
      *
      * @var array<string>
      */
-    public array $translatable = ['data', 'draft_data'];
+    public array $translatable = ['data'];
 
     /**
      * The sortable configuration.
@@ -139,30 +135,6 @@ class ContentBlock extends Model implements HasMedia, Sortable
     }
 
     /**
-     * Get the draft translated data for a specific locale.
-     *
-     * @param  string|null  $locale  The locale to get draft data for (defaults to current locale)
-     * @return array<string, mixed> The draft translated data array
-     */
-    public function getDraftTranslatedData(?string $locale = null): array
-    {
-        // Ensure we have a valid locale
-        if ($locale === null) {
-            $locale = app()->getLocale() ?: config('app.fallback_locale', 'en');
-        }
-
-        $data = $this->getTranslation('draft_data', $locale);
-
-        if (is_string($data)) {
-            $decoded = json_decode($data, true);
-
-            return is_array($decoded) ? $decoded : [];
-        }
-
-        return is_array($data) ? $data : [];
-    }
-
-    /**
      * Get the settings as an array.
      *
      * @return array<string, mixed> The settings array
@@ -181,66 +153,13 @@ class ContentBlock extends Model implements HasMedia, Sortable
     }
 
     /**
-     * Get the draft settings as an array.
-     *
-     * @return array<string, mixed> The draft settings array
-     */
-    public function getDraftSettingsArray(): array
-    {
-        $settings = $this->draft_settings;
-
-        if (is_string($settings)) {
-            $decoded = json_decode($settings, true);
-
-            return is_array($decoded) ? $decoded : [];
-        }
-
-        return is_array($settings) ? $settings : [];
-    }
-
-    /**
-     * Check if this block has draft changes.
-     *
-     * @return bool True if there are draft changes, false otherwise
-     */
-    public function hasDraftChanges(): bool
-    {
-        $visibilityChanged = $this->draft_visible !== null && $this->draft_visible !== $this->visible;
-
-        return ! empty($this->draft_data) || ! empty($this->draft_settings) || $visibilityChanged;
-    }
-
-    /**
      * Check if this block is currently visible.
-     *
-     * Uses draft visibility if available, otherwise falls back to published visibility.
      *
      * @return bool True if the block is visible, false otherwise
      */
     public function isVisible(): bool
     {
-        $value = $this->draft_visible !== null
-            ? $this->getAttribute('draft_visible')
-            : $this->getAttribute('visible');
-
-        return (bool) $value;
-    }
-
-
-
-    /**
-     * Discard all draft changes.
-     *
-     * This method clears all draft data and settings, reverting to
-     * the published state.
-     */
-    public function discardDraft(): void
-    {
-        $this->draft_data = null;
-        $this->draft_settings = null;
-        $this->draft_visible = null;
-        $this->last_draft_at = null;
-        $this->save();
+        return (bool) $this->getAttribute('visible');
     }
 
     /**
@@ -271,11 +190,8 @@ class ContentBlock extends Model implements HasMedia, Sortable
         return [
             'data' => 'array',
             'settings' => 'array',
-            'draft_data' => 'array',
-            'draft_settings' => 'array',
             'visible' => 'boolean',
-            'draft_visible' => 'boolean',
-            'last_draft_at' => 'datetime',
+            'order' => 'integer',
         ];
     }
 
@@ -292,12 +208,8 @@ class ContentBlock extends Model implements HasMedia, Sortable
             'page_id' => $this->page_id,
             'data' => $this->data,
             'settings' => $this->settings,
-            'draft_data' => $this->draft_data,
-            'draft_settings' => $this->draft_settings,
             'visible' => $this->visible,
-            'draft_visible' => $this->draft_visible,
             'order' => $this->order,
-            'last_draft_at' => $this->last_draft_at,
         ];
     }
 
@@ -313,41 +225,5 @@ class ContentBlock extends Model implements HasMedia, Sortable
             'updated_at',
             'deleted_at',
         ];
-    }
-
-    /**
-     * Override the publishDraft method to create a revision.
-     */
-    public function publishDraft(): void
-    {
-        $hasChanges = $this->hasDraftChanges();
-
-        // Only handle visibility changes if draft_visible is explicitly set
-        if ($this->draft_visible !== null) {
-            $this->visible = (bool) $this->draft_visible;
-            $hasChanges = true;
-        }
-
-        if ($hasChanges) {
-            // Create a revision before publishing
-            $this->createManualRevision('publish', 'Published draft changes');
-
-            // Prevent automatic revision on update
-            $this->skipRevision = true;
-
-            // Copy draft data to published data
-            $this->data = $this->draft_data;
-            $this->settings = $this->draft_settings;
-
-            // Clear draft data
-            $this->draft_data = null;
-            $this->draft_settings = null;
-            $this->draft_visible = null;
-            $this->last_draft_at = null;
-
-            $this->save();
-
-            $this->skipRevision = false;
-        }
     }
 }

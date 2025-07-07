@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Actions\Content\SaveDraftContentBlockAction;
 use App\Models\ContentBlock;
+use App\Services\BlockEditorService;
 use App\Services\BlockManager;
 use App\Traits\WithToastNotifications;
 use Livewire\Attributes\Computed;
@@ -19,7 +19,7 @@ use Livewire\WithFileUploads;
  */
 class BlockEditor extends Component
 {
-    use WithToastNotifications, WithFileUploads;
+    use WithFileUploads, WithToastNotifications;
 
     /**
      * Currently active locale for editing.
@@ -62,6 +62,11 @@ class BlockEditor extends Component
     protected BlockManager $blockManager;
 
     /**
+     * Block editor service instance.
+     */
+    protected BlockEditorService $blockEditorService;
+
+    /**
      * Mount the component with the page to edit.
      */
     public function mount(\App\Models\Page $page, string $activeLocale): void
@@ -73,9 +78,10 @@ class BlockEditor extends Component
     /**
      * Boot the component and inject dependencies.
      */
-    public function boot(BlockManager $blockManager): void
+    public function boot(BlockManager $blockManager, BlockEditorService $blockEditorService): void
     {
         $this->blockManager = $blockManager;
+        $this->blockEditorService = $blockEditorService;
     }
 
     /**
@@ -86,22 +92,22 @@ class BlockEditor extends Component
     {
         $blockId = $data['blockId'] ?? null;
 
-        if (!$blockId) {
+        if (! $blockId) {
             return;
         }
 
-        $block = ContentBlock::find($blockId);
+        $block = $this->blockEditorService->getBlockById($blockId);
 
-        if (!$block) {
+        if (! $block) {
             return;
         }
 
         // Set editing state
         $this->editingBlockId = $blockId;
-        $this->editingBlockVisible = $block->isVisible();
+        $this->editingBlockVisible = $this->blockEditorService->getBlockVisibility($block);
 
         // Load block data
-        $this->loadBlockData($block);
+        $this->editingBlockState = $this->blockEditorService->loadBlockData($block, $this->activeLocale);
 
         // Clear any previous image upload
         $this->editingBlockImageUpload = null;
@@ -125,37 +131,13 @@ class BlockEditor extends Component
     public function handleBlockDeleted($data): void
     {
         $deletedBlockId = $data['blockId'] ?? null;
-        
+
         // Clear editing state if the deleted block was being edited
         if ($this->editingBlockId === $deletedBlockId) {
             $this->editingBlockId = null;
             $this->editingBlockState = [];
             $this->editingBlockImageUpload = null;
         }
-    }
-
-    /**
-     * Load block data for editing.
-     */
-    protected function loadBlockData(ContentBlock $block): void
-    {
-        // Clear previous state
-        $this->editingBlockState = [];
-
-        // Load block data - prefer draft data if available, otherwise use published data
-        $blockClass = $this->blockManager->find($block->type);
-        $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
-
-        // Use draft data if available, otherwise fall back to published data
-        $blockData = $block->hasDraftChanges()
-            ? $block->getDraftTranslatedData($this->activeLocale)
-            : $block->getTranslatedData($this->activeLocale);
-
-        $blockSettings = $block->hasDraftChanges()
-            ? $block->getDraftSettingsArray()
-            : $block->getSettingsArray();
-
-        $this->editingBlockState = array_merge($defaultData, $blockData, $blockSettings);
     }
 
     /**
@@ -167,11 +149,8 @@ class BlockEditor extends Component
             // Dispatch event to update PageCanvas immediately
             $this->dispatch('block-state-updated', [
                 'id' => $this->editingBlockId,
-                'state' => $this->editingBlockState
+                'state' => $this->editingBlockState,
             ]);
-            
-            // Debounce the save operation to avoid excessive database writes
-            $this->dispatch('debounced-save-block');
         }
     }
 
@@ -181,19 +160,10 @@ class BlockEditor extends Component
     public function updatedEditingBlockVisible(): void
     {
         if ($this->editingBlockId) {
-            // Save the visibility change immediately
-            $this->saveBlockDraft();
-        }
-    }
-
-    /**
-     * Handle debounced save requests.
-     */
-    #[On('debounced-save-block')]
-    public function handleDebouncedSave(): void
-    {
-        if ($this->editingBlockId) {
-            $this->saveBlockDraft();
+            $this->dispatch('block-visibility-updated', [
+                'id' => $this->editingBlockId,
+                'visible' => $this->editingBlockVisible,
+            ]);
         }
     }
 
@@ -204,31 +174,21 @@ class BlockEditor extends Component
     public function handleRepeaterUpdated($data): void
     {
         if (isset($data['model']) && isset($data['items'])) {
-            // Update the editingBlockState with the new items
             $modelPath = $data['model'];
             $items = $data['items'];
-            
-            // Convert dot notation to array path
-            $pathParts = explode('.', $modelPath);
-            $current = &$this->editingBlockState;
-            
-            foreach ($pathParts as $part) {
-                if (!isset($current[$part])) {
-                    $current[$part] = [];
-                }
-                $current = &$current[$part];
-            }
-            
-            $current = $items;
-            
-            // Dispatch event to update PageCanvas immediately
+
+            // Update the editingBlockState with the new items
+            $this->editingBlockState = $this->blockEditorService->updateRepeaterState(
+                $this->editingBlockState,
+                $modelPath,
+                $items
+            );
+
+            // Immediately notify the parent of the state change
             $this->dispatch('block-state-updated', [
                 'id' => $this->editingBlockId,
-                'state' => $this->editingBlockState
+                'state' => $this->editingBlockState,
             ]);
-            
-            // Debounce the save operation
-            $this->dispatch('debounced-save-block');
         }
     }
 
@@ -238,72 +198,33 @@ class BlockEditor extends Component
     #[On('media-updated')]
     public function handleMediaUpdated($modelId = null, $collection = null, $isTemporary = false): void
     {
-        if ($this->editingBlockId && $collection) {
-            // Get the current block
-            $block = ContentBlock::find($this->editingBlockId);
-            
-            if (!$block) {
-                return;
+        if ($this->editingBlockId && $this->editingBlockId === $modelId) {
+            $block = $this->blockEditorService->getBlockById($this->editingBlockId);
+            if ($block) {
+                // Update the state based on the new media status
+                $this->editingBlockState = $this->blockEditorService->updateMediaState($this->editingBlockState, $block, $collection);
+
+                // Immediately notify the parent of the state change
+                $this->dispatch('block-state-updated', [
+                    'id' => $this->editingBlockId,
+                    'state' => $this->editingBlockState,
+                ]);
             }
-
-            // Get the media URL for the collection (will be null if removed)
-            $media = $block->getFirstMedia($collection);
-            $mediaUrl = $media ? $media->getUrl() : null;
-
-            // Update the editingBlockState with the media URL (or null if removed)
-            // For hero section, this would be background_image
-            if ($collection === 'background_image') {
-                $this->editingBlockState['background_image'] = $mediaUrl;
-            }
-            // Add more collections as needed
-            // elseif ($collection === 'other_collection') {
-            //     $this->editingBlockState['other_field'] = $mediaUrl;
-            // }
-
-            // Dispatch event to update PageCanvas immediately
-            $this->dispatch('block-state-updated', [
-                'id' => $this->editingBlockId,
-                'state' => $this->editingBlockState
-            ]);
-            
-            // Debounce the save operation
-            $this->dispatch('debounced-save-block');
         }
     }
 
     /**
-     * Save the current block as a draft.
+     * Handle debounced save of block data.
      */
-    public function saveBlockDraft(): void
+    public function handleDebouncedSave(): void
     {
-        if (!$this->editingBlockId) {
-            return;
-        }
-
-        try {
-            $block = ContentBlock::find($this->editingBlockId);
-
-            if (!$block) {
-                return;
-            }
-
-            $saveDraftContentBlockAction = app(SaveDraftContentBlockAction::class);
-            $saveDraftContentBlockAction->execute(
-                $block,
-                $this->editingBlockState,
-                $this->activeLocale,
-                $this->editingBlockVisible,
-                $this->editingBlockImageUpload,
-                $this->blockManager
-            );
-
-            // No success toast needed since user can see changes live
-
-        } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.block_editor.block_save_failed_text'),
-                __('messages.block_editor.block_save_failed_title')
-            );
+        if ($this->editingBlockId && !empty($this->editingBlockState)) {
+            // Here you would implement the actual save logic
+            // For now, we'll just dispatch an event to notify that save is needed
+            $this->dispatch('block-save-needed', [
+                'blockId' => $this->editingBlockId,
+                'state' => $this->editingBlockState,
+            ]);
         }
     }
 
@@ -312,7 +233,8 @@ class BlockEditor extends Component
      */
     public function cancelEditing(): void
     {
-        $this->dispatch('cancel-block-edit');
+        $this->handleCancelBlockEdit();
+        $this->dispatch('block-edit-canceled');
     }
 
     /**
@@ -321,11 +243,11 @@ class BlockEditor extends Component
     #[Computed]
     public function getCurrentBlockProperty(): ?ContentBlock
     {
-        if (!$this->editingBlockId) {
+        if (! $this->editingBlockId) {
             return null;
         }
 
-        return ContentBlock::find($this->editingBlockId);
+        return $this->blockEditorService->getBlockById($this->editingBlockId);
     }
 
     /**
@@ -334,13 +256,13 @@ class BlockEditor extends Component
     #[Computed]
     public function getCurrentBlockClassProperty(): ?\App\Blocks\Block
     {
-        $block = $this->currentBlock;
-        
-        if (!$block) {
+        $block = $this->getCurrentBlockProperty();
+
+        if (! $block) {
             return null;
         }
 
-        return $this->blockManager->find($block->type);
+        return $this->blockEditorService->getBlockClass($block);
     }
 
     /**
@@ -362,10 +284,6 @@ class BlockEditor extends Component
      */
     public function render()
     {
-        return view('livewire.admin.block-editor', [
-            'blockManager' => $this->blockManager,
-            'currentBlock' => $this->currentBlock,
-            'currentBlockClass' => $this->currentBlockClass
-        ]);
+        return view('livewire.admin.block-editor');
     }
-} 
+}

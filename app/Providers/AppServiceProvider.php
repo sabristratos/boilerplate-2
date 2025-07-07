@@ -23,7 +23,7 @@ class AppServiceProvider extends ServiceProvider
         // Register SettingsManager as both a singleton and a class binding
         $this->app->singleton(SettingsManager::class, fn (): SettingsManager => new SettingsManager);
         $this->app->singleton('settings', fn (): SettingsManager => new SettingsManager);
-        
+
         // Register BlockManager as a singleton
         $this->app->singleton(\App\Services\BlockManager::class, fn (): \App\Services\BlockManager => new \App\Services\BlockManager);
     }

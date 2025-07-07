@@ -116,6 +116,14 @@
                                 :tooltip="__('messages.forms.tooltips.submissions')"
                                 wire:navigate
                             />
+                            <flux:button
+                                wire:click="duplicateForm({{ $form->id }})"
+                                variant="ghost"
+                                size="xs"
+                                icon="document-duplicate"
+                                square
+                                :tooltip="__('buttons.duplicate')"
+                            />
                             <x-revision-link :model="$form" model-type="form" />
                             <flux:button
                                 href="#"

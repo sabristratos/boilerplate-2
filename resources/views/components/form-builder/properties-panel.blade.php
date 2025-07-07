@@ -19,6 +19,7 @@
                 :activeBreakpoint="$activeBreakpoint"
                 :availableValidationRules="$availableValidationRules"
                 :availableIcons="$availableIcons"
+                :selectedElementOptionsArray="$this->selectedElementOptionsArray"
             />
         </div>
     @else

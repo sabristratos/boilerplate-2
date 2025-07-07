@@ -77,6 +77,14 @@ class Index extends Component
         $this->redirect(route('admin.forms.edit', $form));
     }
 
+    public function duplicateForm($formId)
+    {
+        $form = Form::findOrFail($formId);
+        $newFormDto = app(\App\Services\FormService::class)->duplicateForm($form, auth()->id());
+        \Flux\Flux::toast(__('forms.toast_form_saved'));
+        $this->redirect(route('admin.forms.edit', $newFormDto->id));
+    }
+
     #[\Livewire\Attributes\Computed]
     public function availablePrebuiltForms(): array
     {

@@ -88,9 +88,9 @@ class FormBuilderOptionsRepeater extends Component
             'elementIndex' => $this->elementIndex,
             'propertyPath' => $this->propertyPath,
             'key' => $key,
-            'value' => $value
+            'value' => $value,
         ]);
-        
+
         // Update parent immediately for real-time feedback
         $this->updateParent();
     }
@@ -117,7 +117,7 @@ class FormBuilderOptionsRepeater extends Component
             'propertyPath' => $this->propertyPath,
             'options' => $this->options,
             'optionsString' => trim($optionsString),
-            'timestamp' => now()->timestamp
+            'timestamp' => now()->timestamp,
         ]);
     }
 

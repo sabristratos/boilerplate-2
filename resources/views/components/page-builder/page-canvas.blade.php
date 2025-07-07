@@ -108,20 +108,18 @@
                         <div class="relative cursor-pointer" wire:click="editBlock({{ $block->id }})" style="pointer-events: auto;">
                             @php
                                 $blockClass = $blockManager->find($block->type);
-                                $alpine = false;
                                 
-                                if ($editingBlockId === $block->id && $editingBlockState && is_array($editingBlockState)) {
-                                    // When editing, use the editing state as the primary data
-                                    $data = $editingBlockState;
-                                    $alpine = true;
-                                } else {
-                                    // When not editing, use draft data if available, otherwise use published data
-                                    if ($block->hasDraftChanges()) {
-                                        $data = array_merge($block->getDraftTranslatedData(app()->getLocale()), $block->getDraftSettingsArray());
-                                    } else {
-                                        $data = array_merge($block->getTranslatedData(app()->getLocale()), $block->getSettingsArray());
-                                    }
-                                }
+                                // Get block data from the latest revision or fall back to current model data
+                                $latestRevision = $block->latestRevision();
+                                $blockData = $latestRevision && isset($latestRevision->data['data'])
+                                    ? $latestRevision->data['data']
+                                    : $block->getTranslatedData(app()->getLocale());
+                                
+                                $blockSettings = $latestRevision && isset($latestRevision->data['settings'])
+                                    ? $latestRevision->data['settings']
+                                    : $block->getSettingsArray();
+                                
+                                $data = array_merge($blockData, $blockSettings);
                             @endphp
 
                             @if($blockClass)

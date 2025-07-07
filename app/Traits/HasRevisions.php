@@ -7,7 +7,6 @@ namespace App\Traits;
 use App\Models\Revision;
 use App\Services\RevisionService;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Support\Facades\Auth;
 
 /**
  * Trait for models that support revision tracking.
@@ -28,17 +27,17 @@ trait HasRevisions
     protected static function bootHasRevisions(): void
     {
         static::created(function ($model): void {
-            $model->createRevision('create');
+            $model->createRevision('create', 'Initial creation', [], true); // Published on create
         });
 
         static::updated(function ($model): void {
-            if (!($model->skipRevision ?? false)) {
-                $model->createRevision('update');
+            if (! ($model->skipRevision ?? false)) {
+                $model->createRevision('update'); // Draft by default
             }
         });
 
         static::deleted(function ($model): void {
-            $model->createRevision('delete');
+            $model->createRevision('delete'); // Draft by default
         });
     }
 
@@ -71,30 +70,32 @@ trait HasRevisions
     /**
      * Create a new revision for this model.
      */
-    public function createRevision(string $action, ?string $description = null, array $metadata = []): Revision
+    public function createRevision(string $action, ?string $description = null, array $metadata = [], bool $is_published = false): Revision
     {
         $revisionService = app(RevisionService::class);
-        
+
         return $revisionService->createRevision(
             $this,
             $action,
             $description,
-            $metadata
+            $metadata,
+            $is_published
         );
     }
 
     /**
      * Create a manual revision (for custom actions like publish, revert).
      */
-    public function createManualRevision(string $action, ?string $description = null, array $metadata = []): Revision
+    public function createManualRevision(string $action, ?string $description = null, array $metadata = [], bool $is_published = false): Revision
     {
         $revisionService = app(RevisionService::class);
-        
+
         return $revisionService->createManualRevision(
             $this,
             $action,
             $description,
-            $metadata
+            $metadata,
+            $is_published
         );
     }
 
@@ -104,7 +105,7 @@ trait HasRevisions
     public function revertToRevision(Revision $revision): bool
     {
         $revisionService = app(RevisionService::class);
-        
+
         return $revisionService->revertToRevision($this, $revision);
     }
 
@@ -133,7 +134,6 @@ trait HasRevisions
             'created_at',
             'updated_at',
             'deleted_at',
-            'last_draft_at',
         ];
     }
 
@@ -172,4 +172,4 @@ trait HasRevisions
     {
         return $this->revisions()->published()->count();
     }
-} 
+}

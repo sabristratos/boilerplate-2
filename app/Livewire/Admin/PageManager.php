@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
-use App\Actions\Content\SaveDraftPageDetailsAction;
+use App\DTOs\PageDTO;
 use App\Models\Page;
 use App\Services\BlockManager;
+use App\Services\PageService;
 use App\Traits\WithToastNotifications;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -91,11 +92,17 @@ class PageManager extends Component
     protected BlockManager $blockManager;
 
     /**
+     * Page service instance.
+     */
+    protected PageService $pageService;
+
+    /**
      * Boot the component and inject dependencies.
      */
-    public function boot(BlockManager $blockManager): void
+    public function boot(BlockManager $blockManager, PageService $pageService): void
     {
         $this->blockManager = $blockManager;
+        $this->pageService = $pageService;
     }
 
     /**
@@ -136,19 +143,24 @@ class PageManager extends Component
      */
     protected function loadPageTranslations(): void
     {
-        // Load draft data if available, otherwise fall back to published data
-        $draftTitle = $this->page->getTranslations('draft_title');
-        $this->title = ! empty($draftTitle) ? $draftTitle : $this->page->getTranslations('title');
+        $latestRevision = $this->page->latestRevision();
 
-        $this->slug = $this->page->draft_slug ?? $this->page->slug;
-
-        $draftMetaTitle = $this->page->getTranslations('draft_meta_title');
-        $this->meta_title = ! empty($draftMetaTitle) ? $draftMetaTitle : $this->page->getTranslations('meta_title');
-
-        $draftMetaDescription = $this->page->getTranslations('draft_meta_description');
-        $this->meta_description = ! empty($draftMetaDescription) ? $draftMetaDescription : $this->page->getTranslations('meta_description');
-
-        $this->no_index = $this->page->draft_no_index !== null ? $this->page->draft_no_index : $this->page->no_index;
+        if ($latestRevision) {
+            $data = $latestRevision->data;
+            $this->title = is_array($data['title'] ?? null)
+                ? $data['title']
+                : [$this->activeLocale => ($data['title'] ?? '')];
+            $this->slug = $data['slug'] ?? '';
+            $this->meta_title = $data['meta_title'] ?? [];
+            $this->meta_description = $data['meta_description'] ?? [];
+            $this->no_index = $data['no_index'] ?? false;
+        } else {
+            $this->title = $this->page->getTranslations('title');
+            $this->slug = $this->page->slug;
+            $this->meta_title = $this->page->getTranslations('meta_title');
+            $this->meta_description = $this->page->getTranslations('meta_description');
+            $this->no_index = $this->page->no_index;
+        }
     }
 
     /**
@@ -193,90 +205,50 @@ class PageManager extends Component
     }
 
     /**
-     * Save the page details.
+     * Save the page as a draft.
      */
     public function savePage(): void
     {
         try {
-            $saveDraftPageDetailsAction = app(SaveDraftPageDetailsAction::class);
-            $saveDraftPageDetailsAction->execute($this->page, [
+            $pageData = [
+                'id' => $this->page->id,
                 'title' => $this->title,
                 'slug' => $this->slug,
                 'meta_title' => $this->meta_title,
                 'meta_description' => $this->meta_description,
                 'no_index' => $this->no_index,
-            ]);
+            ];
 
-            $this->showSuccessToast(
-                __('messages.page_manager.page_saved_text'),
-                __('messages.page_manager.page_saved_title')
-            );
+            $pageDTO = PageDTO::fromArray($pageData);
+            $this->pageService->updatePage($this->page, $pageDTO, 'draft', 'Saved page draft');
 
+            $this->showSuccessToast('Draft saved successfully.');
         } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.page_manager.page_save_failed_text'),
-                __('messages.page_manager.page_save_failed_title')
-            );
+            $this->showErrorToast('Failed to save draft.');
         }
     }
 
     /**
-     * Save the page as draft.
-     */
-    public function saveDraft(): void
-    {
-        try {
-            $saveDraftPageDetailsAction = app(SaveDraftPageDetailsAction::class);
-            $saveDraftPageDetailsAction->execute($this->page, [
-                'title' => $this->title,
-                'slug' => $this->slug,
-                'meta_title' => $this->meta_title,
-                'meta_description' => $this->meta_description,
-                'no_index' => $this->no_index,
-            ]);
-
-            $this->showSuccessToast(
-                __('messages.page_manager.draft_saved_text'),
-                __('messages.page_manager.draft_saved_title')
-            );
-
-        } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.page_manager.draft_save_failed_text'),
-                __('messages.page_manager.draft_save_failed_title')
-            );
-        }
-    }
-
-    /**
-     * Publish the page draft.
+     * Publish the page.
      */
     public function publishPage(): void
     {
         try {
-            // First save any current changes as draft
-            $saveDraftPageDetailsAction = app(SaveDraftPageDetailsAction::class);
-            $saveDraftPageDetailsAction->execute($this->page, [
+            $pageData = [
+                'id' => $this->page->id,
                 'title' => $this->title,
                 'slug' => $this->slug,
                 'meta_title' => $this->meta_title,
                 'meta_description' => $this->meta_description,
                 'no_index' => $this->no_index,
-            ]);
+            ];
 
-            // Then publish the draft
-            $this->page->publishDraft();
+            $pageDTO = PageDTO::fromArray($pageData);
+            $this->pageService->updatePage($this->page, $pageDTO, 'publish', 'Published page', true);
 
-            $this->showSuccessToast(
-                __('messages.page_manager.page_published_text'),
-                __('messages.page_manager.page_published_title')
-            );
-
+            $this->showSuccessToast('Page published successfully.');
         } catch (\Exception $e) {
-            $this->showErrorToast(
-                __('messages.page_manager.page_publish_failed_text'),
-                __('messages.page_manager.page_publish_failed_title')
-            );
+            $this->showErrorToast('Failed to publish page.');
         }
     }
 

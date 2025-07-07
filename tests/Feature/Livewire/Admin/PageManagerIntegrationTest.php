@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
-    
+
     $this->page = Page::factory()->create();
 });
 
@@ -35,7 +35,7 @@ describe('PageManager Integration', function () {
 
         $this->assertDatabaseHas('content_blocks', [
             'page_id' => $this->page->id,
-            'type' => 'hero'
+            'type' => 'hero',
         ]);
     });
 
@@ -47,7 +47,7 @@ describe('PageManager Integration', function () {
 
         $this->assertDatabaseHas('content_blocks', [
             'page_id' => $this->page->id,
-            'type' => 'contact'
+            'type' => 'contact',
         ]);
     });
 
@@ -127,12 +127,12 @@ describe('PageManager Integration', function () {
 
         $this->assertDatabaseHas('content_blocks', [
             'id' => $block2->id,
-            'order' => 1
+            'order' => 1,
         ]);
 
         $this->assertDatabaseHas('content_blocks', [
             'id' => $block1->id,
-            'order' => 2
+            'order' => 2,
         ]);
     });
 
@@ -168,4 +168,4 @@ describe('PageManager Integration', function () {
         $this->page->refresh();
         expect($this->page->isPublished())->toBeFalse();
     });
-}); 
+});

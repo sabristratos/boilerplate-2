@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use App\Services\FormBuilder\ElementFactory;
 use App\Services\FormBuilder\ElementDTO;
+use App\Services\FormBuilder\ElementFactory;
 
 describe('ElementFactory', function () {
     beforeEach(function () {
-        $this->factory = new ElementFactory();
+        $this->factory = new ElementFactory;
     });
 
     describe('createElement', function () {
@@ -115,7 +115,7 @@ describe('ElementFactory', function () {
         });
 
         it('throws exception for unknown element type', function () {
-            expect(fn() => $this->factory->createElement('unknown', 'field_19'))
+            expect(fn () => $this->factory->createElement('unknown', 'field_19'))
                 ->toThrow(InvalidArgumentException::class, 'No renderer found for element type: unknown');
         });
     });
@@ -141,8 +141,8 @@ describe('ElementFactory', function () {
                 'properties' => ['label' => 'Test Field'],
             ];
 
-            expect(fn() => $this->factory->renderElement($element))
+            expect(fn () => $this->factory->renderElement($element))
                 ->toThrow(InvalidArgumentException::class, 'No renderer found for element type: unknown');
         });
     });
-}); 
+});

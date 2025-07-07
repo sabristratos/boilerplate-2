@@ -8,9 +8,6 @@ return [
         'GB' => 'media.units.GB',
         'TB' => 'media.units.TB',
     ],
-    'uploader' => [
-        'remove_failed\', [\'message\' => $e->getMessage()]), variant: \'danger' => 'media.uploader.remove_failed\', [\'message\' => $e->getMessage()]), variant: \'danger',
-    ],
     'back_to_library' => 'media.back_to_library',
     'details' => 'media.details',
     'delete_confirm' => 'media.delete_confirm',

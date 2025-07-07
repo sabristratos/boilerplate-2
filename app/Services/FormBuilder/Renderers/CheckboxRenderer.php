@@ -51,11 +51,11 @@ class CheckboxRenderer extends BaseElementRenderer
     {
         $properties = $element->properties ?? [];
         $fluxProps = $properties['fluxProps'] ?? [];
-        
+
         // Parse options using the OptionParserService
         $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
         $options = $optionParser->parseOptions($properties['options'] ?? '');
-        
+
         return [
             'label' => $properties['label'] ?? 'Checkbox Group',
             'required' => in_array('required', $element->validation['rules'] ?? []),
@@ -74,10 +74,10 @@ class CheckboxRenderer extends BaseElementRenderer
         $properties = $element->properties ?? [];
         $label = $properties['label'] ?? '';
         $id = $element->id ?? '';
-        
+
         // Create a field name from the label or ID
-        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_' . $id;
-        
+        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_'.$id;
+
         return "previewFormData.{$fieldName}";
     }
 
@@ -88,12 +88,12 @@ class CheckboxRenderer extends BaseElementRenderer
     {
         $data = $this->prepareViewData($element);
         $data['mode'] = $mode;
-        
+
         // Use the provided fieldName if available
         if ($fieldName) {
             $data['wireModel'] = "previewFormData.{$fieldName}";
         }
-        
+
         // Ensure we have options to display
         if (empty($data['options'])) {
             $data['options'] = [
@@ -102,7 +102,7 @@ class CheckboxRenderer extends BaseElementRenderer
                 ['value' => 'option3', 'label' => 'Option 3'],
             ];
         }
-        
+
         return view($this->getViewName(), $data)->render();
     }
 

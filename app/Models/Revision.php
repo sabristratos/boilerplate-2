@@ -66,8 +66,6 @@ class Revision extends Model
 
     /**
      * Get the model that this revision belongs to.
-     *
-     * @return MorphTo
      */
     public function revisionable(): MorphTo
     {
@@ -96,7 +94,7 @@ class Revision extends Model
     public function scopeForModel($query, Model $model)
     {
         return $query->where('revisionable_type', get_class($model))
-                    ->where('revisionable_id', $model->id);
+            ->where('revisionable_id', $model->id);
     }
 
     /**
@@ -104,7 +102,7 @@ class Revision extends Model
      */
     public function getFormattedVersionAttribute(): string
     {
-        return $this->version ?? 'v' . $this->id;
+        return $this->version ?? 'v'.$this->id;
     }
 
     /**
@@ -121,4 +119,4 @@ class Revision extends Model
             default => ucfirst($this->action),
         };
     }
-} 
+}

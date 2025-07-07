@@ -5,7 +5,6 @@ declare(strict_types=1);
 use App\Livewire\Admin\PageManager;
 use App\Models\Page;
 use App\Models\User;
-use App\Services\BlockManager;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 
@@ -13,16 +12,16 @@ beforeEach(function () {
     // Create all page permissions
     $permissions = [
         'pages.view',
-        'pages.edit', 
+        'pages.edit',
         'pages.create',
         'pages.delete',
-        'settings.general.manage'
+        'settings.general.manage',
     ];
-    
+
     foreach ($permissions as $permission) {
         \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission]);
     }
-    
+
     $this->user = User::factory()->create();
     $this->user->givePermissionTo('pages.edit', 'settings.general.manage');
 
@@ -62,34 +61,44 @@ describe('PageManager Component', function () {
             ->assertSet('availableLocales', ['en' => 'English', 'fr' => 'French']);
     });
 
-    it('loads page translations correctly for current locale', function () {
+    it('loads page translations from the latest revision', function () {
+        // Create a draft revision
+        $this->page->createManualRevision('draft', 'Initial draft', [], false);
+        $this->page->title = ['en' => 'Updated Title'];
+        $this->page->save();
+
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
-            ->assertSet('title.en', 'Test Page')
-            ->assertSet('title.fr', 'Page de Test')
-            ->assertSet('slug', 'test-page')
-            ->assertSet('meta_title.en', 'Test Meta Title')
-            ->assertSet('meta_title.fr', 'Titre Meta de Test')
-            ->assertSet('meta_description.en', 'Test Meta Description')
-            ->assertSet('meta_description.fr', 'Description Meta de Test')
-            ->assertSet('no_index', false);
+            ->assertSet('title.en', 'Updated Title');
     });
 
-    it('loads draft translations when available', function () {
-        // Create a page with draft data
-        $pageWithDraft = Page::factory()->create([
-            'title' => ['en' => 'Published Title'],
-            'draft_title' => ['en' => 'Draft Title', 'fr' => 'Titre Brouillon'],
-            'meta_title' => ['en' => 'Published Meta'],
-            'draft_meta_title' => ['en' => 'Draft Meta', 'fr' => 'Meta Brouillon'],
-        ]);
-
+    it('can save page details as a draft revision', function () {
         Livewire::actingAs($this->user)
-            ->test(PageManager::class, ['page' => $pageWithDraft])
-            ->assertSet('title.en', 'Draft Title')
-            ->assertSet('title.fr', 'Titre Brouillon')
-            ->assertSet('meta_title.en', 'Draft Meta')
-            ->assertSet('meta_title.fr', 'Meta Brouillon');
+            ->test(PageManager::class, ['page' => $this->page])
+            ->set('title.en', 'New Draft Title')
+            ->call('savePage')
+            ->assertHasNoErrors();
+
+        $latestRevision = $this->page->latestRevision();
+        expect($latestRevision)->not->toBeNull()
+            ->and($latestRevision->is_published)->toBeFalse()
+            ->and($latestRevision->data['title']['en'])->toBe('New Draft Title');
+    });
+
+    it('can publish a page', function () {
+        Livewire::actingAs($this->user)
+            ->test(PageManager::class, ['page' => $this->page])
+            ->set('title.en', 'Published Title')
+            ->call('publishPage')
+            ->assertHasNoErrors();
+
+        $latestRevision = $this->page->latestRevision();
+        expect($latestRevision)->not->toBeNull()
+            ->and($latestRevision->is_published)->toBeTrue()
+            ->and($latestRevision->data['title']['en'])->toBe('Published Title');
+
+        $this->page->refresh();
+        expect($this->page->getTranslation('title', 'en'))->toBe('Published Title');
     });
 
     it('can generate slug from title for current locale', function () {
@@ -98,28 +107,6 @@ describe('PageManager Component', function () {
             ->set('title.en', 'New Test Page Title')
             ->call('generateSlug')
             ->assertSet('slug', 'new-test-page-title');
-    });
-
-    it('can save page details with translations', function () {
-        Livewire::actingAs($this->user)
-            ->test(PageManager::class, ['page' => $this->page])
-            ->set('title.en', 'Updated English Title')
-            ->set('title.fr', 'Titre Français Mis à Jour')
-            ->set('slug', 'updated-page-slug')
-            ->set('meta_title.en', 'Updated English Meta')
-            ->set('meta_title.fr', 'Meta Français Mis à Jour')
-            ->set('meta_description.en', 'Updated English Description')
-            ->set('meta_description.fr', 'Description Français Mis à Jour')
-            ->set('no_index', true)
-            ->call('savePage')
-            ->assertHasNoErrors(); // Event assertion omitted due to Livewire version
-
-        $this->page->refresh();
-        expect($this->page->getTranslations('draft_title'))->toBe(['en' => 'Updated English Title', 'fr' => 'Titre Français Mis à Jour']);
-        expect($this->page->draft_slug)->toBe('updated-page-slug');
-        expect($this->page->getTranslations('draft_meta_title'))->toBe(['en' => 'Updated English Meta', 'fr' => 'Meta Français Mis à Jour']);
-        expect($this->page->getTranslations('draft_meta_description'))->toBe(['en' => 'Updated English Description', 'fr' => 'Description Français Mis à Jour']);
-        expect($this->page->draft_no_index)->toBe(true);
     });
 
     it('handles locale switching correctly', function () {
@@ -166,11 +153,11 @@ describe('PageManager Component', function () {
 
     it('requires pages.edit permission to access', function () {
         $unauthorizedUser = User::factory()->create();
-        
+
         // Test the policy directly
-        $policy = new \App\Policies\PagePolicy();
+        $policy = new \App\Policies\PagePolicy;
         expect($policy->update($unauthorizedUser, $this->page))->toBeFalse();
-        
+
         // Test that authorized user can access
         $authorizedUser = User::factory()->create();
         $authorizedUser->givePermissionTo('pages.edit');
@@ -180,7 +167,7 @@ describe('PageManager Component', function () {
     it('allows users with pages.edit permission to access', function () {
         $authorizedUser = User::factory()->create();
         $authorizedUser->givePermissionTo('pages.edit');
-        
+
         Livewire::actingAs($authorizedUser)
             ->test(PageManager::class, ['page' => $this->page])
             ->assertSet('page.id', $this->page->id);
@@ -215,7 +202,7 @@ describe('PageManager Component', function () {
             ->call('savePage');
 
         $page->refresh();
-        
+
         // French translations should still exist
         $draftTitle = $page->getTranslations('draft_title');
         $draftMetaTitle = $page->getTranslations('draft_meta_title');
@@ -224,4 +211,4 @@ describe('PageManager Component', function () {
         expect($draftTitle['en'])->toBe('Updated English Title');
         expect($draftMetaTitle['en'])->toBe('Updated English Meta');
     });
-}); 
+});

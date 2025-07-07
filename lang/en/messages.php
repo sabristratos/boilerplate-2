@@ -25,6 +25,7 @@ return [
         'created' => ':Resource created successfully.',
         'updated' => ':Resource updated successfully.',
         'deleted' => ':Resource deleted successfully.',
+        'published' => ':Resource published successfully.',
     ],
     'errors' => [
         'generic' => 'An unexpected error occurred. Please try again.',
@@ -308,6 +309,7 @@ return [
             'submissions' => 'Submissions',
             'unsaved_changes' => 'Unsaved Changes',
             'draft_changes' => 'Draft Changes',
+            'actions' => 'Actions',
             'save' => 'Save',
             'save_tooltip' => 'Save your form changes',
             'save_draft' => 'Save Draft',
@@ -337,6 +339,11 @@ return [
             'form_name_placeholder' => 'e.g. Contact Us',
             'cancel' => 'Cancel',
             'create' => 'Create',
+            'delete_form' => 'Delete Form',
+            'delete_form_title' => 'Delete Form',
+            'delete_form_confirmation' => 'Are you sure you want to delete this form? This action cannot be undone and will also delete all form submissions.',
+            'form_deleted' => 'Form deleted successfully.',
+            'delete_error' => 'An error occurred while deleting the form.',
         ],
         'submissions' => [
             'submissions_for' => 'Submissions for: :name',

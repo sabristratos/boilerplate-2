@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 
 /**
  * Livewire component for displaying and managing revision history.
@@ -22,7 +23,7 @@ use Livewire\WithPagination;
  */
 class RevisionHistory extends Component
 {
-    use WithPagination, WithConfirmationModal, WithToastNotifications;
+    use WithConfirmationModal, WithPagination, WithToastNotifications;
 
     /**
      * The model to show revisions for.
@@ -50,6 +51,21 @@ class RevisionHistory extends Component
     public ?Revision $revertingRevision = null;
 
     /**
+     * Whether to show the field details modal.
+     */
+    public bool $showFieldDetails = false;
+
+    /**
+     * The field details label.
+     */
+    public string $fieldDetailsLabel = '';
+
+    /**
+     * The field details value (formatted).
+     */
+    public string $fieldDetailsValue = '';
+
+    /**
      * Mount the component.
      */
     public function mount(Model $model): void
@@ -75,7 +91,7 @@ class RevisionHistory extends Component
     #[Computed]
     public function getSelectedRevisionProperty(): ?Revision
     {
-        if (!$this->selectedRevisionId) {
+        if (! $this->selectedRevisionId) {
             return null;
         }
 
@@ -88,7 +104,7 @@ class RevisionHistory extends Component
     #[Computed]
     public function getCompareRevisionProperty(): ?Revision
     {
-        if (!$this->compareRevisionId) {
+        if (! $this->compareRevisionId) {
             return null;
         }
 
@@ -104,11 +120,12 @@ class RevisionHistory extends Component
         $selected = $this->selectedRevision;
         $compare = $this->compareRevision;
 
-        if (!$selected || !$compare) {
+        if (! $selected || ! $compare) {
             return [];
         }
 
         $revisionService = app(RevisionService::class);
+
         return $revisionService->compareRevisions($selected, $compare);
     }
 
@@ -126,8 +143,9 @@ class RevisionHistory extends Component
      */
     public function startComparison(): void
     {
-        if (!$this->selectedRevisionId) {
+        if (! $this->selectedRevisionId) {
             $this->showErrorToast(__('revisions.errors.no_revision_selected'));
+
             return;
         }
 
@@ -157,18 +175,20 @@ class RevisionHistory extends Component
     public function showRevertConfirmation(Revision $revision): void
     {
         $this->revertingRevision = $revision;
-        $this->showConfirmationModal(
+        $this->confirmAction(
             __('revisions.confirm_revert.title'),
-            __('revisions.confirm_revert.message', ['version' => $revision->formatted_version])
+            __('revisions.confirm_revert.message', ['version' => $revision->formatted_version]),
+            'revertToRevision'
         );
     }
 
     /**
      * Revert to the selected revision.
      */
+    #[On('revertToRevision')]
     public function revertToRevision(): void
     {
-        if (!$this->revertingRevision) {
+        if (! $this->revertingRevision) {
             return;
         }
 
@@ -178,7 +198,6 @@ class RevisionHistory extends Component
 
             if ($success) {
                 $this->showSuccessToast(__('revisions.reverted_successfully'));
-                $this->closeConfirmationModal();
                 $this->revertingRevision = null;
                 $this->dispatch('model-updated');
             } else {
@@ -190,10 +209,31 @@ class RevisionHistory extends Component
     }
 
     /**
+     * Show field details in a modal.
+     */
+    #[On('show-field-details')]
+    public function showFieldDetails(array $data): void
+    {
+        $field = $data['field'] ?? '';
+        $value = $data['value'] ?? null;
+
+        $this->fieldDetailsLabel = getRevisionFieldLabel($field);
+        
+        // Format the value for display
+        if (is_array($value) || is_object($value)) {
+            $this->fieldDetailsValue = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        } else {
+            $this->fieldDetailsValue = (string) $value;
+        }
+
+        $this->showFieldDetails = true;
+    }
+
+    /**
      * Render the component.
      */
     public function render()
     {
         return view('livewire.admin.revision-history');
     }
-} 
+}

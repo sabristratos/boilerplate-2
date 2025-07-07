@@ -14,6 +14,7 @@ enum FormElementType: string
     case NUMBER = 'number';
     case PASSWORD = 'password';
     case FILE = 'file';
+    case SubmitButton = 'submit_button';
 
     public function getLabel(): string
     {
@@ -28,6 +29,7 @@ enum FormElementType: string
             self::NUMBER => 'Number Input',
             self::PASSWORD => 'Password',
             self::FILE => 'File Upload',
+            self::SubmitButton => 'Submit Button',
         };
     }
 
@@ -44,6 +46,7 @@ enum FormElementType: string
             self::NUMBER => 'calculator',
             self::PASSWORD => 'lock-closed',
             self::FILE => 'document-arrow-up',
+            self::SubmitButton => 'arrow-right-circle',
         };
     }
 
@@ -60,6 +63,7 @@ enum FormElementType: string
             self::NUMBER => 'Numeric input for numbers with optional min/max values',
             self::PASSWORD => 'Secure password input with visibility toggle',
             self::FILE => 'File upload input for documents, images, and other files',
+            self::SubmitButton => 'Submission button for sending the form',
         };
     }
 }

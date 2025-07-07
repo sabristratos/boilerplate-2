@@ -40,7 +40,7 @@ class InputRenderer extends BaseElementRenderer
     {
         $properties = $element->properties ?? [];
         $fluxProps = $properties['fluxProps'] ?? [];
-        
+
         return [
             'type' => $element->type === 'email' ? 'email' : 'text',
             'label' => $properties['label'] ?? 'Text Input',
@@ -70,12 +70,12 @@ class InputRenderer extends BaseElementRenderer
     {
         $data = $this->prepareViewData($element);
         $data['mode'] = $mode;
-        
+
         // Use the provided fieldName if available
         if ($fieldName) {
             $data['wireModel'] = "previewFormData.{$fieldName}";
         }
-        
+
         return view($this->getViewName(), $data)->render();
     }
 
@@ -87,10 +87,10 @@ class InputRenderer extends BaseElementRenderer
         $properties = $element->properties ?? [];
         $label = $properties['label'] ?? '';
         $id = $element->id ?? '';
-        
+
         // Create a field name from the label or ID
-        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_' . $id;
-        
+        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_'.$id;
+
         return "previewFormData.{$fieldName}";
     }
 

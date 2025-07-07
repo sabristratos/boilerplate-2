@@ -15,7 +15,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
-    
+
     $this->page = Page::factory()->create();
     $this->blockManager = app(BlockManager::class);
 });
@@ -42,7 +42,7 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->assertSee('Test Hero')
             ->assertSee('Test Contact');
@@ -60,7 +60,7 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('editBlock', $block->id)
             ->assertDispatched('edit-block', ['blockId' => $block->id]);
@@ -78,7 +78,7 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('duplicateBlock', $block->id)
             ->assertDispatched('block-created', ['blockId' => $block->id + 1, 'blockType' => 'hero']);
@@ -105,7 +105,7 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('deleteBlock', $block->id)
             ->assertDispatched('block-deleted', ['blockId' => $block->id]);
@@ -131,19 +131,19 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('updateBlockOrder', [$block2->id, $block1->id]);
 
         // Verify the order was updated
         $this->assertDatabaseHas('content_blocks', [
             'id' => $block2->id,
-            'order' => 1
+            'order' => 1,
         ]);
 
         $this->assertDatabaseHas('content_blocks', [
             'id' => $block1->id,
-            'order' => 2
+            'order' => 2,
         ]);
     });
 
@@ -159,11 +159,11 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->dispatch('block-editing-started', [
                 'blockId' => $block->id,
-                'blockState' => ['heading' => 'Updated Heading']
+                'blockState' => ['heading' => 'Updated Heading'],
             ])
             ->assertSet('editingBlockId', $block->id)
             ->assertSet('editingBlockState', ['heading' => 'Updated Heading']);
@@ -173,7 +173,7 @@ describe('PageCanvas', function () {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->set('editingBlockId', 1)
             ->set('editingBlockState', ['heading' => 'Test'])
@@ -181,4 +181,4 @@ describe('PageCanvas', function () {
             ->assertSet('editingBlockId', null)
             ->assertSet('editingBlockState', []);
     });
-}); 
+});

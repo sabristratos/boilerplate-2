@@ -59,7 +59,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function ():
 
     // Forms management
     Route::get('forms', FormIndex::class)->name('forms.index');
-    Route::get('forms/{form}/edit', \App\Livewire\FormBuilder::class)->name('forms.edit');
+    Route::get('forms/{id}/edit', \App\Livewire\FormBuilder::class)->name('forms.edit');
     Route::get('forms/{form}/submissions', \App\Livewire\Admin\Forms\Submissions::class)->name('forms.submissions');
     Route::get('forms/{form}/submissions/{submission}', \App\Livewire\Admin\Forms\SubmissionDetails::class)->name('forms.submissions.show');
 
@@ -101,13 +101,13 @@ require __DIR__.'/auth.php';
 Route::get('/form/{form}', \App\Livewire\Frontend\FormDisplay::class)->name('forms.display');
 
 // Debug route for testing
-Route::get('/debug/form/{id}', function($id) {
+Route::get('/debug/form/{id}', function ($id) {
     $form = \App\Models\Form::find($id);
     dd([
         'form_id' => $id,
         'form_found' => $form ? 'yes' : 'no',
         'form_data' => $form ? $form->toArray() : null,
-        'elements' => $form ? $form->elements : null
+        'elements' => $form ? $form->elements : null,
     ]);
 });
 

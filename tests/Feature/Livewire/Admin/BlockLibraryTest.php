@@ -14,7 +14,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
-    
+
     $this->page = Page::factory()->create();
     $this->blockManager = app(BlockManager::class);
 });
@@ -24,7 +24,7 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->assertSee('Contact Form')
             ->assertSee('Hero Section');
@@ -34,7 +34,7 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->set('search', 'hero')
             ->assertSee('Hero Section')
@@ -45,7 +45,7 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->set('selectedCategory', 'content')
             ->assertSee('Hero Section')
@@ -56,7 +56,7 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->set('search', 'hero')
             ->set('selectedCategory', 'content')
@@ -68,17 +68,17 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('createBlock', 'contact')
             ->assertDispatched('block-created', [
                 'blockId' => 1,
-                'blockType' => 'contact'
+                'blockType' => 'contact',
             ]);
 
         $this->assertDatabaseHas('content_blocks', [
             'page_id' => $this->page->id,
-            'type' => 'contact'
+            'type' => 'contact',
         ]);
     });
 
@@ -86,17 +86,17 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('createBlock', 'hero')
             ->assertDispatched('block-created', [
                 'blockId' => 1,
-                'blockType' => 'hero'
+                'blockType' => 'hero',
             ]);
 
         $this->assertDatabaseHas('content_blocks', [
             'page_id' => $this->page->id,
-            'type' => 'hero'
+            'type' => 'hero',
         ]);
     });
 
@@ -104,7 +104,7 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('close')
             ->assertDispatched('hide-block-library');
@@ -114,7 +114,7 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->set('search', 'test')
             ->set('selectedCategory', 'content')
@@ -127,14 +127,14 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->call('createBlock', 'invalid-block-type')
             ->assertHasErrors(['blockType']);
 
         $this->assertDatabaseMissing('content_blocks', [
             'page_id' => $this->page->id,
-            'type' => 'invalid-block-type'
+            'type' => 'invalid-block-type',
         ]);
     });
 
@@ -142,9 +142,9 @@ describe('BlockLibrary', function () {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
-                'blockManager' => $this->blockManager
+                'blockManager' => $this->blockManager,
             ])
             ->assertSee('Create compelling hero sections')
             ->assertSee('Display contact forms and information');
     });
-}); 
+});

@@ -5,7 +5,7 @@
         Display Options
     </flux:heading>
     <flux:select 
-        wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.variant" 
+        wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.variant" 
         label="Variant"
     >
         <flux:select.option value="default">Default</flux:select.option>

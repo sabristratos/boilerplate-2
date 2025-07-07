@@ -53,11 +53,11 @@ class SelectRenderer extends BaseElementRenderer
     {
         $properties = $element->properties ?? [];
         $fluxProps = $properties['fluxProps'] ?? [];
-        
+
         // Parse options using the OptionParserService
         $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
         $options = $optionParser->parseOptions($properties['options'] ?? '');
-        
+
         return [
             'label' => $properties['label'] ?? 'Select',
             'placeholder' => $properties['placeholder'] ?? 'Choose an option...',
@@ -85,14 +85,12 @@ class SelectRenderer extends BaseElementRenderer
         $properties = $element->properties ?? [];
         $label = $properties['label'] ?? '';
         $id = $element->id ?? '';
-        
+
         // Create a field name from the label or ID
-        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_' . $id;
-        
+        $fieldName = \Illuminate\Support\Str::slug($label, '_') ?: 'field_'.$id;
+
         return "previewFormData.{$fieldName}";
     }
-
-
 
     /**
      * Override the render method to use the fieldName parameter.
@@ -101,21 +99,21 @@ class SelectRenderer extends BaseElementRenderer
     {
         $data = $this->prepareViewData($element);
         $data['mode'] = $mode;
-        
+
         // Use the provided fieldName if available
         if ($fieldName) {
             $data['wireModel'] = "previewFormData.{$fieldName}";
         }
-        
+
         // Debug: Log what we're getting
         \Log::debug('SelectRenderer render method', [
             'elementId' => $element->id ?? 'unknown',
             'properties' => $element->properties ?? [],
             'options' => $data['options'],
             'optionsCount' => count($data['options']),
-            'mode' => $mode
+            'mode' => $mode,
         ]);
-        
+
         // Ensure we have options to display
         if (empty($data['options'])) {
             $data['options'] = [
@@ -124,7 +122,7 @@ class SelectRenderer extends BaseElementRenderer
                 ['value' => 'option3', 'label' => 'Option 3'],
             ];
         }
-        
+
         return view($this->getViewName(), $data)->render();
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Admin;
 
 use App\Actions\Content\DeleteContentBlockAction;
-use App\Actions\Content\SaveDraftContentBlockAction;
 use App\Actions\Content\UpdateBlockOrderAction;
 use App\Models\ContentBlock;
 use App\Models\Page;
@@ -91,15 +90,16 @@ class PageCanvas extends Component
                 __('messages.block_editor.block_not_found_text'),
                 __('messages.block_editor.block_not_found_title')
             );
+
             return;
         }
 
         // Set the editing state
         $this->editingBlockId = $blockId;
-        
+
         // Load initial block data for preview
         $this->loadBlockDataForPreview($block);
-        
+
         // Dispatch event to notify BlockEditor component
         $this->dispatch('edit-block', ['blockId' => $blockId]);
     }
@@ -112,17 +112,18 @@ class PageCanvas extends Component
         // Clear previous state
         $this->editingBlockState = [];
 
-        // Load block data - prefer draft data if available, otherwise use published data
+        // Load block data from the latest revision if available, otherwise from the model itself
         $blockClass = $this->blockManager->find($block->type);
         $defaultData = $blockClass instanceof \App\Blocks\Block ? $blockClass->getDefaultData() : [];
 
-        // Use draft data if available, otherwise fall back to published data
-        $blockData = $block->hasDraftChanges()
-            ? $block->getDraftTranslatedData($this->activeLocale)
+        // Get block data from the latest revision or fall back to current model data
+        $latestRevision = $block->latestRevision();
+        $blockData = $latestRevision && isset($latestRevision->data['data'])
+            ? $latestRevision->data['data']
             : $block->getTranslatedData($this->activeLocale);
 
-        $blockSettings = $block->hasDraftChanges()
-            ? $block->getDraftSettingsArray()
+        $blockSettings = $latestRevision && isset($latestRevision->data['settings'])
+            ? $latestRevision->data['settings']
             : $block->getSettingsArray();
 
         $this->editingBlockState = array_merge($defaultData, $blockData, $blockSettings);
@@ -135,7 +136,7 @@ class PageCanvas extends Component
     {
         $this->editingBlockId = null;
         $this->editingBlockState = [];
-        
+
         // Dispatch event to notify BlockEditor component
         $this->dispatch('cancel-block-edit');
     }
@@ -158,10 +159,10 @@ class PageCanvas extends Component
     public function handleDeleteBlock($data): void
     {
         $blockId = $data['data']['blockId'] ?? $data['blockId'] ?? null;
-        
+
         if ($blockId) {
             $this->deleteBlock($blockId);
-            
+
             // Close the confirmation modal
             $this->dispatch('close-confirmation-modal');
         }
@@ -198,6 +199,7 @@ class PageCanvas extends Component
                 __('messages.block_editor.block_not_found_text'),
                 __('messages.block_editor.block_not_found_title')
             );
+
             return;
         }
 
@@ -248,4 +250,4 @@ class PageCanvas extends Component
             'blockManager' => $this->blockManager,
         ]);
     }
-} 
+}

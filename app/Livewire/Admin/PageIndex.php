@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin;
 
+use App\DTOs\PageDTO;
 use App\Facades\Settings;
 use App\Models\Page;
+use App\Services\PageService;
 use App\Traits\WithToastNotifications;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
@@ -31,17 +35,28 @@ class PageIndex extends Component
 
     public $deleteId;
 
+    /**
+     * Page service instance.
+     */
+    protected PageService $pageService;
+
+    /**
+     * Boot the component and inject dependencies.
+     */
+    public function boot(PageService $pageService): void
+    {
+        $this->pageService = $pageService;
+    }
+
     public function getPagesProperty()
     {
-        return Page::query()
-            ->when($this->search, function ($query, $search): void {
-                $locale = $this->filters['locale'] ?? app()->getLocale() ?? 'en';
-                $query->where(fn ($q) => $q->where('slug', 'like', '%'.$search.'%')
-                    ->orWhereRaw("JSON_EXTRACT(title, '$.\"{$locale}\"') LIKE ?", ["%{$search}%"])
-                );
-            })
-            ->orderBy($this->sortBy, $this->sortDirection)
-            ->paginate($this->perPage);
+        return $this->pageService->getPagesWithFilters(
+            $this->search,
+            $this->filters,
+            $this->sortBy,
+            $this->sortDirection,
+            $this->perPage
+        );
     }
 
     public function getLocalesProperty()
@@ -87,12 +102,15 @@ class PageIndex extends Component
             $counter++;
         }
 
-        $page = Page::create([
+        $pageData = [
             'title' => [
                 $defaultLocale => $title,
             ],
             'slug' => $slug,
-        ]);
+        ];
+
+        $pageDTO = PageDTO::fromArray($pageData);
+        $page = $this->pageService->createPage($pageDTO);
 
         $this->redirectRoute('admin.pages.editor', ['page' => $page->id, 'locale' => $defaultLocale]);
     }
@@ -118,7 +136,7 @@ class PageIndex extends Component
         $page = Page::find($this->deleteId);
         if ($page) {
             $this->authorize('delete', $page);
-            $page->delete();
+            $this->pageService->deletePage($page);
         }
 
         $this->showDeleteModal = false;

@@ -8,10 +8,6 @@ return [
     'save_changes' => 'buttons.save_changes',
     'actions' => 'buttons.actions',
     'export' => 'buttons.export',
-    'create_item\', [\'item\' => __(\'navigation' => [
-        'forms' => 'buttons.create_item\', [\'item\' => __(\'navigation.forms',
-        'pages' => 'buttons.create_item\', [\'item\' => __(\'navigation.pages',
-    ],
     'edit' => 'buttons.edit',
     'view_submissions' => 'buttons.view_submissions',
     'view' => 'buttons.view',

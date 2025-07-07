@@ -24,17 +24,19 @@ class RevisionService
      * @param  string  $action  The action that triggered the revision
      * @param  string|null  $description  Optional description of the revision
      * @param  array<string, mixed>  $metadata  Additional metadata for the revision
+     * @param  bool  $is_published  Whether the revision should be published
      * @return Revision The created revision
      */
     public function createRevision(
         Model $model,
         string $action,
         ?string $description = null,
-        array $metadata = []
+        array $metadata = [],
+        bool $is_published = false
     ): Revision {
         $revisionData = $this->prepareRevisionData($model, $action);
-        
-        return DB::transaction(function () use ($model, $action, $description, $metadata, $revisionData) {
+
+        return DB::transaction(function () use ($model, $action, $description, $metadata, $revisionData, $is_published) {
             $revision = Revision::create([
                 'revisionable_type' => get_class($model),
                 'revisionable_id' => $model->id,
@@ -49,8 +51,8 @@ class RevisionService
                     'session_id' => session()->getId(),
                 ]),
                 'description' => $description ?? $this->generateDescription($model, $action),
-                'is_published' => $action === 'create' || $action === 'publish',
-                'published_at' => in_array($action, ['create', 'publish']) ? now() : null,
+                'is_published' => $is_published,
+                'published_at' => $is_published ? now() : null,
             ]);
 
             // Dispatch event for other systems to listen to
@@ -67,15 +69,24 @@ class RevisionService
      * @param  string  $action  The action that triggered the revision
      * @param  string|null  $description  Optional description of the revision
      * @param  array<string, mixed>  $metadata  Additional metadata for the revision
+     * @param  bool  $is_published  Whether the revision should be published
      * @return Revision The created revision
      */
     public function createManualRevision(
         Model $model,
         string $action,
         ?string $description = null,
-        array $metadata = []
+        array $metadata = [],
+        bool $is_published = false
     ): Revision {
-        return $this->createRevision($model, $action, $description, $metadata);
+        $revision = $this->createRevision($model, $action, $description, $metadata, $is_published);
+
+        // If this is a published revision, update the model's attributes
+        if ($is_published) {
+            $this->updateModelFromRevision($model, $revision);
+        }
+
+        return $revision;
     }
 
     /**
@@ -99,7 +110,7 @@ class RevisionService
             }
             // For translatable fields, ensure associative array assignment
             if (method_exists($model, 'getTranslatableAttributes') && in_array($key, $model->getTranslatableAttributes(), true)) {
-                if (!is_array($value) || array_keys($value) === range(0, count($value) - 1)) {
+                if (! is_array($value) || array_keys($value) === range(0, count($value) - 1)) {
                     // If not associative, wrap with current locale
                     $value = [$model->getLocale() => $value];
                 }
@@ -110,7 +121,8 @@ class RevisionService
         }
         $model->save();
         $model->skipRevision = false;
-        $model->createManualRevision('revert', 'Reverted to revision ' . $revision->version);
+        $model->createManualRevision('revert', 'Reverted to revision '.$revision->version);
+
         return true;
     }
 
@@ -159,7 +171,7 @@ class RevisionService
 
         // Check for new fields in revision2
         foreach ($data2 as $key => $value2) {
-            if (!isset($data1[$key])) {
+            if (! isset($data1[$key])) {
                 $differences[$key] = [
                     'from' => null,
                     'to' => $value2,
@@ -219,7 +231,7 @@ class RevisionService
     {
         $latestRevision = $model->revisions()->first();
 
-        if (!$latestRevision) {
+        if (! $latestRevision) {
             return '1.0.0';
         }
 
@@ -233,10 +245,10 @@ class RevisionService
 
             return match ($action) {
                 'create' => '1.0.0',
-                'update' => "{$major}.{$minor}." . ($patch + 1),
-                'publish' => ($major + 1) . '.0.0',
-                'revert' => "{$major}.{$minor}." . ($patch + 1),
-                default => "{$major}.{$minor}." . ($patch + 1),
+                'update' => "{$major}.{$minor}.".($patch + 1),
+                'publish' => ($major + 1).'.0.0',
+                'revert' => "{$major}.{$minor}.".($patch + 1),
+                default => "{$major}.{$minor}.".($patch + 1),
             };
         }
 
@@ -284,4 +296,39 @@ class RevisionService
 
         $model->save();
     }
-} 
+
+    /**
+     * Update the model's attributes from a revision.
+     *
+     * @param  Model  $model  The model to update
+     * @param  Revision  $revision  The revision to apply
+     */
+    protected function updateModelFromRevision(Model $model, Revision $revision): void
+    {
+        $data = $revision->data;
+        $excluded = $model->getRevisionExcludedFields();
+
+        // Prevent automatic revision on update
+        $model->skipRevision = true;
+
+        foreach ($data as $key => $value) {
+            if (in_array($key, $excluded, true)) {
+                continue;
+            }
+
+            // For translatable fields, ensure associative array assignment
+            if (method_exists($model, 'getTranslatableAttributes') && in_array($key, $model->getTranslatableAttributes(), true)) {
+                if (! is_array($value) || array_keys($value) === range(0, count($value) - 1)) {
+                    // If not associative, wrap with current locale
+                    $value = [$model->getLocale() => $value];
+                }
+                $model->setTranslations($key, $value);
+            } else {
+                $model->{$key} = $value;
+            }
+        }
+
+        $model->save();
+        $model->skipRevision = false;
+    }
+}

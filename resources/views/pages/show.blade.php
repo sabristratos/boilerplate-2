@@ -1,28 +1,30 @@
 <x-layouts.guest :page="$page">
-    @foreach($page->contentBlocks->where('visible', true) as $block)
-        @php($blockClass = app(\App\Services\BlockManager::class)->find($block->type))
-        @if($blockClass)
+    @foreach($page->contentBlocks()->ordered()->get() as $block)
+        @if($block->isVisible())
             @php
-                // Use draft data if available, otherwise use published data
-                if ($block->hasDraftChanges()) {
-                    $data = array_merge($block->getDraftTranslatedData(app()->getLocale()), $block->getDraftSettingsArray());
-                } else {
-                    $data = array_merge($block->getTranslatedData(app()->getLocale()), $block->getSettingsArray());
-                }
+                $blockClass = $blockManager->find($block->type);
                 
-                // Debug logging for contact blocks
-                if ($block->type === 'contact') {
-                    \Log::info('Contact block data', [
-                        'block_id' => $block->id,
-                        'has_draft_changes' => $block->hasDraftChanges(),
-                        'draft_settings' => $block->getDraftSettingsArray(),
-                        'published_settings' => $block->getSettingsArray(),
-                        'final_data' => $data,
-                        'form_id_in_data' => $data['form_id'] ?? 'not found'
-                    ]);
-                }
+                // Get block data from the latest revision or fall back to current model data
+                $latestRevision = $block->latestRevision();
+                $blockData = $latestRevision && isset($latestRevision->data['data'])
+                    ? $latestRevision->data['data']
+                    : $block->getTranslatedData(app()->getLocale());
+                
+                $blockSettings = $latestRevision && isset($latestRevision->data['settings'])
+                    ? $latestRevision->data['settings']
+                    : $block->getSettingsArray();
+                
+                $data = array_merge($blockData, $blockSettings);
             @endphp
-            @include($blockClass->getFrontendView(), ['block' => $block, 'data' => $data])
+
+            @if($blockClass)
+                @include($blockClass->getFrontendView(), [
+                    'block' => $block, 
+                    'data' => $data,
+                    'has_draft_changes' => false, // No longer using draft system
+                    'draft_settings' => $blockSettings,
+                ])
+            @endif
         @endif
     @endforeach
 </x-layouts.guest> 

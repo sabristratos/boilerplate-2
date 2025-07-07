@@ -7,7 +7,7 @@
         </flux:callout>
     @elseif($submitted)
         <flux:callout variant="success" icon="check-circle">
-            <flux:callout.heading>Form Submitted!</flux:callout.heading>
+            <flux:callout.heading>{{ __('forms.ui.form_submitted') }}</flux:callout.heading>
             <flux:callout.text>
                 {{ $successMessage }}
             </flux:callout.text>
@@ -48,14 +48,14 @@
             @else
                 <flux:callout variant="secondary" icon="information-circle">
                     <flux:callout.text>
-                        This form has no elements configured yet.
+                        {{ __('forms.errors.form_has_no_elements') }}
                     </flux:callout.text>
                 </flux:callout>
             @endif
             
             <div class="flex justify-end">
                 <flux:button type="submit" icon="paper-airplane">
-                    Submit Form
+                    {{ __('forms.ui.submit_form') }}
                 </flux:button>
             </div>
         </form>

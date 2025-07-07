@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-use App\Actions\Forms\SaveDraftFormAction;
-use App\Actions\Forms\PublishFormAction;
 use App\Actions\Forms\DiscardFormDraftAction;
+use App\Actions\Forms\PublishFormAction;
+use App\Actions\Forms\SaveDraftFormAction;
 use App\Models\Form;
 use App\Models\User;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
     $this->form = Form::factory()->for($this->user)->create();
-    $this->saveDraftAction = new SaveDraftFormAction();
-    $this->publishAction = new PublishFormAction();
-    $this->discardAction = new DiscardFormDraftAction();
+    $this->saveDraftAction = new SaveDraftFormAction;
+    $this->publishAction = new PublishFormAction;
+    $this->discardAction = new DiscardFormDraftAction;
 });
 
 describe('SaveDraftFormAction', function () {
@@ -77,7 +77,7 @@ describe('SaveDraftFormAction', function () {
 
     it('updates last_draft_at timestamp', function () {
         $originalTime = $this->form->last_draft_at;
-        
+
         $updatedForm = $this->saveDraftAction->execute(
             $this->form,
             [],
@@ -224,7 +224,7 @@ describe('Form Actions Integration', function () {
         $elements = [['type' => 'text', 'id' => '1', 'properties' => ['label' => 'Name']]];
         $settings = ['backgroundColor' => '#fff'];
         $name = ['en' => 'Contact Form'];
-        
+
         $formWithDraft = $this->saveDraftAction->execute(
             $this->form,
             $elements,
@@ -266,4 +266,4 @@ describe('Form Actions Integration', function () {
             ->and($formAfterDiscard->elements)->toBe($elements) // Should still have original published elements
             ->and($formAfterDiscard->settings)->toBe($settings); // Should still have original published settings
     });
-}); 
+});

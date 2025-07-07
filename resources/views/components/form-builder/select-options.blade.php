@@ -6,19 +6,19 @@
     </flux:heading>
     <div class="space-y-3">
         <flux:field variant="inline">
-            <flux:switch wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.clearable" />
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.clearable" />
             <flux:label>Clearable</flux:label>
         </flux:field>
         <flux:field variant="inline">
-            <flux:switch wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.searchable" />
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.searchable" />
             <flux:label>Searchable</flux:label>
         </flux:field>
         <flux:field variant="inline">
-            <flux:switch wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.multiple" />
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.multiple" />
             <flux:label>Multiple Selection</flux:label>
         </flux:field>
         <flux:select 
-            wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.fluxProps.variant" 
+            wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.variant" 
             label="Variant"
         >
             <flux:select.option value="default">Default</flux:select.option>

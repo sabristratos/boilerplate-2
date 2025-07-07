@@ -6,29 +6,29 @@
     </flux:heading>
     <div class="space-y-3">
         <flux:field variant="inline">
-            <flux:switch wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.clearable" />
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.clearable" />
             <flux:label>Clearable</flux:label>
         </flux:field>
         <flux:field variant="inline">
-            <flux:switch wire:model.live="draftElements.{{ $selectedElementIndex }}.properties.copyable" />
+            <flux:switch wire:model.live="elements.{{ $selectedElementIndex }}.properties.copyable" />
             <flux:label>Copyable</flux:label>
         </flux:field>
         <flux:input 
-            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.min" 
+            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.properties.min" 
             type="number"
             label="Minimum Value" 
             placeholder="e.g. 0"
             help="Leave empty for no minimum value"
         />
         <flux:input 
-            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.max" 
+            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.properties.max" 
             type="number"
             label="Maximum Value" 
             placeholder="e.g. 100"
             help="Leave empty for no maximum value"
         />
         <flux:input 
-            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.properties.step" 
+            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.properties.step" 
             type="number"
             label="Step Value" 
             placeholder="e.g. 1, 0.1, 10"

@@ -46,7 +46,7 @@
             </flux:field>
             @if(in_array('required', $selectedRules))
                                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.required" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.required" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"
@@ -64,7 +64,7 @@
                     @foreach($groupedRules['Length'] as $ruleKey => $rule)
                         @if($rule['has_value'])
                             <flux:input 
-                                wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
+                                wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
                                 label="{{ $rule['label'] }}" 
                                 placeholder="{{ $this->getValidationPlaceholder($ruleKey) }}"
                                 size="sm"
@@ -79,7 +79,7 @@
                 @foreach($groupedRules['Length'] as $ruleKey => $rule)
                     @if($rule['has_value'] && !empty($ruleValues[$ruleKey]))
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"
@@ -97,7 +97,7 @@
                 @foreach($groupedRules['Format'] as $ruleKey => $rule)
                     @if($ruleKey === 'regex')
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.values.regex" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.regex" 
                             label="Custom Pattern (Regex)" 
                             placeholder="{{ $this->getValidationPlaceholder('regex') }}"
                             size="sm"
@@ -105,7 +105,7 @@
                         />
                         @if(!empty($ruleValues['regex']))
                             <flux:input 
-                                wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.regex" 
+                                wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.regex" 
                                 label="Custom Message (optional)" 
                                 placeholder="Custom error message..."
                                 size="sm"
@@ -130,7 +130,7 @@
                         </flux:field>
                         @if(in_array($ruleKey, $selectedRules))
                             <flux:input 
-                                wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                                wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                                 label="Custom Message (optional)" 
                                 placeholder="Custom error message..."
                                 size="sm"
@@ -150,7 +150,7 @@
                     @foreach(['min_value', 'max_value'] as $ruleKey)
                         @if(isset($groupedRules['Range'][$ruleKey]))
                             <flux:input 
-                                wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
+                                wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
                                 label="{{ $groupedRules['Range'][$ruleKey]['label'] }}" 
                                 placeholder="{{ $this->getValidationPlaceholder($ruleKey) }}"
                                 size="sm"
@@ -164,7 +164,7 @@
                 @foreach(['min_value', 'max_value'] as $ruleKey)
                     @if(isset($groupedRules['Range'][$ruleKey]) && !empty($ruleValues[$ruleKey]))
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"
@@ -191,7 +191,7 @@
                         </flux:field>
                         @if(in_array($ruleKey, $selectedRules))
                             <flux:input 
-                                wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                                wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                                 label="Custom Message (optional)" 
                                 placeholder="Custom error message..."
                                 size="sm"
@@ -209,7 +209,7 @@
                 <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Date Range</flux:heading>
                 @foreach($groupedRules['Date Range'] as $ruleKey => $rule)
                     <flux:input 
-                        wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
+                        wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
                         label="{{ $rule['label'] }}" 
                         placeholder="{{ $this->getValidationPlaceholder($ruleKey) }}"
                         size="sm"
@@ -218,7 +218,7 @@
                     />
                     @if(!empty($ruleValues[$ruleKey]))
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"
@@ -251,7 +251,7 @@
                     </flux:field>
                     @if(in_array($ruleKey, $selectedRules))
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"
@@ -268,7 +268,7 @@
                 <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Size</flux:heading>
                 @foreach($groupedRules['Size'] as $ruleKey => $rule)
                     <flux:input 
-                        wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
+                        wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
                         label="{{ $rule['label'] }}" 
                         placeholder="{{ $this->getValidationPlaceholder($ruleKey) }}"
                         size="sm"
@@ -278,7 +278,7 @@
                     />
                     @if(!empty($ruleValues[$ruleKey]))
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"
@@ -295,7 +295,7 @@
                 <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Advanced</flux:heading>
                 @foreach($groupedRules['Advanced'] as $ruleKey => $rule)
                     <flux:input 
-                        wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
+                        wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
                         label="{{ $rule['label'] }}" 
                         placeholder="{{ $this->getValidationPlaceholder($ruleKey) }}"
                         size="sm"
@@ -303,7 +303,7 @@
                     />
                     @if(!empty($ruleValues[$ruleKey]))
                         <flux:input 
-                            wire:model.live.debounce.500ms="draftElements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
+                            wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.messages.{{ $ruleKey }}" 
                             label="Custom Message (optional)" 
                             placeholder="Custom error message..."
                             size="sm"

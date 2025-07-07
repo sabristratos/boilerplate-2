@@ -30,4 +30,4 @@ describe('Form Basic Tests', function () {
         $form->draft_name = ['en' => 'Draft Name'];
         expect($form->hasDraftChanges())->toBeTrue();
     });
-}); 
+});

@@ -35,7 +35,7 @@ class ContentBlockFactory extends Factory
                 'contact',
                 'hero',
                 'image-gallery',
-                'testimonials'
+                'testimonials',
             ]),
             'data' => $this->getDefaultData(),
             'order' => $this->faker->numberBetween(1, 100),
@@ -56,7 +56,7 @@ class ContentBlockFactory extends Factory
             'contact',
             'hero',
             'image-gallery',
-            'testimonials'
+            'testimonials',
         ]);
 
         return match ($type) {
@@ -240,17 +240,7 @@ class ContentBlockFactory extends Factory
     public function published(): static
     {
         return $this->state(fn (array $attributes) => [
-            'visible' => true,
+            // No changes needed, default is published
         ]);
     }
-
-    /**
-     * Indicate that the block is a draft.
-     */
-    public function draft(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'visible' => false,
-        ]);
-    }
-} 
+}

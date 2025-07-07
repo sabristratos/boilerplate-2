@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Admin;
 
+use App\Models\ContentBlock;
 use App\Models\Form;
 use App\Models\Page;
-use App\Models\ContentBlock;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
@@ -39,7 +39,7 @@ class RevisionShow extends Component
         $this->modelId = $modelId;
         $this->model = $this->getModel($modelType, $modelId);
 
-        if (!$this->model) {
+        if (! $this->model) {
             abort(404);
         }
     }
@@ -69,4 +69,4 @@ class RevisionShow extends Component
         return view('livewire.admin.revision-show')
             ->layout('components.layouts.app');
     }
-} 
+}

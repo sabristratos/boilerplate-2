@@ -34,4 +34,4 @@ class RevertToRevisionAction
     {
         return $this->revisionService->revertToRevision($model, $revision);
     }
-} 
+}

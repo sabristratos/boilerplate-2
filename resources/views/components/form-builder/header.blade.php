@@ -1,5 +1,9 @@
 @props(['form', 'activeBreakpoint', 'isPreviewMode', 'hasUnsavedChanges'])
 
+@php
+    $latestRevision = $form->latestRevision();
+@endphp
+
 <div class="flex items-center justify-between p-4 border-b border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50">
     <!-- Left Section: Navigation & Form Info -->
     <div class="flex items-center gap-3">
@@ -14,6 +18,18 @@
             </h1>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">ID: {{ $form->id }}</p>
         </div>
+        <!-- Submissions Button -->
+        <flux:tooltip content="{{ __('messages.forms.form_builder_interface.view_submissions_tooltip') }}">
+            <flux:button 
+                href="{{ route('admin.forms.submissions', $form) }}" 
+                wire:navigate
+                size="sm"
+                variant="ghost"
+                icon="document-text"
+            >
+                <span class="text-xs text-zinc-500 dark:text-zinc-400">({{ $form->submissions()->count() }})</span>
+            </flux:button>
+        </flux:tooltip>
     </div>
     
     <!-- Center Section: Breakpoint Controls -->
@@ -24,94 +40,48 @@
     </div>
     
     <!-- Right Section: Controls -->
-    <div class="flex items-center gap-4">
-        <!-- Draft Status Indicator -->
-        @if($this->hasDraftChanges)
-            <flux:badge color="blue" icon="document-text" class="text-xs">
-                {{ __('messages.forms.form_builder_interface.draft_changes') }}
+    <div class="flex items-center gap-3">
+        <!-- Last Updated Info -->
+        @if($latestRevision)
+            <flux:badge color="zinc" icon="clock" class="text-xs">
+                {{ __('forms.builder.last_updated') }} {{ $latestRevision->created_at->diffForHumans() }}
             </flux:badge>
         @endif
-
-        <!-- Submissions Button -->
-        <flux:button 
-            href="{{ route('admin.forms.submissions', $form) }}" 
-            wire:navigate
-            size="sm"
-            variant="ghost"
-            icon="document-text"
-            :tooltip="__('messages.forms.form_builder_interface.view_submissions_tooltip')"
-        >
-            {{ __('messages.forms.form_builder_interface.submissions') }} ({{ $form->submissions()->count() }})
-        </flux:button>
-
-        <!-- Unsaved Changes Badge -->
-        @if($hasUnsavedChanges)
-            <flux:badge color="amber" icon="exclamation-triangle" class="text-xs">
-                {{ __('messages.forms.form_builder_interface.unsaved_changes') }}
-            </flux:badge>
-        @endif
-
-        <!-- Draft Controls -->
-        <div class="flex items-center gap-2">
-            <!-- Save Draft Button -->
-            <flux:button 
-                wire:click="saveDraft" 
-                icon="document-text"
-                variant="ghost"
-                size="sm"
-                :tooltip="__('messages.forms.form_builder_interface.save_draft_tooltip')"
-            >
-                {{ __('messages.forms.form_builder_interface.save_draft') }}
-            </flux:button>
-
-            <!-- Publish Button -->
-            @if($this->hasDraftChanges)
-                <flux:button 
-                    wire:click="publishDraft" 
-                    icon="check-circle"
-                    variant="primary"
-                    size="sm"
-                    :tooltip="__('messages.forms.form_builder_interface.publish_tooltip')"
-                >
-                    {{ __('messages.forms.form_builder_interface.publish') }}
-                </flux:button>
-            @endif
-
-            <!-- Discard Draft Button -->
-            @if($this->hasDraftChanges)
-                <flux:button 
-                    wire:click="confirmDiscardDraft" 
-                    icon="trash"
-                    variant="danger"
-                    size="sm"
-                    :tooltip="__('messages.forms.form_builder_interface.discard_draft_tooltip')"
-                >
-                    {{ __('messages.forms.form_builder_interface.discard_draft') }}
-                </flux:button>
-            @endif
-        </div>
-
-        <!-- Legacy Save Button (for backward compatibility) -->
-        <flux:button 
-            wire:click="save" 
-            icon="check"
-            variant="ghost"
-            size="sm"
-            :tooltip="__('messages.forms.form_builder_interface.save_tooltip')"
-        >
-            {{ __('messages.forms.form_builder_interface.save') }}
-        </flux:button>
 
         <!-- Preview Button -->
-        <flux:button 
-            variant="ghost" 
-            icon="eye"
-            wire:click="togglePreview"
-            :variant="$isPreviewMode ? 'primary' : 'ghost'"
-            size="sm"
-            :tooltip="$isPreviewMode ? __('messages.forms.form_builder_interface.exit_preview_tooltip') : __('messages.forms.form_builder_interface.preview_tooltip')"
-        >
-            {{ $isPreviewMode ? __('messages.forms.form_builder_interface.exit_preview') : __('messages.forms.form_builder_interface.preview') }}
-        </flux:button>
+        <flux:tooltip content="{{ $isPreviewMode ? __('messages.forms.form_builder_interface.exit_preview_tooltip') : __('messages.forms.form_builder_interface.preview_tooltip') }}">
+            <flux:button 
+                variant="ghost" 
+                icon="eye"
+                wire:click="togglePreview"
+                :variant="$isPreviewMode ? 'primary' : 'ghost'"
+                size="sm"
+            />
+        </flux:tooltip>
+
+        <!-- Actions Dropdown -->
+        <flux:dropdown>
+            <flux:button icon:trailing="chevron-down" size="sm" variant="ghost">
+                {{ __('messages.forms.form_builder_interface.actions') }}
+            </flux:button>
+            <flux:menu>
+                <!-- Save -->
+                <flux:menu.item icon="check" wire:click="save">
+                    {{ __('messages.forms.form_builder_interface.save') }}
+                </flux:menu.item>
+                
+                <!-- Revision History -->
+                <flux:menu.item icon="clock" href="{{ route('admin.revisions.show', ['modelType' => 'form', 'modelId' => $form->id]) }}">
+                    {{ __('revisions.view_history') }}
+                </flux:menu.item>
+                
+                <flux:menu.separator />
+                
+                <!-- Delete Form -->
+                <flux:menu.item variant="danger" icon="trash" wire:click="confirmDeleteForm">
+                    {{ __('messages.forms.form_builder_interface.delete_form') }}
+                </flux:menu.item>
+            </flux:menu>
+        </flux:dropdown>
     </div>
 </div> 

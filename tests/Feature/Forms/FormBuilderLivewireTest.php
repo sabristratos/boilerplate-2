@@ -9,7 +9,10 @@ use Livewire\Livewire;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
-    $this->form = Form::factory()->for($this->user)->create([
+    $this->form = Form::factory()->for($this->user)->create();
+    // Create an initial published revision
+    $this->form->createRevision([
+        'name' => ['en' => 'Test Form'],
         'elements' => [
             [
                 'id' => '1',
@@ -20,56 +23,35 @@ beforeEach(function () {
             ],
         ],
         'settings' => ['backgroundColor' => '#fff'],
-    ]);
+    ], is_published: true);
 });
 
 describe('FormBuilder Livewire Component', function () {
-    it('can mount with a form', function () {
+    it('can mount and load the latest revision', function () {
+        // Create a draft revision to ensure it loads this one
+        $this->form->createRevision([
+            'name' => ['en' => 'Draft Form'],
+            'elements' => [['id' => '2', 'type' => 'email']],
+            'settings' => [],
+        ], is_published: false);
+
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->assertSet('form.id', $this->form->id)
-            ->assertSet('elements', function ($elements) {
-                return is_array($elements) && count($elements) === 1;
-            })
-            ->assertSet('draftElements', function ($elements) {
-                return is_array($elements) && count($elements) === 1;
-            })
-            ->assertSet('selectedElementId', null);
-    });
-
-    it('loads current data (draft if available, otherwise published)', function () {
-        // Set up draft data
-        $this->form->draft_elements = [
-            [
-                'id' => '2',
-                'type' => 'email',
-                'order' => 0,
-                'properties' => ['label' => 'Email'],
-                'validation' => ['rules' => ['required', 'email']],
-            ],
-        ];
-        $this->form->save();
-
-        Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->assertSet('draftElements', function ($elements) {
-                return count($elements) === 1 && $elements[0]['type'] === 'email';
-            });
+            ->assertSet('elements.0.type', 'email')
+            ->assertSet('name.en', 'Draft Form');
     });
 
     it('can add a new element', function () {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('addElement', 'text')
-            ->assertSet('draftElements', function ($elements) {
-                return count($elements) === 2; // Original + new element
-            });
+            ->assertCount('elements', 2); // Original + new element
     });
 
     it('can delete an element', function () {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->set('selectedElementId', '1')
             ->call('deleteElement', '1')
-            ->assertSet('draftElements', function ($elements) {
-                return count($elements) === 0;
-            })
+            ->assertCount('elements', 0)
             ->assertSet('selectedElementId', null);
     });
 
@@ -133,53 +115,64 @@ describe('FormBuilder Livewire Component', function () {
             ->assertSet('draftElements.2.type', 'textarea');
     });
 
-    // it('can save draft data', function () {
-    //     Livewire::test(FormBuilder::class, ['form' => $this->form])
-    //         ->set('draftName.en', 'Draft Form')
-    //         ->set('draftElements.0.properties.label', 'Updated Label')
-    //         ->call('save')
-    //         ->assertDispatched('toast', [
-    //             'type' => 'success',
-    //             'message' => __('messages.forms.draft_saved_successfully'),
-    //         ]);
-    // });
+    it('can save a draft revision', function () {
+        $initialRevisionCount = $this->form->revisions()->count();
 
-    // it('can publish draft changes', function () {
-    //     Livewire::test(FormBuilder::class, ['form' => $this->form])
-    //         ->set('draftName.en', 'Draft Form')
-    //         ->set('draftElements.0.properties.label', 'Updated Label')
-    //         ->call('publishDraft')
-    //         ->assertDispatched('toast', [
-    //             'type' => 'success',
-    //             'message' => __('messages.forms.published_successfully'),
-    //         ]);
-    // });
-
-    // it('can discard draft changes', function () {
-    //     Livewire::test(FormBuilder::class, ['form' => $this->form])
-    //         ->set('draftName.en', 'Draft Form')
-    //         ->set('draftElements.0.properties.label', 'Updated Label')
-    //         ->call('confirmDiscardDraft')
-    //         ->assertDispatched('show-confirmation');
-    // });
-
-    // it('can detect unsaved changes', function () {
-    //     Livewire::test(FormBuilder::class, ['form' => $this->form])
-    //         ->set('draftElements.0.properties.label', 'Updated Label')
-    //         ->assertSet('hasUnsavedChanges', true);
-    // });
-
-    it('can detect draft changes', function () {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->assertSet('hasDraftChanges', false);
+            ->set('name.en', 'New Draft Name')
+            ->call('save');
 
-        // Create form with draft data
-        $formWithDraft = Form::factory()->for($this->user)->create([
-            'draft_elements' => [['type' => 'email', 'id' => '2']],
-        ]);
+        $this->form->refresh();
+        $this->assertDatabaseCount('revisions', $initialRevisionCount + 1);
+        $latestRevision = $this->form->latestRevision();
+        $this->assertFalse($latestRevision->is_published);
+        $this->assertSame('New Draft Name', $latestRevision->data['name']['en']);
+        // The main form model should NOT be updated
+        $this->assertNotEquals('New Draft Name', $this->form->name);
+    });
 
-        Livewire::test(FormBuilder::class, ['form' => $formWithDraft])
-            ->assertSet('hasDraftChanges', true);
+    it('can publish a revision', function () {
+        $initialRevisionCount = $this->form->revisions()->count();
+
+        Livewire::test(FormBuilder::class, ['form' => $this->form])
+            ->set('name.en', 'New Published Name')
+            ->call('publish');
+
+        $this->form->refresh();
+        $this->assertDatabaseCount('revisions', $initialRevisionCount + 1);
+        $latestRevision = $this->form->latestRevision();
+        $this->assertTrue($latestRevision->is_published);
+        $this->assertSame('New Published Name', $latestRevision->data['name']['en']);
+        // The main form model SHOULD be updated
+        $this->assertEquals('New Published Name', $this->form->name);
+    });
+
+    it('can discard changes and revert to the last published revision', function () {
+        // Create a draft revision to be discarded
+        $this->form->createRevision(['name' => ['en' => 'My Draft']], is_published: false);
+
+        $this->assertEquals('My Draft', $this->form->latestRevision()->data['name']['en']);
+
+        Livewire::test(FormBuilder::class, ['form' => $this->form])
+            ->call('discardDraft');
+
+        $this->form->refresh();
+        // Check that the livewire component has reverted
+        Livewire::test(FormBuilder::class, ['form' => $this->form])
+            ->assertSet('name.en', 'Test Form');
+
+        // Ensure the latest revision is now the original published one
+        $this->assertEquals('Test Form', $this->form->latestRevision()->data['name']['en']);
+        $this->assertTrue($this->form->latestRevision()->is_published);
+    });
+
+    it('can detect unsaved changes against the latest revision', function () {
+        Livewire::test(FormBuilder::class, ['form' => $this->form])
+            ->assertSet('hasChanges', false)
+            ->set('elements.0.properties.label', 'Updated Label')
+            ->assertSet('hasChanges', true)
+            ->call('save') // Save as draft
+            ->assertSet('hasChanges', false);
     });
 
     it('can generate validation rules for elements', function () {
@@ -205,7 +198,7 @@ describe('FormBuilder Livewire Component', function () {
     it('can get available icons', function () {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->assertSet('availableIcons', function ($icons) {
-                return is_array($icons) && !empty($icons);
+                return is_array($icons) && ! empty($icons);
             });
     });
 
@@ -229,7 +222,7 @@ describe('FormBuilder Livewire Component', function () {
 
     it('can parse options for preview', function () {
         $options = "Option 1\nOption 2\nOption 3";
-        
+
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('parseOptionsForPreview', $options)
             ->assertReturned([
@@ -289,4 +282,4 @@ describe('FormBuilder Component Properties', function () {
             ->set('tab', 'settings')
             ->assertSet('tab', 'settings');
     });
-}); 
+});

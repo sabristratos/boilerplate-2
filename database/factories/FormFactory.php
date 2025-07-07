@@ -25,37 +25,9 @@ class FormFactory extends Factory
                 'en' => fake()->words(3, true),
                 'fr' => fake()->words(3, true),
             ],
-            'draft_name' => null,
             'settings' => null,
-            'draft_settings' => null,
             'elements' => null,
-            'draft_elements' => null,
-            'last_draft_at' => null,
         ];
-    }
-
-    /**
-     * Create a form with draft data.
-     */
-    public function withDraft(): static
-    {
-        return $this->state(fn (array $attributes): array => [
-            'draft_name' => [
-                'en' => fake()->words(3, true) . ' (Draft)',
-                'fr' => fake()->words(3, true) . ' (Brouillon)',
-            ],
-            'draft_elements' => [
-                [
-                    'id' => 'field_1',
-                    'type' => 'text',
-                    'order' => 0,
-                    'properties' => ['label' => 'Draft Field'],
-                    'validation' => ['rules' => []],
-                ],
-            ],
-            'draft_settings' => ['backgroundColor' => '#f0f0f0'],
-            'last_draft_at' => now(),
-        ]);
     }
 
     /**
@@ -93,7 +65,6 @@ class FormFactory extends Factory
             'name' => [
                 'en' => fake()->words(3, true),
             ],
-            'draft_name' => null,
         ]);
     }
 }

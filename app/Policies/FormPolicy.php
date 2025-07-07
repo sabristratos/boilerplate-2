@@ -48,4 +48,4 @@ class FormPolicy
     {
         return $user->hasPermissionTo('delete forms') && $form->user_id === $user->id;
     }
-} 
+}

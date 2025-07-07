@@ -1,4 +1,4 @@
-@props(['selectedElement', 'selectedElementIndex', 'activeBreakpoint', 'availableValidationRules', 'availableIcons'])
+@props(['selectedElement', 'selectedElementIndex', 'activeBreakpoint', 'availableValidationRules', 'availableIcons', 'selectedElementOptionsArray'])
 <flux:tab.group wire:model.live="propertiesTab">
     <flux:tabs>
         <flux:tab name="basic" icon="pencil">Basic</flux:tab>
@@ -10,6 +10,7 @@
         <x-form-builder.basic-properties 
             :selectedElement="$selectedElement"
             :selectedElementIndex="$selectedElementIndex"
+            :selectedElementOptionsArray="$selectedElementOptionsArray"
         />
     </flux:tab.panel>
     

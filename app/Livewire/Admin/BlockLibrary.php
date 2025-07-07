@@ -143,7 +143,7 @@ class BlockLibrary extends Component
 
             $this->dispatch('block-created', [
                 'blockId' => $block->id,
-                'blockType' => $type
+                'blockType' => $type,
             ]);
 
         } catch (\Exception $e) {
@@ -162,7 +162,7 @@ class BlockLibrary extends Component
     public function render()
     {
         return view('livewire.admin.block-library', [
-            'blockManager' => $this->blockManager
+            'blockManager' => $this->blockManager,
         ]);
     }
-} 
+}

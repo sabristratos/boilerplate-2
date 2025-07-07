@@ -6,6 +6,7 @@ use App\Services\ResourceSystem\Resource;
 use App\Traits\WithToastNotifications;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class ResourceForm extends Component
@@ -75,17 +76,109 @@ class ResourceForm extends Component
     {
         $model = $this->getModelInstance();
         $fields = $this->getResourceInstance()->fields();
+        $hasRevisions = method_exists($model, 'latestRevision');
 
         foreach ($fields as $field) {
             $name = $field->getName();
             if ($model->exists) {
-                $value = $name === 'roles' ? $model->getRoleNames()->toArray() : $model->{$name};
+                if ($name === 'roles') {
+                    $value = $model->getRoleNames()->toArray();
+                } elseif ($hasRevisions) {
+                    // Load from latest revision if available
+                    $latestRevision = $model->latestRevision();
+                    if ($latestRevision && isset($latestRevision->data[$name])) {
+                        $value = $latestRevision->data[$name];
+                    } else {
+                        $value = $model->{$name};
+                    }
+                } else {
+                    $value = $model->{$name};
+                }
             } else {
                 $value = $field->getDefaultValue();
             }
 
             $this->data[$name] = $value;
         }
+    }
+
+    /**
+     * Publish the current draft revision.
+     */
+    public function publish(): void
+    {
+        $model = $this->getModelInstance();
+        $hasRevisions = method_exists($model, 'createRevision');
+
+        if (! $hasRevisions || ! $model->exists) {
+            $this->showErrorToast(
+                __('messages.errors.generic'),
+                __('messages.errors.generic')
+            );
+
+            return;
+        }
+
+        DB::beginTransaction();
+
+        try {
+            // Create a published revision with the current form data
+            $data = collect($this->data)->except(['avatar', 'roles']);
+            $model->createManualRevision('publish', 'Resource published', $data->toArray(), true);
+
+            DB::commit();
+
+            $this->showSuccessToast(
+                __('messages.resource.published', ['Resource' => $this->getResourceInstance()::singularLabel()]),
+                __('messages.success.generic')
+            );
+
+            // Redirect to resource index after success
+            $this->redirectRoute('admin.'.$this->getResourceInstance()::uriKey().'.index', navigate: true);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $this->showErrorToast(
+                $e->getMessage(),
+                __('messages.errors.generic')
+            );
+        }
+    }
+
+    /**
+     * Check if the model supports revisions.
+     */
+    #[Computed]
+    public function supportsRevisions(): bool
+    {
+        $model = $this->getModelInstance();
+
+        return method_exists($model, 'createRevision');
+    }
+
+    /**
+     * Check if the model has unsaved changes (draft revisions).
+     */
+    #[Computed]
+    public function hasUnsavedChanges(): bool
+    {
+        $model = $this->getModelInstance();
+
+        if (! $this->supportsRevisions() || ! $model->exists) {
+            return false;
+        }
+
+        $latestRevision = $model->latestRevision();
+        if (! $latestRevision) {
+            return false;
+        }
+
+        // Compare current form data with the latest revision
+        $currentData = collect($this->data)->except(['avatar', 'roles']);
+        $revisionData = $latestRevision->data;
+
+        return $currentData->diffAssoc($revisionData)->isNotEmpty() ||
+               collect($revisionData)->diffAssoc($currentData)->isNotEmpty();
     }
 
     /**
@@ -134,6 +227,7 @@ class ResourceForm extends Component
         try {
             $model = $this->getModelInstance();
             $isNew = ! $model->exists;
+            $hasRevisions = method_exists($model, 'createRevision');
 
             $data = collect($this->data)->except(['avatar', 'roles']);
 
@@ -142,11 +236,31 @@ class ResourceForm extends Component
                 unset($data['password']);
             }
 
-            foreach ($data as $key => $value) {
-                $model->{$key} = $value;
-            }
+            if ($hasRevisions) {
+                // Use revision system for models that support it
+                if ($isNew) {
+                    // For new models, save first to get an ID, then create a published revision
+                    foreach ($data as $key => $value) {
+                        $model->{$key} = $value;
+                    }
+                    $model->save();
 
-            $model->save();
+                    // Update the resourceId so subsequent calls work correctly
+                    $this->resourceId = $model->id;
+
+                    // Create initial published revision
+                    $model->createManualRevision('create', 'Initial creation', $data->toArray(), true);
+                } else {
+                    // For existing models, create a draft revision
+                    $model->createManualRevision('update', 'Resource updated', $data->toArray(), false);
+                }
+            } else {
+                // Fallback to direct model updates for non-revision models
+                foreach ($data as $key => $value) {
+                    $model->{$key} = $value;
+                }
+                $model->save();
+            }
 
             if (isset($this->data['roles'])) {
                 $model->syncRoles($this->data['roles']);
@@ -156,10 +270,6 @@ class ResourceForm extends Component
             $this->handleMediaReattachment($model);
 
             DB::commit();
-
-            if ($isNew) {
-                $this->resourceId = $model->id;
-            }
 
             // Clear password field from data after successful save
             if (isset($this->data['password'])) {

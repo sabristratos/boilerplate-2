@@ -44,9 +44,5 @@ return [
     'back_to_submissions' => 'Back to Submissions',
     'edit_form' => 'Edit Form',
     'export' => 'Export',
-    'actions' => 'buttons.actions',
-    'create_item\', [\'item\' => __(\'navigation' => [
-        'forms' => 'buttons.create_item\', [\'item\' => __(\'navigation.forms',
-        'pages' => 'buttons.create_item\', [\'item\' => __(\'navigation.pages',
-    ],
+    'save_draft' => 'Save Draft',
 ];

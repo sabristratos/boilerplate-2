@@ -41,6 +41,8 @@ return [
     'elements' => 'Elements',
     'submissions' => 'Submissions',
     'draft' => 'Draft',
+    'draft_changes' => 'Draft Changes',
+    'saved' => 'Saved',
     'select_homepage' => 'Select homepage',
     'heading' => 'labels.heading',
 ];

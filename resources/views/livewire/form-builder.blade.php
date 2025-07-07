@@ -55,7 +55,7 @@
         :form="$form" 
         :activeBreakpoint="$activeBreakpoint" 
         :isPreviewMode="$isPreviewMode" 
-        :hasUnsavedChanges="$this->hasUnsavedChanges"
+        :hasUnsavedChanges="$this->hasChanges"
     />
 
     <!-- Main Content Area -->
@@ -63,8 +63,7 @@
         <!-- Left Panel: Toolbox & Settings -->
         <div class="w-80 bg-white dark:bg-zinc-800/50 border-e border-zinc-200 dark:border-zinc-700/50 flex flex-col">
             <x-form-builder.toolbox 
-                :elementTypes="$elementTypes" 
-                :availablePrebuiltForms="$availablePrebuiltForms" 
+                :elementTypes="$this->elementTypes" 
                 :settings="$settings" 
                 :tab="$tab" 
             />
@@ -73,11 +72,11 @@
         <!-- Center Panel: Canvas -->
         <div class="flex-1 flex flex-col">
             <x-form-builder.form-canvas 
-                :elements="$draftElements" 
+                :elements="$elements" 
                 :activeBreakpoint="$activeBreakpoint" 
                 :isPreviewMode="$isPreviewMode" 
                 :form="$form" 
-                :renderedElements="$renderedElements" 
+                :renderedElements="$this->renderedElements" 
                 :selectedElementId="$selectedElementId"
             />
         </div>
@@ -131,12 +130,30 @@
 .responsive-grid-container {
     display: grid;
     grid-template-columns: repeat(12, 1fr);
-    gap: 1rem;
+    gap: 0.5rem;
     width: 100%;
 }
 
 .responsive-grid-item {
-    min-height: 60px;
+    min-height: 40px;
+}
+
+/* Compact form elements in form builder */
+.form-canvas .responsive-grid-item .space-y-2 {
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.form-canvas .responsive-grid-item .space-y-2 > * + * {
+    margin-top: 0.25rem;
+}
+
+/* Reduce padding on form elements in builder mode */
+.form-canvas .responsive-grid-item input,
+.form-canvas .responsive-grid-item textarea,
+.form-canvas .responsive-grid-item select {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
 }
 
 /* Dropdown overflow fix - allow select dropdowns to break out of containers */
@@ -163,7 +180,7 @@ select {
 @media (max-width: 768px) {
     .responsive-grid-container {
         grid-template-columns: 1fr;
-        gap: 0.75rem;
+        gap: 0.375rem;
     }
     
     .responsive-grid-item {
@@ -174,7 +191,7 @@ select {
 /* Tablet responsive adjustments */
 @media (min-width: 769px) and (max-width: 1024px) {
     .responsive-grid-container {
-        gap: 0.875rem;
+        gap: 0.5rem;
     }
 }
 </style>

@@ -17,26 +17,22 @@ use Spatie\Translatable\HasTranslations;
  * @property int $id
  * @property int $user_id
  * @property array $name
- * @property array $draft_name
- * @property array $settings
- * @property array $draft_settings
  * @property array $elements
- * @property array $draft_elements
- * @property \Carbon\Carbon|null $last_draft_at
+ * @property array $settings
  *
  * @method BelongsTo user()
  * @method HasMany submissions()
  */
 class Form extends Model
 {
-    use HasFactory, HasTranslations, HasRevisions;
+    use HasFactory, HasRevisions, HasTranslations;
 
     /**
      * The attributes that are translatable.
      *
      * @var array<string>
      */
-    public array $translatable = ['name', 'draft_name'];
+    public array $translatable = ['name'];
 
     /**
      * The attributes that are mass assignable.
@@ -46,12 +42,8 @@ class Form extends Model
     protected $fillable = [
         'user_id',
         'name',
-        'draft_name',
-        'settings',
-        'draft_settings',
         'elements',
-        'draft_elements',
-        'last_draft_at',
+        'settings',
     ];
 
     /**
@@ -61,10 +53,7 @@ class Form extends Model
      */
     protected $casts = [
         'settings' => 'array',
-        'draft_settings' => 'array',
         'elements' => 'array',
-        'draft_elements' => 'array',
-        'last_draft_at' => 'datetime',
     ];
 
     /**
@@ -88,39 +77,27 @@ class Form extends Model
     }
 
     /**
-     * Check if this form has draft changes.
-     *
-     * @return bool True if there are draft changes, false otherwise
-     */
-    public function hasDraftChanges(): bool
-    {
-        return ! empty($this->draft_name) ||
-               ! empty($this->draft_elements) ||
-               ! empty($this->draft_settings);
-    }
-
-    /**
-     * Get the current elements (draft if available, otherwise published).
+     * Get the current elements (published).
      *
      * @return array The current elements array
      */
     public function getCurrentElements(): array
     {
-        return ! empty($this->draft_elements) ? $this->draft_elements : ($this->elements ?? []);
+        return $this->elements ?? [];
     }
 
     /**
-     * Get the current settings (draft if available, otherwise published).
+     * Get the current settings (published).
      *
      * @return array The current settings array
      */
     public function getCurrentSettings(): array
     {
-        return ! empty($this->draft_settings) ? $this->draft_settings : ($this->settings ?? []);
+        return $this->settings ?? [];
     }
 
     /**
-     * Get the current name (draft if available, otherwise published).
+     * Get the current name (published), filtering out empty translations.
      *
      * @param  string|null  $locale  The locale to get the name for
      * @return array The current name translations
@@ -128,32 +105,10 @@ class Form extends Model
     public function getCurrentName(?string $locale = null): array
     {
         if ($locale) {
-            $draftName = $this->getTranslation('draft_name', $locale);
-            $publishedName = $this->getTranslation('name', $locale);
-
-            return ! empty($draftName) ? [$locale => $draftName] : [$locale => $publishedName];
+            return $this->getTranslation('name', $locale, false);
         }
 
-        $draftName = $this->getTranslations('draft_name');
-        $publishedName = $this->getTranslations('name');
-
-        return ! empty($draftName) ? $draftName : $publishedName;
-    }
-
-
-
-    /**
-     * Discard all draft changes.
-     */
-    public function discardDraft(): void
-    {
-        // Clear draft fields
-        $this->draft_name = null;
-        $this->draft_elements = null;
-        $this->draft_settings = null;
-        $this->last_draft_at = null;
-
-        $this->save();
+        return array_filter($this->getTranslations('name'), fn ($v) => ! empty($v) && $v !== '[]');
     }
 
     /**
@@ -163,9 +118,8 @@ class Form extends Model
      */
     public function getRevisionData(): array
     {
-        // Always return name and draft_name as associative arrays with locale keys
+        // Always return name as associative array with locale keys
         $name = $this->getTranslations('name');
-        $draftName = $this->getTranslations('draft_name');
 
         return [
             'id' => $this->id,
@@ -173,10 +127,6 @@ class Form extends Model
             'name' => $name,
             'elements' => $this->elements,
             'settings' => $this->settings,
-            'draft_name' => $draftName,
-            'draft_elements' => $this->draft_elements,
-            'draft_settings' => $this->draft_settings,
-            'last_draft_at' => $this->last_draft_at,
         ];
     }
 
@@ -195,39 +145,20 @@ class Form extends Model
     }
 
     /**
-     * Override the publishDraft method to create a revision.
+     * Check if the form has draft changes (unpublished revisions).
+     *
+     * @return bool True if there are unpublished revisions, false otherwise
      */
-    public function publishDraft(): void
+    public function hasDraftChanges(): bool
     {
-        if ($this->hasDraftChanges()) {
-            // Create a revision before publishing
-            $this->createManualRevision('publish', 'Published draft changes');
-
-            // Prevent automatic revision on update
-            $this->skipRevision = true;
-
-            // Copy draft fields to published fields
-            if (! empty($this->draft_name)) {
-                $this->name = $this->draft_name;
-            }
-
-            if (! empty($this->draft_elements)) {
-                $this->elements = $this->draft_elements;
-            }
-
-            if (! empty($this->draft_settings)) {
-                $this->settings = $this->draft_settings;
-            }
-
-            // Clear draft fields
-            $this->draft_name = null;
-            $this->draft_elements = null;
-            $this->draft_settings = null;
-            $this->last_draft_at = null;
-
-            $this->save();
-
-            $this->skipRevision = false;
+        $latestRevision = $this->latestRevision();
+        
+        // If no revisions exist, there are no draft changes
+        if (!$latestRevision) {
+            return false;
         }
+        
+        // If the latest revision is not published, there are draft changes
+        return !$latestRevision->is_published;
     }
 }

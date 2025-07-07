@@ -17,28 +17,39 @@ namespace App\Services\FormBuilder;
 class ElementDTO
 {
     /** @var string */
-    public $id;
+    public string $id;
 
     /** @var string */
-    public $type;
+    public string $type;
 
     /** @var int */
-    public $order;
+    public int $order;
 
     /** @var array */
-    public $properties;
+    public array $properties;
 
     /** @var array */
-    public $styles;
+    public array $styles;
 
     /** @var array */
-    public $validation;
+    public array $validation;
 
     /**
      * ElementDTO constructor.
+     *
+     * @param array $data The element data
+     * @throws \InvalidArgumentException If required fields are missing
      */
     public function __construct(array $data)
     {
+        if (empty($data['id'])) {
+            throw new \InvalidArgumentException(__('forms.errors.element_id_required'));
+        }
+
+        if (empty($data['type'])) {
+            throw new \InvalidArgumentException(__('forms.errors.element_type_required'));
+        }
+
         $this->id = $data['id'] ?? '';
         $this->type = $data['type'] ?? '';
         $this->order = $data['order'] ?? 0;
@@ -49,6 +60,9 @@ class ElementDTO
 
     /**
      * Fill the DTO with new data.
+     *
+     * @param array $data The new data to fill
+     * @return void
      */
     public function fill(array $data): void
     {
@@ -61,6 +75,8 @@ class ElementDTO
 
     /**
      * Convert the DTO to an array.
+     *
+     * @return array The DTO as an array
      */
     public function toArray(): array
     {

@@ -67,13 +67,39 @@
                 @endforeach
             </div>
 
-            <div class="pt-6 flex justify-end">
-                <flux:button
-                    type="submit"
-                    variant="primary"
-                >
-                    {{ __('buttons.save') }}
-                </flux:button>
+            <div class="pt-6 flex justify-between items-center">
+                @if ($this->supportsRevisions && $model->exists)
+                    <div class="flex items-center space-x-2">
+                        @if ($this->hasUnsavedChanges)
+                            <flux:badge color="amber">
+                                {{ __('labels.draft_changes') }}
+                            </flux:badge>
+                        @else
+                            <flux:badge color="green">
+                                {{ __('labels.saved') }}
+                            </flux:badge>
+                        @endif
+                    </div>
+                @endif
+
+                <div class="flex space-x-3">
+                    @if ($this->supportsRevisions && $model->exists && $this->hasUnsavedChanges)
+                        <flux:button
+                            type="button"
+                            variant="ghost"
+                            wire:click="publish"
+                        >
+                            {{ __('buttons.publish') }}
+                        </flux:button>
+                    @endif
+                    
+                    <flux:button
+                        type="submit"
+                        variant="primary"
+                    >
+                        {{ $model->exists ? __('buttons.save_draft') : __('buttons.save') }}
+                    </flux:button>
+                </div>
             </div>
         </form>
     </div>
