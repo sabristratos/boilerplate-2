@@ -84,7 +84,8 @@ class FormService implements FormServiceInterface
         try {
             DB::beginTransaction();
 
-            $form->name = $formDto->name;
+            // Use setTranslations for Spatie translatable fields
+            $form->setTranslations('name', $formDto->name);
             $form->elements = $formDto->elements;
             $form->settings = $formDto->settings;
             $form->save();

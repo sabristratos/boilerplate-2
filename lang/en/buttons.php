@@ -45,4 +45,5 @@ return [
     'edit_form' => 'Edit Form',
     'export' => 'Export',
     'save_draft' => 'Save Draft',
+    'discard' => 'Discard',
 ];

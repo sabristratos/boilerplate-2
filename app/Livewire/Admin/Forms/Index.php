@@ -12,11 +12,13 @@ use App\Services\Contracts\FormServiceInterface;
 use App\Services\FormBuilder\PrebuiltForms\PrebuiltFormRegistry;
 use App\Traits\WithEnumHelpers;
 use App\Traits\WithToastNotifications;
+use App\Traits\WithConfirmationModal;
 use Flux\Flux;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 
 /**
  * Livewire component for managing forms in the admin area.
@@ -28,7 +30,7 @@ use Livewire\WithPagination;
 #[Layout('components.layouts.app')]
 class Index extends Component
 {
-    use WithPagination, WithEnumHelpers, WithToastNotifications;
+    use WithPagination, WithEnumHelpers, WithToastNotifications, WithConfirmationModal;
 
     public bool $showCreateModal = false;
 
@@ -39,6 +41,9 @@ class Index extends Component
     public string $search = '';
 
     public int $perPage = 10;
+
+    // Track the form to delete
+    public $formIdToDelete = null;
 
     /**
      * The querystring properties.
@@ -84,7 +89,11 @@ class Index extends Component
 
         try {
             // Prepare form data
-            $name = ['en' => $this->newFormName];
+            $locales = config('app.supported_locales', ['en', 'fr']);
+            $name = [];
+            foreach ($locales as $locale) {
+                $name[$locale] = $this->newFormName;
+            }
             $elements = [];
             $settings = [];
 
@@ -146,6 +155,44 @@ class Index extends Component
             logger()->error('Failed to duplicate form', [
                 'error' => $e->getMessage(),
                 'form_id' => $formId,
+                'user_id' => auth()->id(),
+            ]);
+        }
+    }
+
+    /**
+     * Show confirmation modal for deleting a form.
+     */
+    public function confirmDelete($formId): void
+    {
+        $this->formIdToDelete = $formId;
+        $this->confirmAction(
+            __('messages.forms.form_builder_interface.delete_form_title'),
+            __('messages.forms.form_builder_interface.delete_form_confirmation'),
+            'deleteForm'
+        );
+    }
+
+    /**
+     * Actually delete the form after confirmation.
+     */
+    #[On('deleteForm')]
+    public function deleteForm(): void
+    {
+        if (!$this->formIdToDelete) {
+            $this->showErrorToast(__('forms.toast_form_deletion_failed'));
+            return;
+        }
+        try {
+            $form = \App\Models\Form::findOrFail($this->formIdToDelete);
+            $form->delete();
+            $this->showSuccessToast(__('forms.toast_form_deleted'));
+            $this->formIdToDelete = null;
+        } catch (\Exception $e) {
+            $this->showErrorToast(__('forms.toast_form_deletion_failed'));
+            logger()->error('Failed to delete form', [
+                'error' => $e->getMessage(),
+                'form_id' => $this->formIdToDelete,
                 'user_id' => auth()->id(),
             ]);
         }

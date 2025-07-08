@@ -77,7 +77,13 @@ abstract class BaseDTO implements Arrayable, Jsonable, JsonSerializable, \String
 
         $errorMessages = [];
         foreach ($errors as $field => $message) {
-            $errorMessages[] = "{$field}: {$message}";
+            if (is_array($message)) {
+                foreach ($message as $msg) {
+                    $errorMessages[] = "{$field}: {$msg}";
+                }
+            } else {
+                $errorMessages[] = "{$field}: {$message}";
+            }
         }
 
         return implode(', ', $errorMessages);

@@ -318,7 +318,10 @@ class FormBuilder extends Component
         $this->elementManager->reorderElements($this->elements, $orderedOrders);
     }
 
-    public function save(): void
+    /**
+     * Save the form as a draft.
+     */
+    public function saveDraft(): void
     {
         try {
             // Create a DTO for the form data
@@ -335,29 +338,108 @@ class FormBuilder extends Component
                 return;
             }
 
-            // Update the form using the service
-            $this->formService->updateForm($this->form, $formDto);
+            // Save as draft using the action
+            $action = app(SaveDraftFormAction::class);
+            $action->execute($this->form, $formDto);
 
-            // Create a revision for this save action
-            $this->form->createRevision(
-                'update',
-                'Form saved manually',
-                [],
-                true // Published
-            );
-
-            $this->showSuccessToast(__('forms.toast_form_saved'));
+            $this->showSuccessToast(__('forms.toast_draft_saved'));
 
         } catch (\Exception $e) {
-            logger()->error('Error saving form', [
+            logger()->error('Error saving form draft', [
                 'form_id' => $this->form->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
-            $this->addError('form', __('forms.errors.failed_to_save_form'));
-            $this->showErrorToast(__('forms.errors.failed_to_save_form'));
+            $this->addError('form', __('forms.errors.failed_to_save_draft'));
+            $this->showErrorToast(__('forms.errors.failed_to_save_draft'));
         }
+    }
+
+    /**
+     * Publish the form.
+     */
+    public function publish(): void
+    {
+        try {
+            // Create a DTO for the form data
+            $formDto = DTOFactory::createFormDTOForCreation(
+                $this->name,
+                $this->elements,
+                $this->settings,
+                $this->form->user_id
+            );
+
+            // Validate the DTO
+            if (!$formDto->isValid()) {
+                $this->addError('form', $formDto->getValidationErrorsAsString());
+                return;
+            }
+
+            // Publish using the action
+            $action = app(PublishFormAction::class);
+            $action->execute($this->form, $formDto);
+
+            $this->showSuccessToast(__('forms.toast_form_published'));
+
+        } catch (\Exception $e) {
+            logger()->error('Error publishing form', [
+                'form_id' => $this->form->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $this->addError('form', __('forms.errors.failed_to_publish_form'));
+            $this->showErrorToast(__('forms.errors.failed_to_publish_form'));
+        }
+    }
+
+    /**
+     * Discard draft changes and revert to the latest published version.
+     */
+    public function discardDraft(): void
+    {
+        try {
+            $action = app(DiscardFormDraftAction::class);
+            $action->execute($this->form);
+
+            // Reload the form data from the published revision
+            $this->reloadFormData();
+
+            $this->showSuccessToast(__('forms.toast_draft_discarded'));
+
+        } catch (\Exception $e) {
+            logger()->error('Error discarding form draft', [
+                'form_id' => $this->form->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $this->addError('form', __('forms.errors.failed_to_discard_draft'));
+            $this->showErrorToast(__('forms.errors.failed_to_discard_draft'));
+        }
+    }
+
+    /**
+     * Reload form data from the latest revision.
+     */
+    private function reloadFormData(): void
+    {
+        $latestRevision = $this->form->latestRevision();
+
+        if ($latestRevision) {
+            $data = $latestRevision->data;
+            $this->elements = $data['elements'] ?? [];
+            $this->settings = $data['settings'] ?? [];
+            $this->name = $data['name'] ?? [];
+        } else {
+            $this->elements = $this->form->elements ?? [];
+            $this->settings = $this->form->settings ?? [];
+            $this->name = $this->form->getTranslations('name');
+        }
+
+        // Update selected element data
+        $this->updateSelectedElementData();
     }
 
     public function updatedname($value, $key): void
@@ -806,6 +888,10 @@ class FormBuilder extends Component
         }
     }
 
+    public function confirmDelete(...$params): void
+    {
+        $this->confirmDeleteForm(...$params);
+    }
 
 
     public function submitPreview(): void
@@ -834,6 +920,38 @@ class FormBuilder extends Component
     public function hasChanges(): bool
     {
         return $this->formPreviewService->hasChanges($this->form, $this->name, $this->elements, $this->settings);
+    }
+
+    #[Computed]
+    public function hasDraftChanges(): bool
+    {
+        return $this->form->hasDraftChanges();
+    }
+
+    #[Computed]
+    public function isPublished(): bool
+    {
+        return $this->form->isPublished();
+    }
+
+    #[Computed]
+    public function isDraft(): bool
+    {
+        return $this->form->isDraft();
+    }
+
+    #[Computed]
+    public function canPublish(): bool
+    {
+        // Can publish if form has elements and is not already published
+        return !empty($this->elements) && !$this->form->isPublished();
+    }
+
+    #[Computed]
+    public function canDiscardDraft(): bool
+    {
+        // Can discard if there are draft changes
+        return $this->form->hasDraftChanges();
     }
 
     #[Computed]

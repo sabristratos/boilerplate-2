@@ -52,57 +52,43 @@
     </div>
 
     <div class="rounded-lg overflow-hidden py-2">
-        <table class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-700">
-            <thead>
-                <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        {{ __('labels.name') }}
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        {{ __('labels.elements') }}
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        {{ __('labels.submissions') }}
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        {{ __('labels.status') }}
-                    </th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-zinc-500 uppercase tracking-wider">
-                        {{ __('labels.created_at') }}
-                    </th>
-                    <th scope="col" class="relative px-6 py-3">
-                        <span class="sr-only">{{ __('labels.actions') }}</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-700">
+        <flux:table :paginate="$forms">
+            <flux:table.columns>
+                <flux:table.column>{{ __('labels.name') }}</flux:table.column>
+                <flux:table.column>{{ __('labels.elements') }}</flux:table.column>
+                <flux:table.column>{{ __('labels.submissions') }}</flux:table.column>
+                <flux:table.column>{{ __('labels.status') }}</flux:table.column>
+                <flux:table.column>{{ __('labels.created_at') }}</flux:table.column>
+                <flux:table.column align="end">{{ __('labels.actions') }}</flux:table.column>
+            </flux:table.columns>
+            <flux:table.rows>
                 @forelse($forms as $form)
-                    <tr wire:key="form-{{ $form->id }}">
-                        <td class="px-6 py-4 whitespace-nowrap">
+                    <flux:table.row :key="$form->id">
+                        <flux:table.cell>
                             <div class="text-sm font-medium text-zinc-900 dark:text-white">
                                 {{ $form->getTranslation('name', app()->getLocale()) }}
                             </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                        </flux:table.cell>
+                        <flux:table.cell>
                             {{ $form->elements ? count($form->elements) : 0 }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                        </flux:table.cell>
+                        <flux:table.cell>
                             {{ $form->submissions()->count() }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        </flux:table.cell>
+                        <flux:table.cell>
                             @php
                                 $formStatus = $this->getFormStatusForForm($form);
                             @endphp
                             <flux:badge :color="$formStatus->getColor()" size="sm" :icon="$formStatus->getIcon()">
                                 {{ $formStatus->label() }}
                             </flux:badge>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
+                        </flux:table.cell>
+                        <flux:table.cell>
                             {{ $form->created_at->format('M j, Y') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        </flux:table.cell>
+                        <flux:table.cell align="end">
                             <flux:dropdown position="bottom" align="end">
-                                <flux:button icon:trailing="chevron-down" variant="ghost" size="xs" square :tooltip="__('buttons.actions')" />
+                                <flux:button icon="ellipsis-horizontal" variant="ghost" size="xs" square :tooltip="__('buttons.actions')" />
                                 <flux:menu>
                                     <flux:menu.item icon="pencil-square" href="{{ route('admin.forms.edit', $form) }}">
                                         {{ __('buttons.edit') }}
@@ -111,10 +97,10 @@
                                         {{ __('messages.forms.tooltips.submissions') }}
                                     </flux:menu.item>
                                     <flux:menu.item icon="document-duplicate" wire:click.prevent="duplicateForm({{ $form->id }})">
-                                        {{ __('buttons.duplicate') }}
+                                        {{ __('forms.buttons.duplicate') }}
                                     </flux:menu.item>
-                                    <flux:menu.item>
-                                        <x-revision-link :model="$form" model-type="form" />
+                                    <flux:menu.item icon="clock" href="{{ route('admin.revisions.show', ['modelType' => 'form', 'modelId' => $form->id]) }}">
+                                        {{ __('revisions.view_history') }}
                                     </flux:menu.item>
                                     <flux:menu.item icon="eye" href="#">
                                         {{ __('buttons.view') }}
@@ -125,17 +111,17 @@
                                     </flux:menu.item>
                                 </flux:menu>
                             </flux:dropdown>
-                        </td>
-                    </tr>
+                        </flux:table.cell>
+                    </flux:table.row>
                 @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-center text-zinc-500">
+                    <flux:table.row>
+                        <flux:table.cell colspan="6" align="center">
                             {{ __('messages.no_forms_found') }}
-                        </td>
-                    </tr>
+                        </flux:table.cell>
+                    </flux:table.row>
                 @endforelse
-            </tbody>
-        </table>
+            </flux:table.rows>
+        </flux:table>
     </div>
 
     @if ($forms instanceof \Illuminate\Pagination\AbstractPaginator)

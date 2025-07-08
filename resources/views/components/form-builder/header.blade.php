@@ -13,9 +13,23 @@
         </a>
         <div class="w-px h-4 bg-zinc-300 dark:bg-zinc-600"></div>
         <div>
-            <h1 class="text-sm font-medium text-zinc-900 dark:text-white">
-                {{ $form->getTranslation('name', 'en') }}
-            </h1>
+            <div class="flex items-center gap-2">
+                <h1 class="text-sm font-medium text-zinc-900 dark:text-white">
+                    {{ $form->getTranslation('name', 'en') }}
+                </h1>
+                <!-- Form Status Badge -->
+                @php
+                    $formStatus = $form->status;
+                @endphp
+                <flux:badge :color="$formStatus->getColor()" size="sm" :icon="$formStatus->getIcon()">
+                    {{ $formStatus->label() }}
+                </flux:badge>
+                @if($this->hasDraftChanges)
+                    <flux:badge color="amber" size="sm" icon="document-text">
+                        {{ __('forms.draft_changes') }}
+                    </flux:badge>
+                @endif
+            </div>
             <p class="text-xs text-zinc-500 dark:text-zinc-400">ID: {{ $form->id }}</p>
         </div>
         <!-- Submissions Button -->
@@ -59,17 +73,52 @@
             />
         </flux:tooltip>
 
+        <!-- Draft/Publish Buttons -->
+        <div class="flex items-center gap-2">
+            <!-- Save Draft Button -->
+            <flux:button 
+                wire:click="saveDraft"
+                variant="ghost" 
+                size="sm"
+                icon="document-text"
+                :disabled="!$this->hasChanges"
+            >
+                {{ __('buttons.save_draft') }}
+            </flux:button>
+
+            <!-- Publish Button -->
+            @if($this->canPublish)
+                <flux:button 
+                    wire:click="publish"
+                    variant="primary" 
+                    size="sm"
+                    icon="check-circle"
+                    :disabled="!$this->hasChanges"
+                >
+                    {{ __('buttons.publish') }}
+                </flux:button>
+            @endif
+
+            <!-- Discard Draft Button -->
+            @if($this->canDiscardDraft)
+                <flux:button 
+                    wire:click="discardDraft"
+                    variant="ghost" 
+                    size="sm"
+                    icon="x-mark"
+                    :disabled="!$this->hasDraftChanges"
+                >
+                    {{ __('buttons.discard') }}
+                </flux:button>
+            @endif
+        </div>
+
         <!-- Actions Dropdown -->
         <flux:dropdown>
             <flux:button icon:trailing="chevron-down" size="sm" variant="ghost">
                 {{ __('messages.forms.form_builder_interface.actions') }}
             </flux:button>
             <flux:menu>
-                <!-- Save -->
-                <flux:menu.item icon="check" wire:click="save">
-                    {{ __('messages.forms.form_builder_interface.save') }}
-                </flux:menu.item>
-                
                 <!-- Revision History -->
                 <flux:menu.item icon="clock" href="{{ route('admin.revisions.show', ['modelType' => 'form', 'modelId' => $form->id]) }}">
                     {{ __('revisions.view_history') }}
