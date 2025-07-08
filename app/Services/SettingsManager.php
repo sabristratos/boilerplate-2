@@ -1,16 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
+use App\Enums\SettingType;
 use App\Models\Setting;
 use App\Models\SettingGroup;
+use App\Services\Contracts\SettingsManagerInterface;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
 
-class SettingsManager
+class SettingsManager implements SettingsManagerInterface
 {
     /**
      * Check if a setting exists.
@@ -37,11 +42,8 @@ class SettingsManager
             if (isset($settingConfig['config'])) {
                 return Config::get($settingConfig['config'], $default);
             }
-            if (isset($settingConfig['default'])) {
-                return $settingConfig['default'];
-            }
 
-            return $default;
+            return $settingConfig['default'] ?? $default;
         }
 
         return $value;
@@ -64,7 +66,7 @@ class SettingsManager
     /**
      * Set a setting value.
      */
-    public function set(string $key, mixed $value): void
+    public function set(string $key, mixed $value, SettingType $type = SettingType::STRING): bool
     {
         // Use direct array access instead of dot notation to handle keys with dots
         $settingsConfig = Config::get('settings.settings', []);
@@ -75,10 +77,8 @@ class SettingsManager
         }
 
         // Validate permissions if specified
-        if (isset($settingConfig['permission'])) {
-            if (! auth()->user() || ! auth()->user()->can($settingConfig['permission'])) {
-                throw new AuthorizationException('Insufficient permissions to modify this setting.');
-            }
+        if (isset($settingConfig['permission']) && (! auth()->user() || ! auth()->user()->can($settingConfig['permission']))) {
+            throw new AuthorizationException('Insufficient permissions to modify this setting.');
         }
 
         // Validate value against rules if provided
@@ -100,7 +100,7 @@ class SettingsManager
 
         if (! $setting->exists) {
             $setting->setting_group_id = $settingGroup->id;
-            $setting->type = $settingConfig['type'] ?? 'text';
+            $setting->type = $settingConfig['type'] ?? SettingType::TEXT->value;
             $setting->cast = $settingConfig['cast'] ?? 'string';
             $setting->label = $settingConfig['label'] ?? [];
             $setting->description = $settingConfig['description'] ?? null;
@@ -119,12 +119,14 @@ class SettingsManager
         $setting->save();
 
         $this->clearCache();
+        
+        return true;
     }
 
     /**
      * Set a translated setting value.
      */
-    public function setTranslation(string $key, string $locale, mixed $value): void
+    public function setTranslation(string $key, string $locale, mixed $value): bool
     {
         $currentValue = $this->get($key, []);
 
@@ -133,7 +135,7 @@ class SettingsManager
         }
 
         $currentValue[$locale] = $value;
-        $this->set($key, $currentValue);
+        return $this->set($key, $currentValue);
     }
 
     /**
@@ -144,25 +146,26 @@ class SettingsManager
         $cacheKey = $this->getCacheKey();
 
         if ($this->supportsCacheTags()) {
-            return Cache::tags(['settings'])->remember($cacheKey, now()->addMinutes(30), function () {
-                return $this->loadSettingsFromDatabase();
-            });
+            return Cache::tags(['settings'])->remember($cacheKey, now()->addMinutes(30), fn(): array => $this->loadSettingsFromDatabase());
         }
 
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () {
-            return $this->loadSettingsFromDatabase();
-        });
+        return Cache::remember($cacheKey, now()->addMinutes(30), fn(): array => $this->loadSettingsFromDatabase());
     }
 
     /**
      * Clear the settings cache.
      */
-    public function clearCache(): void
+    public function clearCache(): bool
     {
-        if ($this->supportsCacheTags()) {
-            Cache::tags(['settings'])->flush();
-        } else {
-            Cache::forget($this->getCacheKey());
+        try {
+            if ($this->supportsCacheTags()) {
+                \Illuminate\Support\Facades\Cache::tags(['settings'])->flush();
+            } else {
+                \Illuminate\Support\Facades\Cache::forget($this->getCacheKey());
+            }
+            return true;
+        } catch (\Exception) {
+            return false;
         }
     }
 
@@ -277,17 +280,13 @@ class SettingsManager
      */
     public function getDynamicOptions(string $key): array
     {
-        switch ($key) {
-            case 'general.homepage':
-                return \App\Models\Page::orderBy('title->'.app()->getLocale(), 'asc')
-                    ->pluck('title', 'id')
-                    ->map(function ($title, $id) {
-                        return is_array($title) ? ($title[app()->getLocale()] ?? $title['en'] ?? 'Untitled') : $title;
-                    })
-                    ->toArray();
-            default:
-                return [];
-        }
+        return match ($key) {
+            'general.homepage' => \App\Models\Page::orderBy('title->'.app()->getLocale(), 'asc')
+                ->pluck('title', 'id')
+                ->map(fn($title, $id) => is_array($title) ? ($title[app()->getLocale()] ?? $title['en'] ?? 'Untitled') : $title)
+                ->toArray(),
+            default => [],
+        };
     }
 
     /**
@@ -299,8 +298,229 @@ class SettingsManager
             $store = Cache::getStore();
 
             return method_exists($store, 'tags');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
+    }
+
+    /**
+     * Delete a setting.
+     *
+     * @param string $key The setting key
+     * @return bool True if the setting was deleted successfully
+     */
+    public function delete(string $key): bool
+    {
+        $setting = Setting::where('key', $key)->first();
+        if ($setting) {
+            $setting->delete();
+            $this->clearCache();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get all settings.
+     *
+     * @return Collection The collection of all settings
+     */
+    public function all(): Collection
+    {
+        return collect($this->getAll());
+    }
+
+    /**
+     * Get settings by group.
+     *
+     * @param string $group The settings group
+     * @return Collection The collection of settings in the group
+     */
+    public function getGroup(string $group): Collection
+    {
+        $allSettings = $this->getAll();
+        return collect($allSettings)->filter(fn($setting, $key): bool => str_starts_with((string) $key, $group . '.'));
+    }
+
+    /**
+     * Get settings by type.
+     *
+     * @param SettingType $type The setting type
+     * @return Collection The collection of settings of the specified type
+     */
+    public function getByType(SettingType $type): Collection
+    {
+        $allSettings = $this->getAll();
+        return collect($allSettings)->filter(fn(array $setting): bool => $setting['type'] === $type->value);
+    }
+
+    /**
+     * Set multiple settings at once.
+     *
+     * @param array<string, mixed> $settings Array of key-value pairs
+     * @param SettingType $type The setting type for all settings
+     * @return bool True if all settings were saved successfully
+     */
+    public function setMultiple(array $settings, SettingType $type = SettingType::STRING): bool
+    {
+        try {
+            foreach ($settings as $key => $value) {
+                $this->set($key, $value, $type);
+            }
+            return true;
+        } catch (\Exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Refresh the settings cache.
+     *
+     * @return bool True if the cache was refreshed successfully
+     */
+    public function refreshCache(): bool
+    {
+        try {
+            $this->clearCache();
+            $this->getAll(); // This will rebuild the cache
+            return true;
+        } catch (\Exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Get setting metadata.
+     *
+     * @param string $key The setting key
+     * @return array<string, mixed>|null The setting metadata or null if not found
+     */
+    public function getMetadata(string $key): ?array
+    {
+        $settings = $this->getAll();
+        $setting = $settings[$key] ?? null;
+        
+        if (!$setting) {
+            return null;
+        }
+
+        return [
+            'type' => $setting['type'],
+            'cast' => $setting['cast'],
+            'label' => $setting['label'],
+            'description' => $setting['description'],
+            'permission' => $setting['permission'],
+            'config_key' => $setting['config_key'],
+            'rules' => $setting['rules'],
+            'options' => $setting['options'],
+            'subfields' => $setting['subfields'],
+            'callout' => $setting['callout'],
+            'default' => $setting['default'],
+            'warning' => $setting['warning'],
+            'order' => $setting['order'],
+        ];
+    }
+
+    /**
+     * Set setting metadata.
+     *
+     * @param string $key The setting key
+     * @param array<string, mixed> $metadata The metadata to set
+     * @return bool True if the metadata was saved successfully
+     */
+    public function setMetadata(string $key, array $metadata): bool
+    {
+        try {
+            $setting = Setting::where('key', $key)->first();
+            if (!$setting) {
+                return false;
+            }
+
+            foreach ($metadata as $field => $value) {
+                if (property_exists($setting, $field)) {
+                    $setting->$field = $value;
+                }
+            }
+
+            $setting->save();
+            $this->clearCache();
+            return true;
+        } catch (\Exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Get settings with their metadata.
+     *
+     * @return Collection The collection of settings with metadata
+     */
+    public function allWithMetadata(): Collection
+    {
+        return $this->all();
+    }
+
+    /**
+     * Validate a setting value.
+     *
+     * @param string $key The setting key
+     * @param mixed $value The value to validate
+     * @return bool True if the value is valid
+     */
+    public function validate(string $key, mixed $value): bool
+    {
+        try {
+            $rules = $this->getValidationRules($key);
+            if ($rules === []) {
+                return true;
+            }
+
+            $validator = Validator::make([$key => $value], [$key => $rules]);
+            return !$validator->fails();
+        } catch (\Exception) {
+            return false;
+        }
+    }
+
+    /**
+     * Get validation rules for a setting.
+     *
+     * @param string $key The setting key
+     * @return array<string> Array of validation rules
+     */
+    public function getValidationRules(string $key): array
+    {
+        $settings = $this->getAll();
+        $setting = $settings[$key] ?? null;
+        
+        if (!$setting || !$setting['rules']) {
+            return [];
+        }
+
+        return is_array($setting['rules']) ? $setting['rules'] : [$setting['rules']];
+    }
+
+    /**
+     * Get setting description.
+     *
+     * @param string $key The setting key
+     * @return string|null The setting description or null if not found
+     */
+    public function getDescription(string $key): ?string
+    {
+        $metadata = $this->getMetadata($key);
+        return $metadata['description'] ?? null;
+    }
+
+    /**
+     * Set setting description.
+     *
+     * @param string $key The setting key
+     * @param string $description The description to set
+     * @return bool True if the description was saved successfully
+     */
+    public function setDescription(string $key, string $description): bool
+    {
+        return $this->setMetadata($key, ['description' => $description]);
     }
 }

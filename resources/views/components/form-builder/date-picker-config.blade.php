@@ -1,7 +1,7 @@
 @props(['selectedElement', 'selectedElementIndex'])
 <div class="space-y-4">
-    <flux:heading size="sm" class="flex items-center gap-2">
-        <flux:icon name="calendar-days" class="size-4" />
+    <flux:heading size="md" class="flex items-center gap-2">
+        <flux:icon name="calendar" class="size-4" />
         Date Picker Configuration
     </flux:heading>
     <!-- Basic Settings -->

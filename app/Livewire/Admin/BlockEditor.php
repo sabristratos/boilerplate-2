@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Admin;
 
 use App\Models\ContentBlock;
-use App\Services\BlockEditorService;
+use App\Services\Contracts\BlockEditorServiceInterface;
 use App\Services\BlockManager;
 use App\Traits\WithToastNotifications;
 use Livewire\Attributes\Computed;
@@ -64,7 +64,7 @@ class BlockEditor extends Component
     /**
      * Block editor service instance.
      */
-    protected BlockEditorService $blockEditorService;
+    protected BlockEditorServiceInterface $blockEditorService;
 
     /**
      * Mount the component with the page to edit.
@@ -78,7 +78,7 @@ class BlockEditor extends Component
     /**
      * Boot the component and inject dependencies.
      */
-    public function boot(BlockManager $blockManager, BlockEditorService $blockEditorService): void
+    public function boot(BlockManager $blockManager, BlockEditorServiceInterface $blockEditorService): void
     {
         $this->blockManager = $blockManager;
         $this->blockEditorService = $blockEditorService;
@@ -98,7 +98,7 @@ class BlockEditor extends Component
 
         $block = $this->blockEditorService->getBlockById($blockId);
 
-        if (! $block) {
+        if (!$block instanceof \App\Models\ContentBlock) {
             return;
         }
 
@@ -145,7 +145,7 @@ class BlockEditor extends Component
      */
     public function updatedEditingBlockState(): void
     {
-        if ($this->editingBlockId) {
+        if ($this->editingBlockId !== null && $this->editingBlockId !== 0) {
             // Dispatch event to update PageCanvas immediately
             $this->dispatch('block-state-updated', [
                 'id' => $this->editingBlockId,
@@ -159,7 +159,7 @@ class BlockEditor extends Component
      */
     public function updatedEditingBlockVisible(): void
     {
-        if ($this->editingBlockId) {
+        if ($this->editingBlockId !== null && $this->editingBlockId !== 0) {
             $this->dispatch('block-visibility-updated', [
                 'id' => $this->editingBlockId,
                 'visible' => $this->editingBlockVisible,
@@ -178,7 +178,7 @@ class BlockEditor extends Component
             $items = $data['items'];
 
             // Update the editingBlockState with the new items
-            $this->editingBlockState = $this->blockEditorService->updateRepeaterState(
+            $this->editingBlockState = $this->blockEditorService->updateRepeaterStateInArray(
                 $this->editingBlockState,
                 $modelPath,
                 $items
@@ -200,7 +200,7 @@ class BlockEditor extends Component
     {
         if ($this->editingBlockId && $this->editingBlockId === $modelId) {
             $block = $this->blockEditorService->getBlockById($this->editingBlockId);
-            if ($block) {
+            if ($block instanceof \App\Models\ContentBlock) {
                 // Update the state based on the new media status
                 $this->editingBlockState = $this->blockEditorService->updateMediaState($this->editingBlockState, $block, $collection);
 
@@ -218,7 +218,7 @@ class BlockEditor extends Component
      */
     public function handleDebouncedSave(): void
     {
-        if ($this->editingBlockId && !empty($this->editingBlockState)) {
+        if ($this->editingBlockId && $this->editingBlockState !== []) {
             // Here you would implement the actual save logic
             // For now, we'll just dispatch an event to notify that save is needed
             $this->dispatch('block-save-needed', [
@@ -243,7 +243,7 @@ class BlockEditor extends Component
     #[Computed]
     public function getCurrentBlockProperty(): ?ContentBlock
     {
-        if (! $this->editingBlockId) {
+        if ($this->editingBlockId === null || $this->editingBlockId === 0) {
             return null;
         }
 
@@ -258,7 +258,7 @@ class BlockEditor extends Component
     {
         $block = $this->getCurrentBlockProperty();
 
-        if (! $block) {
+        if (!$block instanceof \App\Models\ContentBlock) {
             return null;
         }
 

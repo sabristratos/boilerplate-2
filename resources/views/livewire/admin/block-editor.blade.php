@@ -22,7 +22,7 @@
             <div class="p-6 pb-4">
                 <div class="flex justify-between items-center">
                     <flux:heading size="sm">
-                        {{ $currentBlockClass ? 'Editing: ' . $currentBlockClass->getName() : 'Editing Block' }}
+                        {{ $this->currentBlockClass ? 'Editing: ' . $this->currentBlockClass->getName() : 'Editing Block' }}
                     </flux:heading>
                     <div class="flex items-center gap-4">
                         <flux:field :label="__('messages.page_manager.visibility')" variant="inline">
@@ -41,13 +41,13 @@
             </div>
 
             <!-- Block Form -->
-            @if($currentBlockClass)
+            @if($this->currentBlockClass)
                 <div class="overflow-y-auto flex-1" style="height: calc(100vh - 200px);">
                     <div class="px-6">
-                        @include($currentBlockClass->getAdminView(), [
+                        @include($this->currentBlockClass->getAdminView(), [
                             'alpine' => true, 
                             'editingBlockState' => $editingBlockState,
-                            'editingBlock' => $currentBlock
+                            'editingBlock' => $this->currentBlock
                         ])
                     </div>
                 </div>

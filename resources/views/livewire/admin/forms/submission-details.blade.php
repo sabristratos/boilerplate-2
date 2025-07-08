@@ -17,9 +17,9 @@
             <flux:card>
                 <flux:heading size="lg" class="mb-4">{{ __('forms.submission_data') }}</flux:heading>
                 
-                @if(is_array($submission->data) && count($submission->data) > 0)
+                @if(is_array($formattedData) && count($formattedData) > 0)
                     <div class="space-y-4">
-                        @foreach($submission->data as $key => $value)
+                        @foreach($formattedData as $key => $value)
                             <div class="border-b border-zinc-200 dark:border-zinc-700 pb-4 last:border-b-0">
                                 <div class="flex items-start justify-between">
                                     <div class="flex-1">
@@ -51,6 +51,15 @@
                         <flux:callout.text>{{ __('forms.no_submission_data_description') }}</flux:callout.text>
                     </flux:callout>
                 @endif
+
+                @if($hasSensitiveData)
+                    <div class="mt-4">
+                        <flux:callout variant="warning" icon="exclamation-triangle">
+                            <flux:callout.heading>{{ __('forms.sensitive_data_warning') }}</flux:callout.heading>
+                            <flux:callout.text>{{ __('forms.sensitive_data_description') }}</flux:callout.text>
+                        </flux:callout>
+                    </div>
+                @endif
             </flux:card>
         </div>
 
@@ -63,22 +72,25 @@
                     <div>
                         <flux:text variant="strong" class="block mb-1">{{ __('forms.submitted_at') }}</flux:text>
                         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                            {{ $submission->created_at->format('F j, Y \a\t g:i A') }}
+                            {{ $submissionDto->createdAt?->format('F j, Y \a\t g:i A') }}
                         </flux:text>
+                        @if($submissionAge)
+                            <flux:text size="xs" class="text-zinc-500">{{ $submissionAge }}</flux:text>
+                        @endif
                     </div>
 
                     <div>
                         <flux:text variant="strong" class="block mb-1">{{ __('forms.ip_address') }}</flux:text>
                         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
-                            {{ $submission->ip_address }}
+                            {{ $submissionDto->ipAddress }}
                         </flux:text>
                     </div>
 
-                    @if($submission->user_agent)
+                    @if($submissionDto->userAgent)
                         <div>
                             <flux:text variant="strong" class="block mb-1">{{ __('forms.user_agent') }}</flux:text>
                             <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400 break-all">
-                                {{ $submission->user_agent }}
+                                {{ $submissionDto->userAgent }}
                             </flux:text>
                         </div>
                     @endif
@@ -86,7 +98,14 @@
                     <div>
                         <flux:text variant="strong" class="block mb-1">{{ __('forms.submission_id') }}</flux:text>
                         <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400 font-mono">
-                            {{ $submission->id }}
+                            {{ $submissionDto->id }}
+                        </flux:text>
+                    </div>
+
+                    <div>
+                        <flux:text variant="strong" class="block mb-1">{{ __('forms.form_name') }}</flux:text>
+                        <flux:text size="sm" class="text-zinc-600 dark:text-zinc-400">
+                            {{ $formDto->getNameForLocale() }}
                         </flux:text>
                     </div>
                 </div>
@@ -115,6 +134,15 @@
                         wire:navigate
                     >
                         {{ __('buttons.edit_form') }}
+                    </flux:button>
+
+                    <flux:button
+                        wire:click="deleteSubmission"
+                        variant="ghost"
+                        icon="trash"
+                        class="w-full justify-start text-red-600 hover:text-red-700"
+                    >
+                        {{ __('buttons.delete_submission') }}
                     </flux:button>
                 </div>
             </flux:card>

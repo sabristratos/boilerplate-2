@@ -119,6 +119,8 @@ class FormDTO extends BaseDTO
         return $this->name[$locale] ?? null;
     }
 
+
+
     /**
      * Check if the form has a name for a specific locale.
      *
@@ -165,7 +167,7 @@ class FormDTO extends BaseDTO
      */
     public function getElementsByType(string $type): array
     {
-        return array_filter($this->elements, fn($element) => ($element['type'] ?? '') === $type);
+        return array_filter($this->elements, fn($element): bool => ($element['type'] ?? '') === $type);
     }
 
     /**
@@ -175,7 +177,7 @@ class FormDTO extends BaseDTO
      */
     public function getElementTypes(): array
     {
-        $types = array_map(fn($element) => $element['type'] ?? '', $this->elements);
+        $types = array_map(fn($element): mixed => $element['type'] ?? '', $this->elements);
         return array_unique(array_filter($types));
     }
 
@@ -196,7 +198,7 @@ class FormDTO extends BaseDTO
      */
     public function hasElements(): bool
     {
-        return !empty($this->elements);
+        return $this->elements !== [];
     }
 
     /**
@@ -251,7 +253,7 @@ class FormDTO extends BaseDTO
      */
     public function getFieldNames(): array
     {
-        return array_map(fn($element) => $this->generateFieldName($element), $this->elements);
+        return array_map(fn($element): string => $this->generateFieldName($element), $this->elements);
     }
 
     /**
@@ -261,7 +263,7 @@ class FormDTO extends BaseDTO
      */
     public function hasFileUploads(): bool
     {
-        return !empty($this->getElementsByType('file'));
+        return $this->getElementsByType('file') !== [];
     }
 
     /**
@@ -310,29 +312,38 @@ class FormDTO extends BaseDTO
      */
     public function validate(): array
     {
-        $errors = [];
-
-        if (empty($this->name)) {
-            $errors['name'] = 'Form name is required';
-        }
-
-        if ($this->userId !== null && $this->userId <= 0) {
-            $errors['user_id'] = 'Valid user ID is required';
-        }
-
-        // Validate elements structure
-        foreach ($this->elements as $index => $element) {
-            if (!is_array($element)) {
-                $errors["elements.{$index}"] = 'Element must be an array';
-                continue;
-            }
-
-            if (empty($element['type'])) {
-                $errors["elements.{$index}.type"] = __('forms.errors.element_type_required');
-            }
-        }
-
-        return $errors;
+        $validationService = app(\App\Services\DTOValidationService::class);
+        
+        // Get validation rules
+        $rules = [
+            'id' => 'nullable|integer|min:1',
+            'user_id' => 'nullable|integer|min:1',
+        ];
+        
+        // Add translatable field rules
+        $rules = array_merge($rules, $validationService->getTranslatableFieldRules('name', true));
+        
+        // Add form elements rules
+        $rules = array_merge($rules, $validationService->getFormElementsRules($this->elements));
+        
+        // Add settings validation
+        $rules['settings'] = 'nullable|array';
+        
+        // Get custom messages and attributes
+        $messages = $validationService->getCustomValidationMessages();
+        $attributes = $validationService->getCustomAttributeNames();
+        
+        // Validate using the service
+        $errors = $validationService->validateDTO($this, $rules, $messages, $attributes);
+        
+        // Add custom validation for form elements
+        $elementErrors = $validationService->validateFormElements($this->elements);
+        $errors = array_merge($errors, $elementErrors);
+        
+        // Add custom validation for translatable fields
+        $translatableErrors = $validationService->validateTranslatableField($this->toArray(), 'name');
+        
+        return array_merge($errors, $translatableErrors);
     }
 
     /**

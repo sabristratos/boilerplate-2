@@ -6,9 +6,10 @@ namespace Tests\Unit\DTOs;
 
 use App\DTOs\FormDTO;
 use App\DTOs\DTOFactory;
+use App\Enums\FormElementType;
 use App\Models\Form;
 use App\Models\User;
-use App\Services\FormService;
+use App\Services\Contracts\FormServiceInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -16,19 +17,19 @@ class FormDTOIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    private FormService $formService;
+    private FormServiceInterface $formService;
     private User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
         
-        $this->formService = app(FormService::class);
+        $this->formService = app(FormServiceInterface::class);
         $this->user = User::factory()->create();
     }
 
     /** @test */
-    public function it_can_create_form_dto_from_model()
+    public function it_can_create_form_dto_from_model(): void
     {
         $form = Form::factory()->create([
             'user_id' => $this->user->id,
@@ -36,7 +37,7 @@ class FormDTOIntegrationTest extends TestCase
             'elements' => [
                 [
                     'id' => 'field_1',
-                    'type' => 'text',
+                    'type' => FormElementType::TEXT->value,
                     'properties' => ['label' => 'Name'],
                     'validation' => ['rules' => ['required']]
                 ]
@@ -55,14 +56,14 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_create_form_dto_for_creation()
+    public function it_can_create_form_dto_for_creation(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             ['en' => 'New Form'],
             [
                 [
                     'id' => 'field_1',
-                    'type' => 'email',
+                    'type' => FormElementType::EMAIL->value,
                     'properties' => ['label' => 'Email'],
                     'validation' => ['rules' => ['required', 'email']]
                 ]
@@ -80,7 +81,7 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_validate_form_dto()
+    public function it_can_validate_form_dto(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             [], // Empty name should fail validation
@@ -99,7 +100,7 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_get_form_name_for_locale()
+    public function it_can_get_form_name_for_locale(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation([
             'en' => 'English Name',
@@ -115,39 +116,39 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_get_elements_by_type()
+    public function it_can_get_elements_by_type(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             ['en' => 'Test Form'],
             [
-                ['id' => 'field_1', 'type' => 'text', 'properties' => ['label' => 'Name']],
-                ['id' => 'field_2', 'type' => 'email', 'properties' => ['label' => 'Email']],
-                ['id' => 'field_3', 'type' => 'text', 'properties' => ['label' => 'Phone']]
+                ['id' => 'field_1', 'type' => FormElementType::TEXT->value, 'properties' => ['label' => 'Name']],
+                ['id' => 'field_2', 'type' => FormElementType::EMAIL->value, 'properties' => ['label' => 'Email']],
+                ['id' => 'field_3', 'type' => FormElementType::TEXT->value, 'properties' => ['label' => 'Phone']]
             ]
         );
 
-        $textElements = $formDto->getElementsByType('text');
+        $textElements = $formDto->getElementsByType(FormElementType::TEXT->value);
         $this->assertCount(2, $textElements);
         
-        $emailElements = $formDto->getElementsByType('email');
+        $emailElements = $formDto->getElementsByType(FormElementType::EMAIL->value);
         $this->assertCount(1, $emailElements);
     }
 
     /** @test */
-    public function it_can_get_required_fields()
+    public function it_can_get_required_fields(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             ['en' => 'Test Form'],
             [
                 [
                     'id' => 'field_1',
-                    'type' => 'text',
+                    'type' => FormElementType::TEXT->value,
                     'properties' => ['label' => 'Name'],
                     'validation' => ['rules' => ['required']]
                 ],
                 [
                     'id' => 'field_2',
-                    'type' => 'email',
+                    'type' => FormElementType::EMAIL->value,
                     'properties' => ['label' => 'Email'],
                     'validation' => ['rules' => ['email']] // Not required
                 ]
@@ -160,13 +161,13 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_check_for_file_uploads()
+    public function it_can_check_for_file_uploads(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             ['en' => 'Test Form'],
             [
-                ['id' => 'field_1', 'type' => 'text', 'properties' => ['label' => 'Name']],
-                ['id' => 'field_2', 'type' => 'file', 'properties' => ['label' => 'Document']]
+                ['id' => 'field_1', 'type' => FormElementType::TEXT->value, 'properties' => ['label' => 'Name']],
+                ['id' => 'field_2', 'type' => FormElementType::FILE->value, 'properties' => ['label' => 'Document']]
             ]
         );
 
@@ -174,14 +175,14 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_validate_form_data_using_service()
+    public function it_can_validate_form_data_using_service(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             ['en' => 'Test Form'],
             [
                 [
                     'id' => 'field_1',
-                    'type' => 'text',
+                    'type' => FormElementType::TEXT->value,
                     'properties' => ['label' => 'Name'],
                     'validation' => ['rules' => ['required']]
                 ]
@@ -201,14 +202,14 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_create_form_using_service_with_dto()
+    public function it_can_create_form_using_service_with_dto(): void
     {
         $formDto = DTOFactory::createFormDTOForCreation(
             ['en' => 'Service Test Form'],
             [
                 [
                     'id' => 'field_1',
-                    'type' => 'text',
+                    'type' => FormElementType::TEXT->value,
                     'properties' => ['label' => 'Name'],
                     'validation' => ['rules' => ['required']]
                 ]
@@ -227,7 +228,7 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_can_update_form_using_service_with_dto()
+    public function it_can_update_form_using_service_with_dto(): void
     {
         $form = Form::factory()->create([
             'user_id' => $this->user->id,
@@ -241,7 +242,7 @@ class FormDTOIntegrationTest extends TestCase
             [
                 [
                     'id' => 'field_1',
-                    'type' => 'text',
+                    'type' => FormElementType::TEXT->value,
                     'properties' => ['label' => 'Name'],
                     'validation' => ['rules' => ['required']]
                 ]
@@ -258,7 +259,7 @@ class FormDTOIntegrationTest extends TestCase
     }
 
     /** @test */
-    public function it_throws_exception_for_invalid_dto_in_service()
+    public function it_throws_exception_for_invalid_dto_in_service(): void
     {
         $this->expectException(\InvalidArgumentException::class);
 

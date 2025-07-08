@@ -20,7 +20,7 @@ class PrebuiltFormRegistry
     public static function find(string $class): ?PrebuiltFormInterface
     {
         foreach (self::all() as $form) {
-            if (get_class($form) === $class) {
+            if ($form::class === $class) {
                 return $form;
             }
         }

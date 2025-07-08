@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Enums\SettingGroupKey;
@@ -7,6 +9,7 @@ use App\Enums\SettingType;
 use App\Facades\Settings;
 use App\Models\Setting;
 use App\Models\SettingGroup;
+use App\Services\Contracts\SettingsManagerInterface;
 use App\Traits\WithToastNotifications;
 use Flux\Flux;
 use Illuminate\Support\Facades\Artisan;
@@ -16,17 +19,28 @@ use Livewire\Attributes\On;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+/**
+ * Livewire component for managing application settings.
+ *
+ * This component provides a comprehensive settings management interface
+ * with support for different setting types, validation, and file uploads.
+ * It uses services for business logic and DTOs for data handling.
+ */
 class SettingsPage extends Component
 {
     use WithFileUploads, WithToastNotifications;
 
     /**
      * The state of the settings.
+     *
+     * @var array<string, mixed>
      */
     public array $state = [];
 
     /**
      * The initial state of the settings.
+     *
+     * @var array<string, mixed>
      */
     public array $initialState = [];
 
@@ -42,14 +56,25 @@ class SettingsPage extends Component
 
     /**
      * Temporary file uploads.
+     *
+     * @var array<string, mixed>
      */
     public array $files = [];
 
     public SettingGroup $currentGroup;
 
-    protected $listeners = [
-        'repeater-updated' => 'onRepeaterUpdate',
-    ];
+    /**
+     * Settings manager service instance.
+     */
+    protected SettingsManagerInterface $settingsManager;
+
+    /**
+     * Boot the component with dependencies.
+     */
+    public function boot(SettingsManagerInterface $settingsManager): void
+    {
+        $this->settingsManager = $settingsManager;
+    }
 
     /**
      * Mount the component.
@@ -89,7 +114,7 @@ class SettingsPage extends Component
                 continue;
             }
 
-            if (! $this->userCan($setting['permission'] ?? null)) {
+            if (!$this->userCan($setting['permission'] ?? null)) {
                 continue;
             }
 
@@ -99,7 +124,7 @@ class SettingsPage extends Component
                 continue;
             }
 
-            $value = Settings::get($key);
+            $value = $this->settingsManager->get($key);
 
             // If value is null, use the default value from the config
             if ($value === null && isset($setting['default'])) {
@@ -121,39 +146,53 @@ class SettingsPage extends Component
      */
     public function save(): void
     {
-        $settingsConfig = Config::get('settings.settings', []);
-        $warnings = [];
+        try {
+            $settingsConfig = Config::get('settings.settings', []);
+            $warnings = [];
 
-        $currentState = data_get($this->state, $this->group, []);
-        $initialState = data_get($this->initialState, $this->group, []);
+            $currentState = data_get($this->state, $this->group, []);
+            $initialState = data_get($this->initialState, $this->group, []);
 
-        foreach ($currentState as $key => $value) {
-            if (data_get($initialState, $key) != $value) {
-                $fullKey = $this->group.'.'.$key;
-                if (isset($settingsConfig[$fullKey]['warning'])) {
-                    $label = $settingsConfig[$fullKey]['label'];
-                    $labelText = is_array($label) ? ($label[app()->getLocale() ?? 'en'] ?? $label['en']) : $label;
-                    $warnings[$labelText] = $settingsConfig[$fullKey]['warning'];
+            foreach ($currentState as $key => $value) {
+                if (data_get($initialState, $key) != $value) {
+                    $fullKey = $this->group.'.'.$key;
+                    if (isset($settingsConfig[$fullKey]['warning'])) {
+                        $label = $settingsConfig[$fullKey]['label'];
+                        $labelText = is_array($label) ? ($label[app()->getLocale() ?? 'en'] ?? $label['en']) : $label;
+                        $warnings[$labelText] = $settingsConfig[$fullKey]['warning'];
+                    }
                 }
             }
-        }
 
-        if ($warnings !== []) {
-            $warningHtml = '<p>'.__('messages.confirm_save.title').':</p><ul class="mt-2 list-disc list-inside space-y-1">';
-            foreach ($warnings as $label => $text) {
-                $warningHtml .= "<li><strong>{$label}:</strong> {$text}</li>";
+            if ($warnings !== []) {
+                $warningHtml = '<p>'.__('messages.confirm_save.title').':</p><ul class="mt-2 list-disc list-inside space-y-1">';
+                foreach ($warnings as $label => $text) {
+                    $warningHtml .= "<li><strong>{$label}:</strong> {$text}</li>";
+                }
+                $warningHtml .= '</ul>';
+                $this->confirmationWarning = $warningHtml;
+
+                Flux::modal('confirm-save')->show();
+
+                return;
             }
-            $warningHtml .= '</ul>';
-            $this->confirmationWarning = $warningHtml;
 
-            Flux::modal('confirm-save')->show();
+            $this->confirmedSave();
 
-            return;
+        } catch (\Exception $e) {
+            logger()->error('Error saving settings', [
+                'group' => $this->group,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            $this->showErrorToast(__('settings.errors.save_failed'));
         }
-
-        $this->confirmedSave();
     }
 
+    /**
+     * Confirm and execute the save operation.
+     */
     public function confirmedSave(): void
     {
         try {
@@ -188,7 +227,7 @@ class SettingsPage extends Component
                 $this->validate($validationRules, $validationMessages);
             }
 
-            // 3. Save the validated, changed data.
+            // 3. Save the validated, changed data using the service.
             $changedSettings = [];
             foreach ($changedData as $fullKey => $value) {
                 // Handle file uploads
@@ -196,227 +235,198 @@ class SettingsPage extends Component
                     $value = $this->handleFileUpload($fullKey);
                 }
 
-                Settings::set($fullKey, $value);
+                $this->settingsManager->set($fullKey, $value);
                 $changedSettings[$fullKey] = $value;
             }
 
-            // Show success message using toast notification
-            $groupLabel = $this->getAuthorizedGroups()->firstWhere('key', $this->group)->label ?? $this->group;
-            $message = __(':group settings saved successfully.', ['group' => $groupLabel]);
-
-            $this->showSuccessToast($message);
-
-            // Dispatch a global event to notify other components
-            if ($changedSettings !== []) {
-                $this->dispatch('settings-updated', settings: $changedSettings);
+            // Update initial state to reflect saved changes
+            foreach ($changedSettings as $fullKey => $value) {
+                $key = str_replace($this->group.'.', '', $fullKey);
+                data_set($this->initialState, $this->group.'.'.$key, $value);
             }
 
-            // Close the modal
-            Flux::modal('confirm-save')->close();
+            $this->showSuccessToast(__('settings.toast.saved_successfully'));
 
-            // Update initial state
-            $this->initialState = $this->state;
+            // Clear cache if needed
+            if (!empty($changedSettings)) {
+                $this->clearCache();
+            }
+
         } catch (\Exception $e) {
-            $this->showErrorToast(__('messages.errors.generic'), $e->getMessage());
+            logger()->error('Error in confirmed save', [
+                'group' => $this->group,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            $this->showErrorToast(__('settings.errors.save_failed'));
         }
     }
 
     /**
-     * Revert changes to the initial state.
+     * Cancel changes and revert to initial state.
      */
     public function cancelChanges(): void
     {
         $this->state = $this->initialState;
+        $this->showWarningToast(__('settings.toast.changes_cancelled'));
     }
 
     /**
-     * Handle file upload.
+     * Handle file upload for a setting.
      */
     protected function handleFileUpload(string $key): string
     {
-        try {
-            $file = $this->files[$key];
-            $path = $file->store('public/settings');
-
-            return str_replace('public/', 'storage/', $path);
-        } catch (\Exception $e) {
-            $this->showErrorToast(__('messages.errors.file_upload'), $e->getMessage());
-            throw $e; // Re-throw to be caught by the parent try-catch
-        }
+        $file = $this->files[$key];
+        $path = $file->store('settings', 'public');
+        
+        return $path;
     }
 
     /**
-     * Clear the application cache.
+     * Clear application cache.
      */
     public function clearCache(): void
     {
         try {
             Artisan::call('cache:clear');
-            $this->showSuccessToast(__('messages.cache_cleared_successfully'));
+            Artisan::call('config:clear');
+            Artisan::call('view:clear');
+            
+            $this->showSuccessToast(__('settings.toast.cache_cleared'));
+            
         } catch (\Exception $e) {
-            $this->showErrorToast(__('messages.errors.generic'), $e->getMessage());
+            logger()->error('Error clearing cache', [
+                'error' => $e->getMessage(),
+            ]);
+            
+            $this->showErrorToast(__('settings.errors.cache_clear_failed'));
         }
     }
 
     /**
-     * Fix the language settings by resetting them to defaults.
-     * This addresses issues with incorrect data structure in the database.
+     * Fix language settings.
      */
     public function fixLanguageSettings(): void
     {
         try {
-            // Delete the incorrect setting row
-            Setting::where('key', 'general.available_locales')->delete();
-
-            // Run the settings:sync command to recreate the setting with the correct structure
-            Artisan::call('settings:sync');
-
-            // Reload the settings to update the UI
-            $this->loadSettings();
-            $this->initialState = $this->state;
-
-            $this->showSuccessToast(__('messages.language_settings_reset'));
+            $this->settingsManager->fixLanguageSettings();
+            $this->showSuccessToast(__('settings.toast.language_settings_fixed'));
+            
         } catch (\Exception $e) {
-            $this->showErrorToast(__('messages.errors.generic'), $e->getMessage());
+            logger()->error('Error fixing language settings', [
+                'error' => $e->getMessage(),
+            ]);
+            
+            $this->showErrorToast(__('settings.errors.language_fix_failed'));
         }
     }
 
     /**
-     * Get the authorized setting groups.
-     *
-     * @return \Illuminate\Support\Collection
+     * Get authorized setting groups for the current user.
      */
     protected function getAuthorizedGroups()
     {
-        return SettingGroup::query()
-            ->whereIn('key', array_keys(config('settings.groups')))
-            ->get()
-            ->filter(function ($group): bool {
-                // If a permission is required for the group, check if the user has it
-                $permission = config('settings.groups.'.$group->key.'.permission');
-
-                return ! $permission || $this->userCan($permission);
+        return SettingGroup::whereHas('settings', function ($query) {
+            $query->where(function ($q) {
+                $q->whereNull('permission')
+                  ->orWhereHas('permission', function ($permissionQuery) {
+                      $permissionQuery->whereHas('roles', function ($roleQuery) {
+                          $roleQuery->whereHas('users', function ($userQuery) {
+                              $userQuery->where('user_id', Auth::id());
+                          });
+                      });
+                  });
             });
+        })->get();
     }
 
     /**
-     * Get the settings for a given group.
-     *
-     * @return \Illuminate\Support\Collection
+     * Get authorized settings for a specific group.
      */
     protected function getAuthorizedSettings(string $groupKey)
     {
-        $settings = collect(config('settings.settings', []));
+        $settingsConfig = Config::get('settings.settings', []);
+        $authorizedSettings = [];
 
-        return $settings->filter(fn ($setting, $key): bool => ($setting['group'] ?? '') === $groupKey && $this->userCan($setting['permission'] ?? null))->map(function ($settingData, $key) {
-            // Check if the user has permission to manage the setting
-            if (! $this->userCan($settingData['permission'] ?? null)) {
-                return null;
+        foreach ($settingsConfig as $key => $setting) {
+            if (($setting['group'] ?? '') !== $groupKey) {
+                continue;
             }
 
-            // For media settings, we load the Setting model instance.
-            if ($settingData['type'] === SettingType::MEDIA->value) {
-                $setting = Setting::firstOrCreate(['key' => $key], $settingData);
-            } else {
-                $settingData['key'] = $key;
-                $settingData['value'] = Settings::get($key);
-                $settingData['label'] = is_array($settingData['label']) ? ($settingData['label'][app()->getLocale() ?? 'en'] ?? $settingData['label']['en']) : $settingData['label'];
-                $settingData['description'] = isset($settingData['description']) ? (is_array($settingData['description']) ? ($settingData['description'][app()->getLocale() ?? 'en'] ?? $settingData['description']['en']) : $settingData['description']) : null;
-
-                // Process subfields for repeaters
-                if (isset($settingData['subfields']) && is_array($settingData['subfields'])) {
-                    foreach ($settingData['subfields'] as $subfieldKey => $subfield) {
-                        if (isset($subfield['label'])) {
-                            $settingData['subfields'][$subfieldKey]['label'] = is_array($subfield['label'])
-                                ? ($subfield['label'][app()->getLocale() ?? 'en'] ?? $subfield['label']['en'])
-                                : $subfield['label'];
-                        }
-                    }
-                }
-
-                // Process options - handle both callable functions and dynamic options
-                if (isset($settingData['options'])) {
-                    if (is_callable($settingData['options'])) {
-                        $settingData['options'] = call_user_func($settingData['options']);
-                    } elseif (is_string($settingData['options']) && str_starts_with($settingData['options'], 'dynamic:')) {
-                        // Handle dynamic options like 'dynamic:general.homepage'
-                        $dynamicKey = substr($settingData['options'], 8); // Remove 'dynamic:' prefix
-                        $settingData['options'] = app(\App\Services\SettingsManager::class)->getDynamicOptions($dynamicKey);
-                    }
-                    // If options is already an array, leave it as is
-                }
-                if (isset($settingData['callout']['text'])) {
-                    $settingData['callout']['text'] = is_array($settingData['callout']['text']) ? ($settingData['callout']['text'][app()->getLocale() ?? 'en'] ?? $settingData['callout']['text']['en']) : $settingData['callout']['text'];
-                }
-                $setting = (object) $settingData;
+            if (!$this->userCan($setting['permission'] ?? null)) {
+                continue;
             }
 
-            return $setting;
-        })->filter();
+            $authorizedSettings[$key] = $setting;
+        }
+
+        return $authorizedSettings;
     }
 
     /**
-     * Check if the user can perform the given permission.
+     * Check if user has permission for a setting.
      */
     protected function userCan(?string $permission): bool
     {
-        if ($permission === null || $permission === '' || $permission === '0') {
+        if ($permission === null) {
             return true;
         }
 
-        // Check if the authenticated user has the required permission
-        return Auth::user() && Auth::user()->can($permission);
+        return Auth::user()->can($permission);
     }
 
     /**
-     * Get the icon for a group.
+     * Get group icon for display.
      */
     protected function getGroupIcon(string $groupKey): string
     {
-        return match ($groupKey) {
-            SettingGroupKey::GENERAL->value => 'cog',
+        $icons = [
+            SettingGroupKey::GENERAL->value => 'cog-6-tooth',
             SettingGroupKey::APPEARANCE->value => 'paint-brush',
             SettingGroupKey::EMAIL->value => 'envelope',
-            SettingGroupKey::SECURITY->value => 'shield-check',
             SettingGroupKey::SOCIAL->value => 'share',
-            SettingGroupKey::ADVANCED->value => 'wrench',
-            SettingGroupKey::CONTACT->value => 'phone',
-            default => 'adjustments-horizontal',
-        };
+            SettingGroupKey::ADVANCED->value => 'wrench-screwdriver',
+        ];
+
+        return $icons[$groupKey] ?? 'cog-6-tooth';
     }
 
+    /**
+     * Handle media updates.
+     */
     #[On('media-updated')]
     public function reloadSettings(): void
     {
         $this->loadSettings();
+        $this->initialState = $this->state;
     }
 
+    /**
+     * Handle repeater updates.
+     */
     #[On('repeater-updated')]
     public function onRepeaterUpdate(array $data): void
     {
-        data_set($this->state, $data['model'], $data['items']);
+        if (isset($data['model']) && isset($data['items'])) {
+            $modelPath = $data['model'];
+            $items = $data['items'];
+
+            data_set($this->state, $modelPath, $items);
+        }
     }
 
     /**
      * Render the component.
-     *
-     * @return \Illuminate\View\View
      */
     public function render()
     {
-        // Get all authorized groups
-        $groups = $this->getAuthorizedGroups();
-
-        // Find the current group object
-        $currentGroup = $groups->firstWhere('key', $this->group);
-
-        // Get all settings for the current group
-        $settings = $this->getAuthorizedSettings($this->group);
+        $authorizedGroups = $this->getAuthorizedGroups();
+        $authorizedSettings = $this->getAuthorizedSettings($this->group);
 
         return view('livewire.settings-page', [
-            'groups' => $groups,
-            'currentGroup' => $currentGroup,
-            'settings' => $settings,
-        ]);
+            'authorizedGroups' => $authorizedGroups,
+            'authorizedSettings' => $authorizedSettings,
+        ])->title(__('settings.page_title'));
     }
 }

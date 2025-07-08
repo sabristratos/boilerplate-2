@@ -2,6 +2,7 @@
 
 namespace App\Services\FormBuilder\Renderers;
 
+use App\Enums\FormElementType;
 use App\Services\FormBuilder\ElementDTO;
 
 /**
@@ -14,7 +15,7 @@ class TextareaRenderer extends BaseElementRenderer
      */
     public function supports(string $type): bool
     {
-        return $type === 'textarea';
+        return $type === FormElementType::TEXTAREA->value;
     }
 
     /**
@@ -93,7 +94,7 @@ class TextareaRenderer extends BaseElementRenderer
         $data['mode'] = $mode;
 
         // Use the provided fieldName if available
-        if ($fieldName) {
+        if ($fieldName !== null && $fieldName !== '' && $fieldName !== '0') {
             $data['wireModel'] = "previewFormData.{$fieldName}";
         }
 

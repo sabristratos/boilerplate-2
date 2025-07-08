@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('form_submissions', function (Blueprint $table) {
+        Schema::create('form_submissions', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('form_id')->constrained()->cascadeOnDelete();
             $table->json('data');

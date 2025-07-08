@@ -1,9 +1,9 @@
 @props(['selectedElement', 'selectedElementIndex'])
+<flux:heading size="md" class="flex items-center gap-2">
+    <flux:icon name="eye" class="size-4" />
+    Display Options
+</flux:heading>
 <div class="space-y-4">
-    <flux:heading size="sm" class="flex items-center gap-2">
-        <flux:icon name="squares-2x2" class="size-4" />
-        Display Options
-    </flux:heading>
     <flux:select 
         wire:model.live="elements.{{ $selectedElementIndex }}.properties.fluxProps.variant" 
         label="Variant"

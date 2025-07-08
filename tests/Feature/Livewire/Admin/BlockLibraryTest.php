@@ -11,7 +11,7 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
 
@@ -19,8 +19,8 @@ beforeEach(function () {
     $this->blockManager = app(BlockManager::class);
 });
 
-describe('BlockLibrary', function () {
-    it('renders the block library with available blocks', function () {
+describe('BlockLibrary', function (): void {
+    it('renders the block library with available blocks', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -30,7 +30,7 @@ describe('BlockLibrary', function () {
             ->assertSee('Hero Section');
     });
 
-    it('filters blocks by search term', function () {
+    it('filters blocks by search term', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -41,7 +41,7 @@ describe('BlockLibrary', function () {
             ->assertDontSee('Contact Form');
     });
 
-    it('filters blocks by category', function () {
+    it('filters blocks by category', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -52,7 +52,7 @@ describe('BlockLibrary', function () {
             ->assertDontSee('Contact Form');
     });
 
-    it('combines search and category filters', function () {
+    it('combines search and category filters', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -64,7 +64,7 @@ describe('BlockLibrary', function () {
             ->assertDontSee('Contact Form');
     });
 
-    it('can create a contact form block', function () {
+    it('can create a contact form block', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -82,7 +82,7 @@ describe('BlockLibrary', function () {
         ]);
     });
 
-    it('can create a hero section block', function () {
+    it('can create a hero section block', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -100,7 +100,7 @@ describe('BlockLibrary', function () {
         ]);
     });
 
-    it('can close the block library', function () {
+    it('can close the block library', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -110,7 +110,7 @@ describe('BlockLibrary', function () {
             ->assertDispatched('hide-block-library');
     });
 
-    it('resets filters when close is called', function () {
+    it('resets filters when close is called', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -123,7 +123,7 @@ describe('BlockLibrary', function () {
             ->assertSet('selectedCategory', '');
     });
 
-    it('handles invalid block type gracefully', function () {
+    it('handles invalid block type gracefully', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,
@@ -138,7 +138,7 @@ describe('BlockLibrary', function () {
         ]);
     });
 
-    it('displays block descriptions and icons', function () {
+    it('displays block descriptions and icons', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockLibrary::class, [
                 'page' => $this->page,

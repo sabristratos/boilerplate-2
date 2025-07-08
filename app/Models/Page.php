@@ -142,7 +142,7 @@ class Page extends Model implements HasMedia
         $latestRevision = $this->latestRevision();
         
         // If no revisions exist, there are no draft changes
-        if (!$latestRevision) {
+        if (!$latestRevision instanceof \App\Models\Revision) {
             return false;
         }
         

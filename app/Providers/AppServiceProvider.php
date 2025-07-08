@@ -6,6 +6,14 @@ namespace App\Providers;
 
 use App\Facades\Settings;
 use App\Observers\MediaObserver;
+use App\Services\BlockEditorService;
+use App\Services\BlockManager;
+use App\Services\Contracts\BlockEditorServiceInterface;
+use App\Services\Contracts\FormServiceInterface;
+use App\Services\Contracts\MediaServiceInterface;
+use App\Services\Contracts\SettingsManagerInterface;
+use App\Services\FormService;
+use App\Services\MediaService;
 use App\Services\SettingsManager;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Facades\Gate;
@@ -20,12 +28,18 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Register service interfaces to their implementations
+        $this->app->bind(FormServiceInterface::class, FormService::class);
+        $this->app->bind(BlockEditorServiceInterface::class, BlockEditorService::class);
+        $this->app->bind(MediaServiceInterface::class, MediaService::class);
+        $this->app->bind(SettingsManagerInterface::class, SettingsManager::class);
+
         // Register SettingsManager as both a singleton and a class binding
         $this->app->singleton(SettingsManager::class, fn (): SettingsManager => new SettingsManager);
         $this->app->singleton('settings', fn (): SettingsManager => new SettingsManager);
 
         // Register BlockManager as a singleton
-        $this->app->singleton(\App\Services\BlockManager::class, fn (): \App\Services\BlockManager => new \App\Services\BlockManager);
+        $this->app->singleton(BlockManager::class, fn (): BlockManager => new BlockManager);
     }
 
     /**
@@ -41,7 +55,7 @@ class AppServiceProvider extends ServiceProvider
 
                 Settings::get('appearance.primary_color', 'oklch(64.5% .246 16.439)');
                 Settings::get('appearance.theme', 'light');
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 // If settings are not available (e.g., during migrations), use defaults
                 View::share('headerLinks', []);
                 View::share('footerLinks', []);
@@ -74,7 +88,7 @@ class AppServiceProvider extends ServiceProvider
                         break;
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             // If settings are not available, skip scheduling
         }
     }

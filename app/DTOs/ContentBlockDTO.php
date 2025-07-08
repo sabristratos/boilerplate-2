@@ -253,9 +253,9 @@ class ContentBlockDTO extends BaseDTO
      * Create a copy of this DTO with updated values.
      *
      * @param array<string, mixed> $changes The changes to apply
-     * @return self A new DTO with the changes applied
+     * @return static A new DTO with the changes applied
      */
-    public function with(array $changes): self
+    public function with(array $changes): static
     {
         return new self(
             id: $changes['id'] ?? $this->id,
@@ -278,20 +278,32 @@ class ContentBlockDTO extends BaseDTO
      */
     public function validate(): array
     {
-        $errors = [];
-
-        if (empty($this->type)) {
-            $errors['type'] = 'Block type is required';
+        $validationService = app(\App\Services\DTOValidationService::class);
+        
+        // Get validation rules
+        $rules = $validationService->getContentBlockDataRules();
+        
+        // Add ID validation for updates
+        if ($this->id !== null) {
+            $rules['id'] = 'required|integer|min:1';
         }
-
-        if ($this->pageId <= 0) {
-            $errors['page_id'] = 'Valid page ID is required';
+        
+        // Add translations validation
+        $rules['translations'] = 'nullable|array';
+        $rules['translations.*'] = 'array';
+        
+        // Get custom messages and attributes
+        $messages = $validationService->getCustomValidationMessages();
+        $attributes = $validationService->getCustomAttributeNames();
+        
+        // Validate using the service
+        $errors = $validationService->validateDTO($this, $rules, $messages, $attributes);
+        
+        // Add custom validation for block type
+        if ($this->type !== '' && $this->type !== '0' && !in_array($this->type, ['hero', 'content', 'contact', 'gallery', 'testimonial'])) {
+            $errors['type'] = __('dto.validation.block_type_invalid');
         }
-
-        if ($this->order < 0) {
-            $errors['order'] = 'Order must be non-negative';
-        }
-
+        
         return $errors;
     }
 

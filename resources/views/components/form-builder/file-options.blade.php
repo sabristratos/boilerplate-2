@@ -1,6 +1,6 @@
 @props(['selectedElement', 'selectedElementIndex'])
 <div class="space-y-4">
-    <flux:heading size="sm" class="flex items-center gap-2">
+    <flux:heading size="md" class="flex items-center gap-2">
         <flux:icon name="document-arrow-up" class="size-4" />
         File Upload Options
     </flux:heading>

@@ -19,7 +19,7 @@
     />
 @endif
 
-@if($selectedElement['type'] === 'textarea')
+@if($selectedElement['type'] === \App\Enums\FormElementType::TEXTAREA->value)
     <flux:input 
         wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.properties.rows" 
         type="number" 

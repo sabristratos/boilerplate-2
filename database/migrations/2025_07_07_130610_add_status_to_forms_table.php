@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('forms', function (Blueprint $table) {
-            //
+        Schema::table('forms', function (Blueprint $table): void {
+            $table->string('status')->default('draft')->after('settings');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('forms', function (Blueprint $table) {
-            //
+        Schema::table('forms', function (Blueprint $table): void {
+            $table->dropColumn('status');
         });
     }
 };

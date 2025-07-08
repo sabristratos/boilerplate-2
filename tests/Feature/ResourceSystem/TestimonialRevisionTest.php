@@ -7,13 +7,13 @@ use App\Models\Testimonial;
 use App\Models\User;
 use Livewire\Livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->actingAs($this->user);
 });
 
-describe('Testimonial Resource Revision System', function () {
-    it('creates a published revision when creating a new testimonial', function () {
+describe('Testimonial Resource Revision System', function (): void {
+    it('creates a published revision when creating a new testimonial', function (): void {
         $resource = new TestimonialResource;
 
         Livewire::test(\App\Livewire\ResourceSystem\ResourceForm::class, [
@@ -38,7 +38,7 @@ describe('Testimonial Resource Revision System', function () {
         $this->assertEquals('John Doe', $revision->data['name']);
     });
 
-    it('creates a draft revision when updating an existing testimonial', function () {
+    it('creates a draft revision when updating an existing testimonial', function (): void {
         // Create a testimonial with initial data
         $testimonial = Testimonial::factory()->create([
             'name' => 'Original Name',
@@ -67,7 +67,7 @@ describe('Testimonial Resource Revision System', function () {
         $this->assertEquals('Original Name', $testimonial->name);
     });
 
-    it('can publish a draft revision', function () {
+    it('can publish a draft revision', function (): void {
         // Create a testimonial with initial data
         $testimonial = Testimonial::factory()->create([
             'name' => 'Original Name',
@@ -94,7 +94,7 @@ describe('Testimonial Resource Revision System', function () {
         $this->assertEquals('Updated Name', $testimonial->name);
     });
 
-    it('detects unsaved changes correctly', function () {
+    it('detects unsaved changes correctly', function (): void {
         // Create a testimonial with initial data
         $testimonial = Testimonial::factory()->create([
             'name' => 'Original Name',

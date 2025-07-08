@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Enums\FormStatus;
 use App\Traits\HasRevisions;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -44,16 +45,7 @@ class Form extends Model
         'name',
         'elements',
         'settings',
-    ];
-
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'settings' => 'array',
-        'elements' => 'array',
+        'status',
     ];
 
     /**
@@ -104,11 +96,11 @@ class Form extends Model
      */
     public function getCurrentName(?string $locale = null): array
     {
-        if ($locale) {
+        if ($locale !== null && $locale !== '' && $locale !== '0') {
             return $this->getTranslation('name', $locale, false);
         }
 
-        return array_filter($this->getTranslations('name'), fn ($v) => ! empty($v) && $v !== '[]');
+        return array_filter($this->getTranslations('name'), fn ($v): bool => ! empty($v) && $v !== '[]');
     }
 
     /**
@@ -127,6 +119,7 @@ class Form extends Model
             'name' => $name,
             'elements' => $this->elements,
             'settings' => $this->settings,
+            'status' => $this->status,
         ];
     }
 
@@ -154,11 +147,54 @@ class Form extends Model
         $latestRevision = $this->latestRevision();
         
         // If no revisions exist, there are no draft changes
-        if (!$latestRevision) {
+        if (!$latestRevision instanceof \App\Models\Revision) {
             return false;
         }
         
         // If the latest revision is not published, there are draft changes
         return !$latestRevision->is_published;
+    }
+
+    /**
+     * Check if the form is published.
+     *
+     * @return bool True if the form is published
+     */
+    public function isPublished(): bool
+    {
+        return $this->status === FormStatus::PUBLISHED;
+    }
+
+    /**
+     * Check if the form is a draft.
+     *
+     * @return bool True if the form is a draft
+     */
+    public function isDraft(): bool
+    {
+        return $this->status === FormStatus::DRAFT;
+    }
+
+    /**
+     * Check if the form is archived.
+     *
+     * @return bool True if the form is archived
+     */
+    public function isArchived(): bool
+    {
+        return $this->status === FormStatus::ARCHIVED;
+    }
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'settings' => 'array',
+            'elements' => 'array',
+            'status' => FormStatus::class,
+        ];
     }
 }

@@ -12,7 +12,7 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
 
@@ -20,8 +20,8 @@ beforeEach(function () {
     $this->blockManager = app(BlockManager::class);
 });
 
-describe('PageCanvas', function () {
-    it('renders the page canvas with blocks', function () {
+describe('PageCanvas', function (): void {
+    it('renders the page canvas with blocks', function (): void {
         // Create some test blocks
         ContentBlock::factory()->create([
             'page_id' => $this->page->id,
@@ -48,7 +48,7 @@ describe('PageCanvas', function () {
             ->assertSee('Test Contact');
     });
 
-    it('can edit a block', function () {
+    it('can edit a block', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -66,7 +66,7 @@ describe('PageCanvas', function () {
             ->assertDispatched('edit-block', ['blockId' => $block->id]);
     });
 
-    it('can duplicate a block', function () {
+    it('can duplicate a block', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -93,7 +93,7 @@ describe('PageCanvas', function () {
         expect($duplicatedBlock->type)->toBe('hero');
     });
 
-    it('can delete a block', function () {
+    it('can delete a block', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -113,7 +113,7 @@ describe('PageCanvas', function () {
         $this->assertDatabaseMissing('content_blocks', ['id' => $block->id]);
     });
 
-    it('can update block order', function () {
+    it('can update block order', function (): void {
         $block1 = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -147,7 +147,7 @@ describe('PageCanvas', function () {
         ]);
     });
 
-    it('handles block editing events', function () {
+    it('handles block editing events', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -169,7 +169,7 @@ describe('PageCanvas', function () {
             ->assertSet('editingBlockState', ['heading' => 'Updated Heading']);
     });
 
-    it('handles block editing cancelled events', function () {
+    it('handles block editing cancelled events', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageCanvas::class, [
                 'page' => $this->page,

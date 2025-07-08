@@ -15,7 +15,7 @@ use App\Services\FormBuilder\Renderers\TextareaRenderer;
 
 class PreviewRenderer
 {
-    private array $renderers;
+    private readonly array $renderers;
 
     public function __construct()
     {
@@ -39,11 +39,11 @@ class PreviewRenderer
     {
         $renderer = $this->getRenderer($element['type']);
 
-        if (! $renderer) {
+        if (!$renderer instanceof \App\Services\FormBuilder\Contracts\ElementRendererInterface) {
             return '<div class="text-red-500">Unsupported element type: '.$element['type'].'</div>';
         }
 
-        return $this->renderPreviewInput($element, $fieldName, $renderer);
+        return $this->renderPreviewInput($element, $fieldName);
     }
 
     /**
@@ -63,45 +63,21 @@ class PreviewRenderer
     /**
      * Render a preview input based on element type
      */
-    private function renderPreviewInput(array $element, string $fieldName, ElementRendererInterface $renderer): string
+    private function renderPreviewInput(array $element, string $fieldName): string
     {
         $properties = $element['properties'] ?? [];
-        $label = $properties['label'] ?? 'Field';
-        $placeholder = $properties['placeholder'] ?? '';
-        $required = in_array('required', $element['validation']['rules'] ?? []);
-
-        switch ($element['type']) {
-            case 'text':
-            case 'email':
-                return $this->renderTextInput($fieldName, $properties, $element['type']);
-
-            case 'textarea':
-                return $this->renderTextarea($fieldName, $properties);
-
-            case 'select':
-                return $this->renderSelect($fieldName, $properties);
-
-            case 'checkbox':
-                return $this->renderCheckbox($fieldName, $properties);
-
-            case 'radio':
-                return $this->renderRadio($fieldName, $properties);
-
-            case 'date':
-                return $this->renderDatePicker($fieldName, $properties);
-
-            case 'number':
-                return $this->renderNumberInput($fieldName, $properties);
-
-            case 'password':
-                return $this->renderPasswordInput($fieldName, $properties);
-
-            case 'file':
-                return $this->renderFileInput($fieldName, $properties);
-
-            default:
-                return '<div class="text-red-500">Unsupported element type: '.$element['type'].'</div>';
-        }
+        return match ($element['type']) {
+            'text', 'email' => $this->renderTextInput($fieldName, $properties, $element['type']),
+            'textarea' => $this->renderTextarea($fieldName, $properties),
+            'select' => $this->renderSelect($fieldName, $properties),
+            'checkbox' => $this->renderCheckbox($fieldName, $properties),
+            'radio' => $this->renderRadio($fieldName, $properties),
+            'date' => $this->renderDatePicker($fieldName, $properties),
+            'number' => $this->renderNumberInput($fieldName, $properties),
+            'password' => $this->renderPasswordInput($fieldName, $properties),
+            'file' => $this->renderFileInput($fieldName, $properties),
+            default => '<div class="text-red-500">Unsupported element type: '.$element['type'].'</div>',
+        };
     }
 
     private function renderTextInput(string $fieldName, array $properties, string $type): string

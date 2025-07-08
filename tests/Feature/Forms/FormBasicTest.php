@@ -5,8 +5,8 @@ declare(strict_types=1);
 use App\Models\Form;
 use App\Models\User;
 
-describe('Form Basic Tests', function () {
-    it('can create a form', function () {
+describe('Form Basic Tests', function (): void {
+    it('can create a form', function (): void {
         $user = User::factory()->create();
         $form = Form::factory()->for($user)->create();
 
@@ -14,7 +14,7 @@ describe('Form Basic Tests', function () {
             ->and($form->user_id)->toBe($user->id);
     });
 
-    it('can access form relationships', function () {
+    it('can access form relationships', function (): void {
         $user = User::factory()->create();
         $form = Form::factory()->for($user)->create();
 
@@ -22,7 +22,7 @@ describe('Form Basic Tests', function () {
             ->and($form->user->id)->toBe($user->id);
     });
 
-    it('can check draft status', function () {
+    it('can check draft status', function (): void {
         $form = Form::factory()->create();
 
         expect($form->hasDraftChanges())->toBeFalse();

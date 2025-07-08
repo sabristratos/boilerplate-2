@@ -1,11 +1,11 @@
 <div>
     <div class="mt-4">
         {{-- Current Media Preview --}}
-        @if($mediaUrl)
+        @if($currentMedia)
             <div class="mb-4">
                 <div class="relative w-full">
                     <div class="w-full aspect-video overflow-hidden rounded-md border border-zinc-200 dark:border-zinc-700">
-                        <img src="{{ $mediaUrl }}" alt="{{ $model->name ?? 'Media' }}" class="w-full h-full object-cover object-center">
+                        <img src="{{ $currentMedia->getUrl() }}" alt="{{ $currentMedia->name }}" class="w-full h-full object-cover object-center">
                     </div>
                     <div class="absolute top-2 right-2">
                         <flux:button wire:click="remove" variant="danger" size="xs" icon="trash">
@@ -105,9 +105,9 @@
                     </flux:callout>
                 </div>
 
-                @if($existingMedia->count() > 0)
+                @if($availableMedia->count() > 0)
                     <flux:checkbox.group :label="__('labels.select_media')" variant="cards" class="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        @foreach($existingMedia as $item)
+                        @foreach($availableMedia as $item)
                             <flux:checkbox wire:click="toggleMediaSelection({{ $item->id }})" value="{{ $item->id }}" :checked="in_array($item->id, $selectedMediaIds)" class="relative">
                                 <div class="absolute top-2 left-2 z-10">
                                     <flux:checkbox.indicator />
@@ -129,7 +129,7 @@
                     </flux:checkbox.group>
 
                     <div class="mt-6">
-                        {{ $existingMedia->links() }}
+                        {{ $availableMedia->links() }}
                     </div>
                 @else
                     <div class="mt-4 text-center py-8">

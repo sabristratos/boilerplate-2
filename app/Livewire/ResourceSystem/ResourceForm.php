@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\ResourceSystem;
 
 use App\Services\ResourceSystem\Resource;
@@ -9,50 +11,77 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
 
+/**
+ * Livewire component for resource forms.
+ *
+ * This component provides form functionality for creating and editing
+ * resources with support for validation, media handling, and revisions.
+ * It uses services for business logic and DTOs for data handling.
+ */
 class ResourceForm extends Component
 {
     use WithToastNotifications;
 
     /**
      * The resource class.
-     *
-     * @var string
      */
-    public $resource;
+    public string $resourceClass;
+
+    /**
+     * The resource instance.
+     */
+    protected ?Resource $resourceInstance = null;
 
     /**
      * The resource ID.
-     *
-     * @var int|null
      */
-    public $resourceId;
+    public ?int $resourceId = null;
 
     /**
      * The form data.
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    public $data = [];
+    public array $data = [];
 
     /**
      * Mount the component.
      */
-    public function mount(Resource $resource, ?int $resourceId = null): void
+    public function mount(): void
     {
-        $this->resource = $resource::class;
-        $this->resourceId = $resourceId;
+        // The resource and resourceId are passed as public properties from the view
+        if (empty($this->resourceClass)) {
+            throw new \RuntimeException('Resource class not provided to component.');
+        }
+
+        // Create the resource instance if not already set
+        if ($this->resourceInstance === null) {
+            $this->resourceInstance = new $this->resourceClass;
+        }
+
+        // Clear any existing temporary media for new resource creation
+        if (!$this->resourceId) {
+            $this->clearTemporaryMedia();
+        }
 
         $this->loadData();
     }
 
     /**
      * Get the resource instance.
-     *
-     * @return \App\Services\ResourceSystem\Resource
      */
-    public function getResourceInstance()
+    public function getResourceInstance(): Resource
     {
-        return $this->resource::make();
+        if ($this->resourceInstance === null) {
+            // Try to initialize the resource instance if it's not set
+            if (!empty($this->resourceClass)) {
+                $this->resourceInstance = new $this->resourceClass;
+            } else {
+                throw new \RuntimeException('Resource instance not initialized. Make sure the component is properly mounted.');
+            }
+        }
+        
+        return $this->resourceInstance;
     }
 
     /**
@@ -60,11 +89,16 @@ class ResourceForm extends Component
      */
     public function getModelInstance(): ?Model
     {
-        if (! $this->resourceId) {
-            return $this->resource::newModel();
+        if (empty($this->resourceClass)) {
+            throw new \RuntimeException('Resource class not initialized. Make sure the component is properly mounted.');
         }
 
-        $model = $this->resource::$model;
+        if (!$this->resourceId) {
+            $model = $this->resourceClass::$model;
+            return new $model();
+        }
+
+        $model = $this->resourceClass::$model;
 
         return $model::findOrFail($this->resourceId);
     }
@@ -86,11 +120,7 @@ class ResourceForm extends Component
                 } elseif ($hasRevisions) {
                     // Load from latest revision if available
                     $latestRevision = $model->latestRevision();
-                    if ($latestRevision && isset($latestRevision->data[$name])) {
-                        $value = $latestRevision->data[$name];
-                    } else {
-                        $value = $model->{$name};
-                    }
+                    $value = $latestRevision && isset($latestRevision->data[$name]) ? $latestRevision->data[$name] : $model->{$name};
                 } else {
                     $value = $model->{$name};
                 }
@@ -110,12 +140,8 @@ class ResourceForm extends Component
         $model = $this->getModelInstance();
         $hasRevisions = method_exists($model, 'createRevision');
 
-        if (! $hasRevisions || ! $model->exists) {
-            $this->showErrorToast(
-                __('messages.errors.generic'),
-                __('messages.errors.generic')
-            );
-
+        if (!$hasRevisions || !$model->exists) {
+            $this->showErrorToast(__('messages.errors.generic'));
             return;
         }
 
@@ -129,19 +155,22 @@ class ResourceForm extends Component
             DB::commit();
 
             $this->showSuccessToast(
-                __('messages.resource.published', ['Resource' => $this->getResourceInstance()::singularLabel()]),
-                __('messages.success.generic')
+                __('messages.resource.published', ['Resource' => $this->getResourceInstance()::singularLabel()])
             );
 
             // Redirect to resource index after success
-            $this->redirectRoute('admin.'.$this->getResourceInstance()::uriKey().'.index', navigate: true);
+            $this->redirectRoute('admin.resources.'.$this->getResourceInstance()::uriKey().'.index', navigate: true);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->showErrorToast(
-                $e->getMessage(),
-                __('messages.errors.generic')
-            );
+            
+            logger()->error('Failed to publish resource', [
+                'resource_id' => $this->resourceId,
+                'resource_class' => $this->resource,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->showErrorToast($e->getMessage());
         }
     }
 
@@ -164,12 +193,12 @@ class ResourceForm extends Component
     {
         $model = $this->getModelInstance();
 
-        if (! $this->supportsRevisions() || ! $model->exists) {
+        if (!$this->supportsRevisions() || !$model->exists) {
             return false;
         }
 
         $latestRevision = $model->latestRevision();
-        if (! $latestRevision) {
+        if (!$latestRevision) {
             return false;
         }
 
@@ -183,6 +212,8 @@ class ResourceForm extends Component
 
     /**
      * Get the validation rules.
+     *
+     * @return array<string, array<string>>
      */
     public function rules(): array
     {
@@ -198,6 +229,8 @@ class ResourceForm extends Component
 
     /**
      * Get the validation attributes.
+     *
+     * @return array<string, string>
      */
     public function validationAttributes(): array
     {
@@ -216,122 +249,184 @@ class ResourceForm extends Component
      */
     public function save(): void
     {
-        if (isset($this->data['roles']) && ! is_array($this->data['roles'])) {
-            $this->data['roles'] = [];
-        }
-
         $this->validate();
 
         DB::beginTransaction();
 
         try {
             $model = $this->getModelInstance();
-            $isNew = ! $model->exists;
+            $fields = $this->getResourceInstance()->fields();
             $hasRevisions = method_exists($model, 'createRevision');
 
-            $data = collect($this->data)->except(['avatar', 'roles']);
+            // Prepare data for saving
+            $saveData = [];
+            foreach ($fields as $field) {
+                $name = $field->getName();
+                
+                // Skip special fields that are handled separately
+                if (in_array($name, ['avatar', 'roles'])) {
+                    continue;
+                }
 
-            // Only update password if it's not empty
-            if (empty($data['password'])) {
-                unset($data['password']);
+                $value = $this->data[$name] ?? null;
+                
+                // Apply field transformations
+                if (method_exists($field, 'transformValue')) {
+                    $value = $field->transformValue($value);
+                }
+
+                $saveData[$name] = $value;
             }
 
-            if ($hasRevisions) {
-                // Use revision system for models that support it
-                if ($isNew) {
-                    // For new models, save first to get an ID, then create a published revision
-                    foreach ($data as $key => $value) {
-                        $model->{$key} = $value;
-                    }
-                    $model->save();
-
-                    // Update the resourceId so subsequent calls work correctly
-                    $this->resourceId = $model->id;
-
-                    // Create initial published revision
-                    $model->createManualRevision('create', 'Initial creation', $data->toArray(), true);
-                } else {
-                    // For existing models, create a draft revision
-                    $model->createManualRevision('update', 'Resource updated', $data->toArray(), false);
-                }
+            // Save the model
+            if ($model->exists) {
+                $model->update($saveData);
             } else {
-                // Fallback to direct model updates for non-revision models
-                foreach ($data as $key => $value) {
-                    $model->{$key} = $value;
-                }
+                $model->fill($saveData);
                 $model->save();
             }
 
-            if (isset($this->data['roles'])) {
-                $model->syncRoles($this->data['roles']);
-            }
+            // Handle special fields
+            $this->handleSpecialFields($model);
 
-            // Handle media reattachment after model is saved
+            // Handle media reattachment if needed
             $this->handleMediaReattachment($model);
+
+            // Create revision if supported
+            if ($hasRevisions && $model->exists) {
+                $revisionData = collect($this->data)->except(['avatar', 'roles']);
+                $model->createManualRevision('update', 'Resource updated', $revisionData->toArray(), false);
+            }
 
             DB::commit();
 
-            // Clear password field from data after successful save
-            if (isset($this->data['password'])) {
-                $this->data['password'] = '';
-            }
-
             $this->showSuccessToast(
-                $isNew
-                    ? __('messages.resource.created', ['Resource' => $this->getResourceInstance()::singularLabel()])
-                    : __('messages.resource.updated', ['Resource' => $this->getResourceInstance()::singularLabel()]),
-                __('messages.success.generic')
+                __('messages.resource.saved', ['Resource' => $this->getResourceInstance()::singularLabel()])
             );
 
             // Redirect to resource index after success
-            $this->redirectRoute('admin.'.$this->getResourceInstance()::uriKey().'.index', navigate: true);
+            $this->redirectRoute('admin.resources.'.$this->getResourceInstance()::uriKey().'.index', navigate: true);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->showErrorToast(
-                $e->getMessage(),
-                __('messages.errors.generic')
-            );
+            
+            logger()->error('Failed to save resource', [
+                'resource_id' => $this->resourceId,
+                'resource_class' => $this->resourceClass,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $this->showErrorToast($e->getMessage());
         }
     }
 
     /**
-     * Handle media reattachment after model is saved.
+     * Handle special fields like roles.
      */
-    protected function handleMediaReattachment($model): void
+    protected function handleSpecialFields(Model $model): void
     {
-        // Get all temporary media for this session and model type
-        $sessionId = session()->getId();
-        $modelType = get_class($model);
+        // Handle roles
+        if (isset($this->data['roles']) && method_exists($model, 'syncRoles')) {
+            $model->syncRoles($this->data['roles']);
+        }
+    }
 
-        $temporaryMediaRecords = \App\Models\TemporaryMedia::where('session_id', $sessionId)
-            ->where('model_type', $modelType)
-            ->get();
+    /**
+     * Clear temporary media for all media fields in the resource.
+     */
+    protected function clearTemporaryMedia(): void
+    {
+        try {
+            $fields = $this->getResourceInstance()->fields();
+            $sessionId = session()->getId();
+            
+            foreach ($fields as $field) {
+                if ($field instanceof \App\Services\ResourceSystem\Fields\Media) {
+                    $fieldName = $field->getName();
+                    \App\Models\TemporaryMedia::clearForSession($sessionId, $fieldName);
+                }
+            }
+        } catch (\Exception $e) {
+            logger()->error('Failed to clear temporary media', [
+                'error' => $e->getMessage(),
+                'session_id' => session()->getId(),
+                'resource_class' => $this->resourceClass,
+            ]);
+        }
+    }
 
-        foreach ($temporaryMediaRecords as $tempMedia) {
-            $media = $tempMedia->getFirstMedia('temp');
+    /**
+     * Handle media reattachment for temporary media.
+     */
+    protected function handleMediaReattachment(Model $model): void
+    {
+        // Handle avatar/media fields that might have temporary media
+        if (method_exists($model, 'getFirstMedia')) {
+            $fields = $this->getResourceInstance()->fields();
+            
+            foreach ($fields as $field) {
+                if ($field instanceof \App\Services\ResourceSystem\Fields\Media) {
+                    $fieldName = $field->getName();
+                    
+                    // Check if there's temporary media to reattach
+                    $temporaryMedia = \App\Models\TemporaryMedia::getForSession(
+                        session()->getId(),
+                        $fieldName
+                    );
 
-            if ($media) {
-                // Copy the media to the actual model
-                $media->copy($model, $tempMedia->collection_name);
-
-                // Delete the temporary media record and its media
-                $tempMedia->delete();
+                    if ($temporaryMedia && $temporaryMedia->getFirstMedia('temp')) {
+                        // Clear existing media and copy from temporary
+                        $model->clearMediaCollection($fieldName);
+                        $temporaryMedia->getFirstMedia('temp')->copy($model, $fieldName);
+                        
+                        // Clean up temporary media
+                        $temporaryMedia->delete();
+                    }
+                }
             }
         }
+    }
+
+    /**
+     * Get form fields for the resource.
+     */
+    public function getFormFields(): array
+    {
+        return $this->getResourceInstance()->fields();
+    }
+
+    /**
+     * Get resource title for the page.
+     */
+    public function getResourceTitle(): string
+    {
+        $resourceInstance = $this->getResourceInstance();
+        
+        if ($this->resourceId) {
+            return __('messages.resource.edit_title', [
+                'Resource' => $resourceInstance::singularLabel()
+            ]);
+        }
+
+        return __('messages.resource.create_title', [
+            'Resource' => $resourceInstance::singularLabel()
+        ]);
     }
 
     /**
      * Render the component.
-     *
-     * @return \Illuminate\View\View
      */
     public function render()
     {
+        $resourceInstance = $this->getResourceInstance();
+        $fields = $resourceInstance->fields();
+        $model = $this->getModelInstance();
+
         return view('livewire.resource-system.resource-form', [
-            'resource' => $this->getResourceInstance(),
-            'model' => $this->getModelInstance(),
-            'fields' => $this->getResourceInstance()->fields(),
-        ]);
+            'fields' => $fields,
+            'model' => $model,
+            'resourceInstance' => $resourceInstance,
+        ])->title($this->getResourceTitle());
     }
 }

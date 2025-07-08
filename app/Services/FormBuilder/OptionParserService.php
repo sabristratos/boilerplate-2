@@ -12,7 +12,7 @@ class OptionParserService
      */
     public function parseOptions(string $options): array
     {
-        if (empty($options)) {
+        if ($options === '' || $options === '0') {
             return [];
         }
 
@@ -21,7 +21,7 @@ class OptionParserService
 
         foreach ($lines as $line) {
             $line = trim($line);
-            if (empty($line)) {
+            if ($line === '' || $line === '0') {
                 continue;
             }
 
@@ -50,7 +50,7 @@ class OptionParserService
         $parsedOptions = $this->parseOptions($options);
 
         // If no options were parsed, return at least one empty option
-        if (empty($parsedOptions)) {
+        if ($parsedOptions === []) {
             return [
                 [
                     'value' => '',

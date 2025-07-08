@@ -15,11 +15,9 @@ class UpdateBlockOrderAction
         $pageBlockIds = $page->contentBlocks()->pluck('id')->toArray();
 
         // Filter the sort order to only include blocks that belong to this page
-        $filteredSortOrder = array_filter($sortOrder, function ($id) use ($pageBlockIds) {
-            return in_array((int) $id, $pageBlockIds);
-        });
+        $filteredSortOrder = array_filter($sortOrder, fn($id): bool => in_array((int) $id, $pageBlockIds));
 
-        if (! empty($filteredSortOrder)) {
+        if ($filteredSortOrder !== []) {
             ContentBlock::setNewOrder($filteredSortOrder);
         }
     }

@@ -38,7 +38,7 @@ class RevisionService
 
         return DB::transaction(function () use ($model, $action, $description, $metadata, $revisionData, $is_published) {
             $revision = Revision::create([
-                'revisionable_type' => get_class($model),
+                'revisionable_type' => $model::class,
                 'revisionable_id' => $model->id,
                 'user_id' => Auth::id() ?: null,
                 'action' => $action,
@@ -137,7 +137,7 @@ class RevisionService
     {
         $query = $model->revisions();
 
-        if ($limit) {
+        if ($limit !== null && $limit !== 0) {
             $query->limit($limit);
         }
 

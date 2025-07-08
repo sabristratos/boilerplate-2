@@ -14,12 +14,12 @@ class SidebarSearch extends Component
 
     public Collection $searchResults;
 
-    public function mount()
+    public function mount(): void
     {
         $this->searchResults = collect();
     }
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         if (strlen($this->search) < 2) {
             $this->searchResults = collect();
@@ -40,7 +40,7 @@ class SidebarSearch extends Component
         // Navigation items
         $navigationItems = $this->getNavigationItems();
         foreach ($navigationItems as $item) {
-            if (str_contains(strtolower($item['label']), $searchTerm) ||
+            if (str_contains(strtolower((string) $item['label']), $searchTerm) ||
                 str_contains(strtolower($item['description'] ?? ''), $searchTerm)) {
                 $results->push($item);
             }
@@ -160,7 +160,7 @@ class SidebarSearch extends Component
         ];
     }
 
-    public function selectItem($index)
+    public function selectItem($index): void
     {
         if ($this->searchResults->has($index)) {
             $item = $this->searchResults->get($index);
@@ -177,7 +177,7 @@ class SidebarSearch extends Component
         }
     }
 
-    public function clearSearch()
+    public function clearSearch(): void
     {
         $this->search = '';
         $this->searchResults = collect();

@@ -90,49 +90,41 @@
                             {{ $form->submissions()->count() }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <flux:badge color="green" size="sm">
-                                {{ $form->status ?? __('labels.draft') }}
+                            @php
+                                $formStatus = $this->getFormStatusForForm($form);
+                            @endphp
+                            <flux:badge :color="$formStatus->getColor()" size="sm" :icon="$formStatus->getIcon()">
+                                {{ $formStatus->label() }}
                             </flux:badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-zinc-500 dark:text-zinc-400">
                             {{ $form->created_at->format('M j, Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <flux:button
-                                href="{{ route('admin.forms.edit', $form) }}"
-                                variant="ghost"
-                                size="xs"
-                                icon="pencil-square"
-                                square
-                                :tooltip="__('buttons.edit')"
-                                wire:navigate
-                            />
-                            <flux:button
-                                href="{{ route('admin.forms.submissions', $form) }}"
-                                variant="ghost"
-                                size="xs"
-                                icon="document-text"
-                                square
-                                :tooltip="__('messages.forms.tooltips.submissions')"
-                                wire:navigate
-                            />
-                            <flux:button
-                                wire:click="duplicateForm({{ $form->id }})"
-                                variant="ghost"
-                                size="xs"
-                                icon="document-duplicate"
-                                square
-                                :tooltip="__('buttons.duplicate')"
-                            />
-                            <x-revision-link :model="$form" model-type="form" />
-                            <flux:button
-                                href="#"
-                                variant="ghost"
-                                size="xs"
-                                icon="eye"
-                                square
-                                :tooltip="__('buttons.view')"
-                            />
+                            <flux:dropdown position="bottom" align="end">
+                                <flux:button icon:trailing="chevron-down" variant="ghost" size="xs" square :tooltip="__('buttons.actions')" />
+                                <flux:menu>
+                                    <flux:menu.item icon="pencil-square" href="{{ route('admin.forms.edit', $form) }}">
+                                        {{ __('buttons.edit') }}
+                                    </flux:menu.item>
+                                    <flux:menu.item icon="document-text" href="{{ route('admin.forms.submissions', $form) }}">
+                                        {{ __('messages.forms.tooltips.submissions') }}
+                                    </flux:menu.item>
+                                    <flux:menu.item icon="document-duplicate" wire:click.prevent="duplicateForm({{ $form->id }})">
+                                        {{ __('buttons.duplicate') }}
+                                    </flux:menu.item>
+                                    <flux:menu.item>
+                                        <x-revision-link :model="$form" model-type="form" />
+                                    </flux:menu.item>
+                                    <flux:menu.item icon="eye" href="#">
+                                        {{ __('buttons.view') }}
+                                    </flux:menu.item>
+                                    <flux:menu.separator />
+                                    <flux:menu.item icon="trash" variant="danger" wire:click.prevent="confirmDelete({{ $form->id }})">
+                                        {{ __('buttons.delete') }}
+                                    </flux:menu.item>
+                                </flux:menu>
+                            </flux:dropdown>
                         </td>
                     </tr>
                 @empty

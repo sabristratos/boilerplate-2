@@ -16,22 +16,16 @@ namespace App\Services\FormBuilder;
  */
 class ElementDTO
 {
-    /** @var string */
     public string $id;
 
-    /** @var string */
     public string $type;
 
-    /** @var int */
     public int $order;
 
-    /** @var array */
     public array $properties;
 
-    /** @var array */
     public array $styles;
 
-    /** @var array */
     public array $validation;
 
     /**
@@ -62,7 +56,6 @@ class ElementDTO
      * Fill the DTO with new data.
      *
      * @param array $data The new data to fill
-     * @return void
      */
     public function fill(array $data): void
     {

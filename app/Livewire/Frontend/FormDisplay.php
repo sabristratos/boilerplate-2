@@ -6,7 +6,7 @@ use App\Models\Form;
 use App\DTOs\FormDTO;
 use App\DTOs\DTOFactory;
 use App\Services\FormBuilder\ElementFactory;
-use App\Services\FormService;
+use App\Services\Contracts\FormServiceInterface;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -14,7 +14,7 @@ class FormDisplay extends Component
 {
     use WithFileUploads;
 
-    public $form = null;
+    public $form;
 
     public array $formData = [];
 
@@ -23,16 +23,12 @@ class FormDisplay extends Component
     public string $successMessage = '';
 
     private ElementFactory $elementFactory;
-    private FormService $formService;
+    private FormServiceInterface $formService;
 
     /**
      * Boot the component with dependencies.
-     *
-     * @param ElementFactory $elementFactory
-     * @param FormService $formService
-     * @return void
      */
-    public function boot(ElementFactory $elementFactory, FormService $formService)
+    public function boot(ElementFactory $elementFactory, FormServiceInterface $formService): void
     {
         $this->elementFactory = $elementFactory;
         $this->formService = $formService;
@@ -42,9 +38,8 @@ class FormDisplay extends Component
      * Mount the component with the given form or form ID.
      *
      * @param mixed $form
-     * @return void
      */
-    public function mount($form = null)
+    public function mount($form = null): void
     {
         // Handle both Form object and form ID
         if (is_numeric($form) || (is_string($form) && ctype_digit($form))) {
@@ -73,7 +68,7 @@ class FormDisplay extends Component
         }
     }
 
-    private function initializeFormData()
+    private function initializeFormData(): void
     {
         $this->formData = [];
 
@@ -85,7 +80,7 @@ class FormDisplay extends Component
         }
     }
 
-    private function generateFieldName($element): string
+    private function generateFieldName(array $element): string
     {
         $fieldNameGenerator = app(\App\Services\FormBuilder\FieldNameGeneratorService::class);
 
@@ -94,10 +89,8 @@ class FormDisplay extends Component
 
     /**
      * Submit the form and handle validation and submission logic.
-     *
-     * @return void
      */
-    public function submit()
+    public function submit(): void
     {
         if (! $this->form) {
             $this->addError('general', __('forms.errors.form_not_found'));
@@ -111,7 +104,7 @@ class FormDisplay extends Component
             // Validate form data using the service
             $validationErrors = $this->formService->validateFormData($formDto, $this->formData);
             
-            if (!empty($validationErrors)) {
+            if ($validationErrors !== []) {
                 foreach ($validationErrors as $field => $message) {
                     $this->addError($field, $message);
                 }

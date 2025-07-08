@@ -52,7 +52,7 @@ class SyncTranslationsFromCode extends Command
 
         $translationKeys = $this->findTranslationKeys();
 
-        if (empty($translationKeys)) {
+        if ($translationKeys === []) {
             $this->info('No translation keys found in the codebase.');
 
             return self::SUCCESS;
@@ -72,7 +72,7 @@ class SyncTranslationsFromCode extends Command
             $this->info('Dry run completed. No files were modified.');
         } else {
             $this->info('Translation key sync completed successfully.');
-            if (! empty($this->modifiedFiles)) {
+            if ($this->modifiedFiles !== []) {
                 $this->info('Modified files: '.implode(', ', $this->modifiedFiles));
             }
         }
@@ -190,7 +190,7 @@ class SyncTranslationsFromCode extends Command
             return $this->disk->allFiles($path);
         });
 
-        return $files->filter(function (SplFileInfo $file) use ($excludePaths) {
+        return $files->filter(function (SplFileInfo $file) use ($excludePaths): bool {
             // Check file extension
             if (! in_array($file->getExtension(), ['php', 'blade.php', 'js', 'vue'])) {
                 return false;
@@ -241,7 +241,7 @@ class SyncTranslationsFromCode extends Command
                 continue;
             }
 
-            $parts = explode('.', $key);
+            $parts = explode('.', (string) $key);
             $group = $parts[0];
             $translationKey = implode('.', array_slice($parts, 1));
 
@@ -279,7 +279,7 @@ class SyncTranslationsFromCode extends Command
         $addedKeys = false;
         $missingKeys = [];
 
-        foreach ($keys as $fullKey => $translationKey) {
+        foreach ($keys as $translationKey) {
             if (! Arr::has($existingTranslations, $translationKey)) {
                 $missingKeys[] = $translationKey;
                 Arr::set($existingTranslations, $translationKey, $this->generatePlaceholderValue($translationKey, $locale));

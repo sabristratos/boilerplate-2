@@ -2,17 +2,18 @@
 
 declare(strict_types=1);
 
+use App\Enums\FormElementType;
 use App\Models\Form;
 use App\Models\FormSubmission;
 use App\Models\User;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->form = Form::factory()->for($this->user)->create();
 });
 
-describe('Form Model', function () {
-    it('can be created with basic attributes', function () {
+describe('Form Model', function (): void {
+    it('can be created with basic attributes', function (): void {
         expect($this->form)
             ->toBeInstanceOf(Form::class)
             ->and($this->form->user_id)->toBe($this->user->id)
@@ -21,7 +22,7 @@ describe('Form Model', function () {
             ->and($this->form->elements)->toBeNull();
     });
 
-    it('has proper relationships', function () {
+    it('has proper relationships', function (): void {
         expect($this->form->user)->toBeInstanceOf(User::class)
             ->and($this->form->user->id)->toBe($this->user->id);
 
@@ -31,7 +32,7 @@ describe('Form Model', function () {
             ->and($this->form->submissions->first())->toBeInstanceOf(FormSubmission::class);
     });
 
-    it('supports translatable name field', function () {
+    it('supports translatable name field', function (): void {
         $this->form->setTranslation('name', 'en', 'Contact Form');
         $this->form->setTranslation('name', 'fr', 'Formulaire de Contact');
         $this->form->save();
@@ -41,14 +42,14 @@ describe('Form Model', function () {
     });
 });
 
-describe('Form Factory', function () {
-    it('can create forms with different states', function () {
+describe('Form Factory', function (): void {
+    it('can create forms with different states', function (): void {
         $formWithElements = Form::factory()->create([
-            'elements' => [['type' => 'text', 'id' => '1']],
+            'elements' => [['type' => FormElementType::TEXT->value, 'id' => '1']],
             'settings' => ['backgroundColor' => '#fff'],
         ]);
 
-        expect($formWithElements->elements)->toBe([['type' => 'text', 'id' => '1']])
+        expect($formWithElements->elements)->toBe([['type' => FormElementType::TEXT->value, 'id' => '1']])
             ->and($formWithElements->settings)->toBe(['backgroundColor' => '#fff']);
     });
 });

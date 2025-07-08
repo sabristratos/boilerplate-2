@@ -76,8 +76,11 @@
                                     class="h-full w-full object-cover object-center"
                                 >
                             @else
+                                @php
+                                    $mediaType = $this->getMediaTypeForMime($item->mime_type);
+                                @endphp
                                 <div class="flex h-full w-full items-center justify-center">
-                                    <flux:icon name="{{ $this->getIconForMimeType($item->mime_type) }}" class="h-16 w-16 text-gray-400" />
+                                    <flux:icon name="{{ $mediaType->getIcon() }}" class="h-16 w-16 text-{{ $mediaType->getColor() }}-400" />
                                 </div>
                             @endif
                         </div>

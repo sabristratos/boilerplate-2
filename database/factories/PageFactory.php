@@ -18,7 +18,7 @@ class PageFactory extends Factory
      */
     public function definition(): array
     {
-        $title = $this->faker->sentence(3);
+        $title = fake()->sentence(3);
 
         return [
             'title' => [
@@ -27,10 +27,10 @@ class PageFactory extends Factory
             'slug' => Str::slug($title),
             'status' => PublishStatus::DRAFT,
             'meta_title' => [
-                'en' => $this->faker->sentence(5),
+                'en' => fake()->sentence(5),
             ],
             'meta_description' => [
-                'en' => $this->faker->sentence(10),
+                'en' => fake()->sentence(10),
             ],
             'no_index' => false,
         ];
@@ -41,7 +41,7 @@ class PageFactory extends Factory
      */
     public function published(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'status' => PublishStatus::PUBLISHED,
         ]);
     }
@@ -51,7 +51,7 @@ class PageFactory extends Factory
      */
     public function noIndex(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'no_index' => true,
         ]);
     }

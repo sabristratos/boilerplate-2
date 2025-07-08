@@ -37,7 +37,7 @@ class ImportExport extends Component
 
     protected ResourceManager $resourceManager;
 
-    public function boot(ImportExportService $importExportService, ResourceManager $resourceManager)
+    public function boot(ImportExportService $importExportService, ResourceManager $resourceManager): void
     {
         $this->importExportService = $importExportService;
         $this->resourceManager = $resourceManager;
@@ -61,7 +61,7 @@ class ImportExport extends Component
         }
     }
 
-    public function getResourcesProperty()
+    public function getResourcesProperty(): array
     {
         return $this->resourceManager->getResourcesWithInstances();
     }
@@ -72,30 +72,24 @@ class ImportExport extends Component
             $resource = new $this->selectedResource;
             $model = $resource::$model;
 
-            return $model::all()->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'name' => $item->name ?? $item->email ?? $item->title ?? "ID: {$item->id}",
-                ];
-            })->toArray();
+            return $model::all()->map(fn($item): array => [
+                'id' => $item->id,
+                'name' => $item->name ?? $item->email ?? $item->title ?? "ID: {$item->id}",
+            ])->toArray();
         }
 
         if ($this->selectedType === 'pages') {
-            return \App\Models\Page::all()->map(function ($page) {
-                return [
-                    'id' => $page->id,
-                    'name' => $page->getTranslation('title', app()->getLocale()) ?? $page->slug,
-                ];
-            })->toArray();
+            return \App\Models\Page::all()->map(fn($page): array => [
+                'id' => $page->id,
+                'name' => $page->getTranslation('title', app()->getLocale()) ?? $page->slug,
+            ])->toArray();
         }
 
         if ($this->selectedType === 'forms') {
-            return \App\Models\Form::all()->map(function ($form) {
-                return [
-                    'id' => $form->id,
-                    'name' => $form->getTranslation('name', app()->getLocale()) ?? "Form ID: {$form->id}",
-                ];
-            })->toArray();
+            return \App\Models\Form::all()->map(fn($form): array => [
+                'id' => $form->id,
+                'name' => $form->getTranslation('name', app()->getLocale()) ?? "Form ID: {$form->id}",
+            ])->toArray();
         }
 
         return [];
@@ -118,7 +112,7 @@ class ImportExport extends Component
             if (empty($exportData['data'])) {
                 $this->showErrorToast('No data to export', 'Export failed');
 
-                return;
+                return null;
             }
 
             // Create ZIP file if media is included
@@ -130,7 +124,7 @@ class ImportExport extends Component
                 // Return JSON file
                 $filename = "export_{$this->selectedType}_".now()->format('Y-m-d_H-i-s').'.json';
 
-                return response()->streamDownload(function () use ($exportData) {
+                return response()->streamDownload(function () use ($exportData): void {
                     echo json_encode($exportData, JSON_PRETTY_PRINT);
                 }, $filename, [
                     'Content-Type' => 'application/json',
@@ -140,9 +134,10 @@ class ImportExport extends Component
         } catch (\Exception $e) {
             $this->showErrorToast($e->getMessage(), 'Export failed');
         }
+        return null;
     }
 
-    public function import()
+    public function import(): void
     {
         $this->validate([
             'importFile' => 'required|file|mimes:zip,json|max:10240', // 10MB max
@@ -158,7 +153,7 @@ class ImportExport extends Component
                 $data = $extracted['data'];
                 $tempDir = $extracted['temp_dir'];
             } else {
-                $data = json_decode($this->importFile->get(), true);
+                $data = json_decode((string) $this->importFile->get(), true);
             }
 
             if (! $data) {
@@ -202,23 +197,23 @@ class ImportExport extends Component
         }
     }
 
-    public function updatedSelectedType()
+    public function updatedSelectedType(): void
     {
         $this->selectedResource = '';
         $this->selectedIds = [];
     }
 
-    public function updatedSelectedResource()
+    public function updatedSelectedResource(): void
     {
         $this->selectedIds = [];
     }
 
-    public function selectAll()
+    public function selectAll(): void
     {
         $this->selectedIds = collect($this->resourceData)->pluck('id')->toArray();
     }
 
-    public function deselectAll()
+    public function deselectAll(): void
     {
         $this->selectedIds = [];
     }

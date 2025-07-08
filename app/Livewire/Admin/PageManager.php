@@ -126,7 +126,7 @@ class PageManager extends Component
         $requestedLocale = request()->query('locale', config('app.fallback_locale'));
 
         // Validate locale format (2-3 character language code)
-        if (! preg_match('/^[a-z]{2,3}$/', $requestedLocale)) {
+        if (in_array(preg_match('/^[a-z]{2,3}$/', $requestedLocale), [0, false], true)) {
             $requestedLocale = config('app.fallback_locale');
         }
 
@@ -145,7 +145,7 @@ class PageManager extends Component
     {
         $latestRevision = $this->page->latestRevision();
 
-        if ($latestRevision) {
+        if ($latestRevision instanceof \App\Models\Revision) {
             $data = $latestRevision->data;
             $this->title = is_array($data['title'] ?? null)
                 ? $data['title']
@@ -223,7 +223,7 @@ class PageManager extends Component
             $this->pageService->updatePage($this->page, $pageDTO, 'draft', 'Saved page draft');
 
             $this->showSuccessToast('Draft saved successfully.');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast('Failed to save draft.');
         }
     }
@@ -247,7 +247,7 @@ class PageManager extends Component
             $this->pageService->updatePage($this->page, $pageDTO, 'publish', 'Published page', true);
 
             $this->showSuccessToast('Page published successfully.');
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast('Failed to publish page.');
         }
     }

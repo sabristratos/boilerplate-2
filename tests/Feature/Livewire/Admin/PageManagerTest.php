@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Config;
 use Livewire\Livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     // Create all page permissions
     $permissions = [
         'pages.view',
@@ -52,8 +52,8 @@ beforeEach(function () {
     ]);
 });
 
-describe('PageManager Component', function () {
-    it('can mount with a page', function () {
+describe('PageManager Component', function (): void {
+    it('can mount with a page', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->assertSet('page.id', $this->page->id)
@@ -61,7 +61,7 @@ describe('PageManager Component', function () {
             ->assertSet('availableLocales', ['en' => 'English', 'fr' => 'French']);
     });
 
-    it('loads page translations from the latest revision', function () {
+    it('loads page translations from the latest revision', function (): void {
         // Create a draft revision
         $this->page->createManualRevision('draft', 'Initial draft', [], false);
         $this->page->title = ['en' => 'Updated Title'];
@@ -72,7 +72,7 @@ describe('PageManager Component', function () {
             ->assertSet('title.en', 'Updated Title');
     });
 
-    it('can save page details as a draft revision', function () {
+    it('can save page details as a draft revision', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->set('title.en', 'New Draft Title')
@@ -85,7 +85,7 @@ describe('PageManager Component', function () {
             ->and($latestRevision->data['title']['en'])->toBe('New Draft Title');
     });
 
-    it('can publish a page', function () {
+    it('can publish a page', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->set('title.en', 'Published Title')
@@ -101,7 +101,7 @@ describe('PageManager Component', function () {
         expect($this->page->getTranslation('title', 'en'))->toBe('Published Title');
     });
 
-    it('can generate slug from title for current locale', function () {
+    it('can generate slug from title for current locale', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->set('title.en', 'New Test Page Title')
@@ -109,7 +109,7 @@ describe('PageManager Component', function () {
             ->assertSet('slug', 'new-test-page-title');
     });
 
-    it('handles locale switching correctly', function () {
+    it('handles locale switching correctly', function (): void {
         $page = Page::factory()->create([
             'title' => ['en' => 'English Title', 'fr' => 'French Title'],
             'meta_title' => ['en' => 'English Meta', 'fr' => 'French Meta'],
@@ -121,7 +121,7 @@ describe('PageManager Component', function () {
             ->assertRedirect(route('admin.pages.editor', ['page' => $page, 'locale' => 'fr']));
     });
 
-    it('validates locale format and falls back to default', function () {
+    it('validates locale format and falls back to default', function (): void {
         $page = Page::factory()->create();
 
         Livewire::actingAs($this->user)
@@ -130,28 +130,28 @@ describe('PageManager Component', function () {
             ->assertSet('activeLocale', 'en'); // Should fall back to default
     });
 
-    it('handles block creation events', function () {
+    it('handles block creation events', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->call('handleBlockCreated', ['blockId' => 1, 'blockType' => 'hero'])
             ->assertHasNoErrors(); // Event assertion omitted due to Livewire version
     });
 
-    it('handles block deletion events', function () {
+    it('handles block deletion events', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->call('handleBlockDeleted', ['blockId' => 1])
             ->assertHasNoErrors(); // Event assertion omitted due to Livewire version
     });
 
-    it('handles block order update events', function () {
+    it('handles block order update events', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->call('handleBlockOrderUpdated', ['sort' => [1, 2, 3]])
             ->assertHasNoErrors(); // Event assertion omitted due to Livewire version
     });
 
-    it('requires pages.edit permission to access', function () {
+    it('requires pages.edit permission to access', function (): void {
         $unauthorizedUser = User::factory()->create();
 
         // Test the policy directly
@@ -164,7 +164,7 @@ describe('PageManager Component', function () {
         expect($policy->update($authorizedUser, $this->page))->toBeTrue();
     });
 
-    it('allows users with pages.edit permission to access', function () {
+    it('allows users with pages.edit permission to access', function (): void {
         $authorizedUser = User::factory()->create();
         $authorizedUser->givePermissionTo('pages.edit');
 
@@ -173,7 +173,7 @@ describe('PageManager Component', function () {
             ->assertSet('page.id', $this->page->id);
     });
 
-    it('handles missing translations gracefully', function () {
+    it('handles missing translations gracefully', function (): void {
         $pageWithPartialTranslations = Page::factory()->create([
             'title' => ['en' => 'English Only'],
             'meta_title' => ['en' => 'English Meta Only'],
@@ -187,7 +187,7 @@ describe('PageManager Component', function () {
             ->assertSet('meta_title.fr', null);
     });
 
-    it('preserves existing translations when saving partial data', function () {
+    it('preserves existing translations when saving partial data', function (): void {
         // Start with a page that has both English and French translations
         $page = Page::factory()->create([
             'title' => ['en' => 'English Title', 'fr' => 'French Title'],

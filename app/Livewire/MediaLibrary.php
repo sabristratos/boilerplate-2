@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use App\Enums\MediaType;
+use App\Traits\WithEnumHelpers;
 use Flux\Flux;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -9,7 +11,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 class MediaLibrary extends Component
 {
-    use WithPagination;
+    use WithPagination, WithEnumHelpers;
 
     /**
      * The number of items to display per page.
@@ -68,29 +70,47 @@ class MediaLibrary extends Component
     }
 
     /**
-     * Get the appropriate icon for a MIME type.
+     * Get the media type enum for a MIME type.
+     */
+    public function getMediaTypeForMime(string $mimeType): MediaType
+    {
+        return $this->getMediaType($mimeType);
+    }
+
+    /**
+     * Get the appropriate icon for a MIME type using MediaType enum.
      */
     public function getIconForMimeType(string $mimeType): string
     {
-        if (str_contains($mimeType, 'image')) {
-            return 'photo';
-        } elseif (str_contains($mimeType, 'video')) {
-            return 'film';
-        } elseif (str_contains($mimeType, 'audio')) {
-            return 'musical-note';
-        } elseif (str_contains($mimeType, 'pdf')) {
-            return 'document-text';
-        } elseif (str_contains($mimeType, 'word') || str_contains($mimeType, 'document')) {
-            return 'document';
-        } elseif (str_contains($mimeType, 'excel') || str_contains($mimeType, 'spreadsheet')) {
-            return 'table-cells';
-        } elseif (str_contains($mimeType, 'powerpoint') || str_contains($mimeType, 'presentation')) {
-            return 'presentation-chart-bar';
-        } elseif (str_contains($mimeType, 'zip') || str_contains($mimeType, 'archive')) {
-            return 'archive-box';
-        } else {
-            return 'document';
-        }
+        $mediaType = $this->getMediaType($mimeType);
+        return $mediaType->getIcon();
+    }
+
+    /**
+     * Get the color for a media type.
+     */
+    public function getColorForMimeType(string $mimeType): string
+    {
+        $mediaType = $this->getMediaType($mimeType);
+        return $mediaType->getColor();
+    }
+
+    /**
+     * Get the label for a media type.
+     */
+    public function getLabelForMimeType(string $mimeType): string
+    {
+        $mediaType = $this->getMediaType($mimeType);
+        return $mediaType->label();
+    }
+
+    /**
+     * Get the description for a media type.
+     */
+    public function getDescriptionForMimeType(string $mimeType): string
+    {
+        $mediaType = $this->getMediaType($mimeType);
+        return $mediaType->getDescription();
     }
 
     /**

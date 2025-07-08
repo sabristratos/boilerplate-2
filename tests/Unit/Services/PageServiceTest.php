@@ -147,8 +147,8 @@ class PageServiceTest extends TestCase
     /** @test */
     public function it_can_get_pages_by_status(): void
     {
-        $publishedPage = Page::factory()->create(['status' => 'published']);
-        $draftPage = Page::factory()->create(['status' => 'draft']);
+        $publishedPage = Page::factory()->create(['status' => \App\Enums\PublishStatus::PUBLISHED]);
+        $draftPage = Page::factory()->create(['status' => \App\Enums\PublishStatus::DRAFT]);
 
         $publishedPages = $this->pageService->getPagesByStatus('published');
         $draftPages = $this->pageService->getPagesByStatus('draft');

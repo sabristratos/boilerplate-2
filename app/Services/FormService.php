@@ -9,6 +9,7 @@ use App\DTOs\FormSubmissionDTO;
 use App\DTOs\DTOFactory;
 use App\Models\Form;
 use App\Models\FormSubmission;
+use App\Services\Contracts\FormServiceInterface;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
@@ -21,7 +22,7 @@ use InvalidArgumentException;
  * This service provides type-safe form management operations
  * using Data Transfer Objects for data integrity and consistency.
  */
-class FormService
+class FormService implements FormServiceInterface
 {
     /**
      * Create a new form.
@@ -179,20 +180,13 @@ class FormService
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
+            $query->where(function ($q) use ($search): void {
                 $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$search}%"])
                   ->orWhereRaw("JSON_EXTRACT(name, '$.fr') LIKE ?", ["%{$search}%"]);
             });
         }
 
-        $forms = $query->orderBy('created_at', 'desc')->paginate($perPage);
-
-        // Convert to DTOs
-        $forms->getCollection()->transform(function ($form) {
-            return DTOFactory::createFormDTO($form);
-        });
-
-        return $forms;
+        return $query->orderBy('created_at', 'desc')->paginate($perPage);
     }
 
     /**
@@ -264,9 +258,7 @@ class FormService
             ->paginate($perPage);
 
         // Convert to DTOs
-        $submissions->getCollection()->transform(function ($submission) {
-            return DTOFactory::createFormSubmissionDTO($submission);
-        });
+        $submissions->getCollection()->transform(fn($submission): \App\DTOs\FormSubmissionDTO => DTOFactory::createFormSubmissionDTO($submission));
 
         return $submissions;
     }
@@ -422,5 +414,170 @@ class FormService
             ]);
             throw $e;
         }
+    }
+
+    /**
+     * Get all forms with optional filtering.
+     *
+     * @param array<string, mixed> $filters Optional filters to apply
+     * @return Collection<Form> The collection of forms
+     */
+    public function getForms(array $filters = []): Collection
+    {
+        $query = Form::with('user');
+
+        // Apply filters
+        if (!empty($filters['user_id'])) {
+            $query->where('user_id', $filters['user_id']);
+        }
+
+        if (!empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search): void {
+                $q->whereRaw("JSON_EXTRACT(name, '$.en') LIKE ?", ["%{$search}%"])
+                  ->orWhereRaw("JSON_EXTRACT(name, '$.fr') LIKE ?", ["%{$search}%"]);
+            });
+        }
+
+        return $query->orderBy('created_at', 'desc')->get();
+    }
+
+    /**
+     * Get forms by user ID.
+     *
+     * @param int $userId The user ID
+     * @return Collection<Form> The collection of forms
+     */
+    public function getFormsByUser(int $userId): Collection
+    {
+        return Form::where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->get();
+    }
+
+    /**
+     * Generate validation rules for a form element.
+     *
+     * @param array<string, mixed> $element The form element configuration
+     * @return array<string> Array of validation rules
+     */
+    public function generateValidationRules(array $element): array
+    {
+        $rules = [];
+
+        $rules[] = !empty($element['required']) && $element['required'] === true ? 'required' : 'nullable';
+
+        // Add type-specific rules
+        switch ($element['type'] ?? '') {
+            case 'email':
+                $rules[] = 'email';
+                break;
+            case 'number':
+                $rules[] = 'numeric';
+                if (!empty($element['min'])) {
+                    $rules[] = 'min:' . $element['min'];
+                }
+                if (!empty($element['max'])) {
+                    $rules[] = 'max:' . $element['max'];
+                }
+                break;
+            case 'file':
+                $rules[] = 'file';
+                if (!empty($element['max_size'])) {
+                    $rules[] = 'max:' . $element['max_size'];
+                }
+                if (!empty($element['allowed_types'])) {
+                    $rules[] = 'mimes:' . implode(',', $element['allowed_types']);
+                }
+                break;
+            case 'textarea':
+                if (!empty($element['max_length'])) {
+                    $rules[] = 'max:' . $element['max_length'];
+                }
+                break;
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Generate validation messages for a form element.
+     *
+     * @param array<string, mixed> $element The form element configuration
+     * @return array<string, string> Array of validation messages
+     */
+    public function generateValidationMessages(array $element): array
+    {
+        $messages = [];
+        $fieldName = $element['name'] ?? '';
+
+        if (!empty($element['required']) && $element['required'] === true) {
+            $messages[$fieldName . '.required'] = __('forms.validation.field_required');
+        }
+
+        // Add type-specific messages
+        switch ($element['type'] ?? '') {
+            case 'email':
+                $messages[$fieldName . '.email'] = __('forms.validation.email_invalid');
+                break;
+            case 'number':
+                $messages[$fieldName . '.numeric'] = __('forms.validation.numeric_required');
+                if (!empty($element['min'])) {
+                    $messages[$fieldName . '.min'] = __('forms.validation.min_value', ['min' => $element['min']]);
+                }
+                if (!empty($element['max'])) {
+                    $messages[$fieldName . '.max'] = __('forms.validation.max_value', ['max' => $element['max']]);
+                }
+                break;
+            case 'file':
+                $messages[$fieldName . '.file'] = __('forms.validation.file_required');
+                if (!empty($element['max_size'])) {
+                    $messages[$fieldName . '.max'] = __('forms.validation.file_too_large');
+                }
+                if (!empty($element['allowed_types'])) {
+                    $messages[$fieldName . '.mimes'] = __('forms.validation.file_type_not_allowed');
+                }
+                break;
+            case 'textarea':
+                if (!empty($element['max_length'])) {
+                    $messages[$fieldName . '.max'] = __('forms.validation.text_too_long', ['max' => $element['max_length']]);
+                }
+                break;
+        }
+
+        return $messages;
+    }
+
+    /**
+     * Get form field names from form elements.
+     *
+     * @param FormDTO $formDto The form DTO
+     * @return array<string> Array of field names
+     */
+    public function getFormFieldNames(FormDTO $formDto): array
+    {
+        return $formDto->getFieldNames();
+    }
+
+    /**
+     * Check if a form has file upload elements.
+     *
+     * @param FormDTO $formDto The form DTO
+     * @return bool True if the form has file upload elements
+     */
+    public function hasFileUploads(FormDTO $formDto): bool
+    {
+        return collect($formDto->elements)->contains('type', 'file');
+    }
+
+    /**
+     * Get required fields from a form.
+     *
+     * @param FormDTO $formDto The form DTO
+     * @return array<string> Array of required field names
+     */
+    public function getRequiredFields(FormDTO $formDto): array
+    {
+        return $formDto->getRequiredFields();
     }
 } 

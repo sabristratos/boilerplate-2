@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('setting_groups', function (Blueprint $table) {
+        Schema::create('setting_groups', function (Blueprint $table): void {
             $table->id();
             $table->string('key')->unique();
             $table->json('label')->nullable();

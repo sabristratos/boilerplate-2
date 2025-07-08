@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('content_blocks', function (Blueprint $table) {
+        Schema::create('content_blocks', function (Blueprint $table): void {
             $table->id();
             $table->foreignId('page_id')->constrained()->cascadeOnDelete();
             $table->string('type');

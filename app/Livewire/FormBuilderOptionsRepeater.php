@@ -18,19 +18,15 @@ class FormBuilderOptionsRepeater extends Component
         $this->propertyPath = $propertyPath;
 
         // Ensure options is always an array
-        if (! is_array($options)) {
-            $this->options = [
-                [
-                    'value' => '',
-                    'label' => '',
-                ],
-            ];
-        } else {
-            $this->options = $options;
-        }
+        $this->options = is_array($options) ? $options : [
+            [
+                'value' => '',
+                'label' => '',
+            ],
+        ];
 
         // If options is empty, add at least one empty option
-        if (empty($this->options)) {
+        if ($this->options === []) {
             $this->options = [
                 [
                     'value' => '',
@@ -71,7 +67,7 @@ class FormBuilderOptionsRepeater extends Component
         }
 
         // If options is empty, add at least one empty option
-        if (empty($this->options)) {
+        if ($this->options === []) {
             $this->options = [
                 [
                     'value' => '',

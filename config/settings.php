@@ -40,12 +40,12 @@ $settings = [
         'subfields' => [
             'code' => [
                 'label' => ['en' => 'Code', 'fr' => 'Code'],
-                'type' => 'text',
+                'type' => SettingType::TEXT->value,
                 'rules' => 'required|string|size:2',
             ],
             'name' => [
                 'label' => ['en' => 'Name', 'fr' => 'Nom'],
-                'type' => 'text',
+                'type' => SettingType::TEXT->value,
                 'rules' => 'required|string',
             ],
         ],
@@ -154,7 +154,7 @@ $settings = [
         'subfields' => [
             'email' => [
                 'label' => ['en' => 'Email', 'fr' => 'Courriel'],
-                'type' => 'email',
+                'type' => SettingType::EMAIL->value,
                 'rules' => 'required|email',
             ],
         ],
@@ -170,7 +170,7 @@ $settings = [
         'subfields' => [
             'phone' => [
                 'label' => ['en' => 'Phone', 'fr' => 'Téléphone'],
-                'type' => 'tel',
+                'type' => SettingType::TEL->value,
                 'rules' => 'required|string',
             ],
         ],
@@ -186,12 +186,12 @@ $settings = [
         'subfields' => [
             'platform' => [
                 'label' => 'Platform',
-                'type' => 'text',
+                'type' => SettingType::TEXT->value,
                 'rules' => 'required|string',
             ],
             'url' => [
                 'label' => 'URL',
-                'type' => 'url',
+                'type' => SettingType::URL->value,
                 'rules' => 'required|url',
             ],
         ],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Enums\FormElementType;
 use App\Models\ContentBlock;
 use App\Models\Form;
 use App\Models\Page;
@@ -32,7 +33,7 @@ class RevisionSystemTest extends TestCase
         $form = Form::factory()->create([
             'user_id' => $this->user->id,
             'name' => ['en' => 'Test Form'],
-            'elements' => [['type' => 'text']],
+            'elements' => [['type' => FormElementType::TEXT->value]],
         ]);
 
         $this->assertTrue($form->hasRevisions());
@@ -109,7 +110,7 @@ class RevisionSystemTest extends TestCase
         $page = Page::factory()->create();
         $block = ContentBlock::factory()->create([
             'page_id' => $page->id,
-            'type' => 'text',
+            'type' => 'text', // This is a content block type, not a form element type
             'data' => ['content' => 'Test content'],
         ]);
 

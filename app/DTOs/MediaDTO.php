@@ -105,7 +105,7 @@ class MediaDTO extends BaseDTO
             mimeType: $media->mime_type,
             size: $media->size,
             disk: $media->disk,
-            path: $media->getPath(),
+            path: $media->getUrl(), // Use the web-accessible URL
             collectionName: $media->collection_name,
             modelType: $media->model_type,
             modelId: $media->model_id,
@@ -317,7 +317,7 @@ class MediaDTO extends BaseDTO
      */
     public function getUrl(): string
     {
-        return config('app.url') . '/storage/' . $this->path;
+        return $this->path;
     }
 
     /**
@@ -327,7 +327,7 @@ class MediaDTO extends BaseDTO
      */
     public function getAgeInDays(): ?int
     {
-        if ($this->createdAt === null) {
+        if (!$this->createdAt instanceof \Carbon\Carbon) {
             return null;
         }
 
@@ -341,7 +341,7 @@ class MediaDTO extends BaseDTO
      */
     public function isRecent(): bool
     {
-        if ($this->createdAt === null) {
+        if (!$this->createdAt instanceof \Carbon\Carbon) {
             return false;
         }
 
@@ -383,9 +383,9 @@ class MediaDTO extends BaseDTO
      * Create a copy of this DTO with updated values.
      *
      * @param array<string, mixed> $changes The changes to apply
-     * @return self A new DTO with the changes applied
+     * @return static A new DTO with the changes applied
      */
-    public function with(array $changes): self
+    public function with(array $changes): static
     {
         return new self(
             id: $changes['id'] ?? $this->id,
@@ -416,40 +416,47 @@ class MediaDTO extends BaseDTO
      */
     public function validate(): array
     {
-        $errors = [];
-
-        if (empty($this->fileName)) {
-            $errors['file_name'] = 'File name is required';
+        $validationService = app(\App\Services\DTOValidationService::class);
+        
+        // Get validation rules
+        $rules = [
+            'id' => 'nullable|integer|min:1',
+            'file_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'mime_type' => 'required|string|max:255',
+            'size' => 'required|integer|min:1',
+            'disk' => 'required|string|max:255',
+            'path' => 'required|string|max:1000',
+            'collection_name' => 'required|string|max:255',
+            'model_type' => 'required|string|max:255',
+            'model_id' => 'nullable|integer|min:1',
+            'custom_properties' => 'nullable|array',
+            'responsive_images' => 'nullable|array',
+            'conversions' => 'nullable|array',
+            'created_at' => 'nullable|date',
+            'updated_at' => 'nullable|date',
+            'uuid' => 'nullable|string|max:255',
+            'conversions_disk' => 'nullable|string|max:255',
+            'manipulations' => 'nullable|array',
+        ];
+        
+        // Get custom messages and attributes
+        $messages = $validationService->getCustomValidationMessages();
+        $attributes = $validationService->getCustomAttributeNames();
+        
+        // Validate using the service
+        $errors = $validationService->validateDTO($this, $rules, $messages, $attributes);
+        
+        // Add custom validation for MIME type
+        if ($this->mimeType !== '' && $this->mimeType !== '0' && in_array(preg_match('/^[a-zA-Z0-9]+\/[a-zA-Z0-9\-\.\+]+$/', $this->mimeType), [0, false], true)) {
+            $errors['mime_type'] = __('dto.validation.media_mime_type_invalid');
         }
-
-        if (empty($this->name)) {
-            $errors['name'] = 'Media name is required';
+        
+        // Add custom validation for file size
+        if ($this->size > 0 && $this->size > config('media-library.max_file_size', 1024 * 1024 * 100)) {
+            $errors['size'] = __('dto.validation.media_file_too_large');
         }
-
-        if (empty($this->mimeType)) {
-            $errors['mime_type'] = 'MIME type is required';
-        }
-
-        if ($this->size <= 0) {
-            $errors['size'] = 'Valid file size is required';
-        }
-
-        if (empty($this->disk)) {
-            $errors['disk'] = 'Storage disk is required';
-        }
-
-        if (empty($this->path)) {
-            $errors['path'] = 'File path is required';
-        }
-
-        if (empty($this->collectionName)) {
-            $errors['collection_name'] = 'Collection name is required';
-        }
-
-        if (empty($this->modelType)) {
-            $errors['model_type'] = 'Model type is required';
-        }
-
+        
         return $errors;
     }
 

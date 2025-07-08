@@ -18,7 +18,7 @@
                 </flux:button>
             </div>
 
-            @livewire('resource-system.resource-form', ['resource' => $resource, 'resourceId' => $resourceId])
+            @livewire('resource-system.resource-form', ['resourceClass' => get_class($resource), 'resourceId' => $resourceId])
         </div>
     </div>
 </x-layouts.app>

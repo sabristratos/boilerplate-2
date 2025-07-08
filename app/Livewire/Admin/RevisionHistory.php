@@ -91,7 +91,7 @@ class RevisionHistory extends Component
     #[Computed]
     public function getSelectedRevisionProperty(): ?Revision
     {
-        if (! $this->selectedRevisionId) {
+        if ($this->selectedRevisionId === null || $this->selectedRevisionId === 0) {
             return null;
         }
 
@@ -104,7 +104,7 @@ class RevisionHistory extends Component
     #[Computed]
     public function getCompareRevisionProperty(): ?Revision
     {
-        if (! $this->compareRevisionId) {
+        if ($this->compareRevisionId === null || $this->compareRevisionId === 0) {
             return null;
         }
 
@@ -143,7 +143,7 @@ class RevisionHistory extends Component
      */
     public function startComparison(): void
     {
-        if (! $this->selectedRevisionId) {
+        if ($this->selectedRevisionId === null || $this->selectedRevisionId === 0) {
             $this->showErrorToast(__('revisions.errors.no_revision_selected'));
 
             return;
@@ -188,7 +188,7 @@ class RevisionHistory extends Component
     #[On('revertToRevision')]
     public function revertToRevision(): void
     {
-        if (! $this->revertingRevision) {
+        if (!$this->revertingRevision instanceof \App\Models\Revision) {
             return;
         }
 

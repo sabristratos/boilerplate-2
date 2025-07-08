@@ -70,7 +70,7 @@ if (! function_exists('formatRevisionValue')) {
         }
 
         // Handle empty arrays
-        if (is_array($value) && empty($value)) {
+        if ($value === []) {
             return '<span class="text-gray-400 italic">Empty</span>';
         }
 
@@ -79,11 +79,11 @@ if (! function_exists('formatRevisionValue')) {
             $formatted = [];
             foreach ($value as $locale => $translation) {
                 if (! empty($translation)) {
-                    $formatted[] = "<strong>{$locale}:</strong> ".htmlspecialchars($translation);
+                    $formatted[] = "<strong>{$locale}:</strong> ".htmlspecialchars((string) $translation);
                 }
             }
 
-            return ! empty($formatted) ? implode('<br>', $formatted) : '<span class="text-gray-400 italic">Empty</span>';
+            return $formatted === [] ? '<span class="text-gray-400 italic">Empty</span>' : implode('<br>', $formatted);
         }
 
         // Handle arrays (like form elements, settings)

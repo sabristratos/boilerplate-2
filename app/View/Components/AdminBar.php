@@ -3,7 +3,7 @@
 namespace App\View\Components;
 
 use App\Services\ResourceManager;
-use App\Services\SettingsManager;
+use App\Services\Contracts\SettingsManagerInterface;
 use Closure;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +17,7 @@ class AdminBar extends Component
      * Create a new component instance.
      */
     public function __construct(
-        protected SettingsManager $settings,
+        protected SettingsManagerInterface $settings,
         protected ResourceManager $resourceManager
     ) {
         $this->resources = $this->resourceManager->getResourcesWithInstances();

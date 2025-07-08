@@ -39,7 +39,7 @@ class RevisionShow extends Component
         $this->modelId = $modelId;
         $this->model = $this->getModel($modelType, $modelId);
 
-        if (! $this->model) {
+        if (!$this->model instanceof \Illuminate\Database\Eloquent\Model) {
             abort(404);
         }
     }

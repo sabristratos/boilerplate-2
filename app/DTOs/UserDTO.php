@@ -53,6 +53,7 @@ class UserDTO extends BaseDTO
         public readonly ?Carbon $updatedAt = null,
         public readonly ?array $roles = null,
         public readonly ?array $permissions = null,
+        public readonly ?string $passwordConfirmation = null,
     ) {
     }
 
@@ -160,7 +161,7 @@ class UserDTO extends BaseDTO
      */
     public function hasSocialLogin(): bool
     {
-        return ! empty($this->googleId) || ! empty($this->facebookId);
+        return $this->googleId !== null && $this->googleId !== '' && $this->googleId !== '0' || $this->facebookId !== null && $this->facebookId !== '' && $this->facebookId !== '0';
     }
 
     /**
@@ -170,7 +171,7 @@ class UserDTO extends BaseDTO
      */
     public function hasGoogleLogin(): bool
     {
-        return ! empty($this->googleId);
+        return $this->googleId !== null && $this->googleId !== '' && $this->googleId !== '0';
     }
 
     /**
@@ -180,7 +181,7 @@ class UserDTO extends BaseDTO
      */
     public function hasFacebookLogin(): bool
     {
-        return ! empty($this->facebookId);
+        return $this->facebookId !== null && $this->facebookId !== '' && $this->facebookId !== '0';
     }
 
     /**
@@ -190,7 +191,7 @@ class UserDTO extends BaseDTO
      */
     public function hasPassword(): bool
     {
-        return ! empty($this->password);
+        return $this->password !== null && $this->password !== '' && $this->password !== '0';
     }
 
     /**
@@ -200,7 +201,7 @@ class UserDTO extends BaseDTO
      */
     public function isEmailVerified(): bool
     {
-        return $this->emailVerifiedAt !== null;
+        return $this->emailVerifiedAt instanceof \Carbon\Carbon;
     }
 
     /**
@@ -226,7 +227,7 @@ class UserDTO extends BaseDTO
             return false;
         }
         
-        return ! empty(array_intersect($roleNames, $this->roles));
+        return array_intersect($roleNames, $this->roles) !== [];
     }
 
     /**
@@ -241,7 +242,7 @@ class UserDTO extends BaseDTO
             return false;
         }
         
-        return empty(array_diff($roleNames, $this->roles));
+        return array_diff($roleNames, $this->roles) === [];
     }
 
     /**
@@ -267,7 +268,7 @@ class UserDTO extends BaseDTO
             return false;
         }
         
-        return ! empty(array_intersect($permissionNames, $this->permissions));
+        return array_intersect($permissionNames, $this->permissions) !== [];
     }
 
     /**
@@ -308,7 +309,7 @@ class UserDTO extends BaseDTO
      */
     public function toArray(): array
     {
-        return [
+        $arr = [
             'id' => $this->id,
             'name' => $this->name,
             'email' => $this->email,
@@ -326,6 +327,10 @@ class UserDTO extends BaseDTO
             'roles' => $this->roles,
             'permissions' => $this->permissions,
         ];
+        if ($this->passwordConfirmation !== null) {
+            $arr['password_confirmation'] = $this->passwordConfirmation;
+        }
+        return $arr;
     }
 
 
@@ -334,9 +339,9 @@ class UserDTO extends BaseDTO
      * Create a copy of this DTO with updated values.
      *
      * @param array<string, mixed> $changes The changes to apply
-     * @return self A new DTO with the changes applied
+     * @return static A new DTO with the changes applied
      */
-    public function with(array $changes): self
+    public function with(array $changes): static
     {
         return new self(
             id: $changes['id'] ?? $this->id,
@@ -355,6 +360,7 @@ class UserDTO extends BaseDTO
             updatedAt: $changes['updated_at'] ?? $changes['updatedAt'] ?? $this->updatedAt,
             roles: $changes['roles'] ?? $this->roles,
             permissions: $changes['permissions'] ?? $this->permissions,
+            passwordConfirmation: $changes['password_confirmation'] ?? $this->passwordConfirmation,
         );
     }
 
@@ -365,22 +371,43 @@ class UserDTO extends BaseDTO
      */
     public function validate(): array
     {
-        $errors = [];
-
-        if (empty($this->name)) {
-            $errors['name'] = 'Name is required';
+        $validationService = app(\App\Services\DTOValidationService::class);
+        
+        // Get validation rules
+        $rules = [
+            'id' => 'nullable|integer|min:1',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'password' => 'nullable|string|min:8',
+            'locale' => 'nullable|string|in:en,fr',
+            'google_id' => 'nullable|string|max:255',
+            'google_token' => 'nullable|string',
+            'google_refresh_token' => 'nullable|string',
+            'facebook_id' => 'nullable|string|max:255',
+            'facebook_token' => 'nullable|string',
+            'facebook_refresh_token' => 'nullable|string',
+            'email_verified_at' => 'nullable|date',
+            'created_at' => 'nullable|date',
+            'updated_at' => 'nullable|date',
+            'roles' => 'nullable|array',
+            'roles.*' => 'string|in:' . implode(',', \App\Enums\UserRole::values()),
+            'permissions' => 'nullable|array',
+            'permissions.*' => 'string',
+        ];
+        
+        // Add password confirmation rule if password is provided
+        if ($this->password !== null && $this->password !== '' && $this->password !== '0') {
+            $rules['password'] = 'required|string|min:8|confirmed';
+            $rules['password_confirmation'] = 'required|string|min:8';
         }
-
-        if (empty($this->email)) {
-            $errors['email'] = 'Email is required';
-        } elseif (! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
-            $errors['email'] = 'Valid email address is required';
-        }
-
-        if ($this->locale !== null && ! in_array($this->locale, ['en', 'fr'], true)) {
-            $errors['locale'] = 'Valid locale is required';
-        }
-
+        
+        // Get custom messages and attributes
+        $messages = $validationService->getCustomValidationMessages();
+        $attributes = $validationService->getCustomAttributeNames();
+        
+        // Validate using the service
+        $errors = $validationService->validateDTO($this, $rules, $messages, $attributes);
+        
         return $errors;
     }
 

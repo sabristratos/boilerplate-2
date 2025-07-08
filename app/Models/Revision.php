@@ -93,30 +93,30 @@ class Revision extends Model
      */
     public function scopeForModel($query, Model $model)
     {
-        return $query->where('revisionable_type', get_class($model))
+        return $query->where('revisionable_type', $model::class)
             ->where('revisionable_id', $model->id);
     }
 
     /**
      * Get the formatted version number.
      */
-    public function getFormattedVersionAttribute(): string
+    protected function formattedVersion(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return $this->version ?? 'v'.$this->id;
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn() => $this->version ?? 'v'.$this->id);
     }
 
     /**
      * Get the human-readable action description.
      */
-    public function getActionDescriptionAttribute(): string
+    protected function actionDescription(): \Illuminate\Database\Eloquent\Casts\Attribute
     {
-        return match ($this->action) {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(get: fn() => match ($this->action) {
             'create' => __('revisions.actions.created'),
             'update' => __('revisions.actions.updated'),
             'delete' => __('revisions.actions.deleted'),
             'publish' => __('revisions.actions.published'),
             'revert' => __('revisions.actions.reverted'),
             default => ucfirst($this->action),
-        };
+        });
     }
 }

@@ -29,7 +29,7 @@ class ContentBlockFactory extends Factory
     {
         return [
             'page_id' => Page::factory(),
-            'type' => $this->faker->randomElement([
+            'type' => fake()->randomElement([
                 'content-area',
                 'call-to-action',
                 'contact',
@@ -38,8 +38,8 @@ class ContentBlockFactory extends Factory
                 'testimonials',
             ]),
             'data' => $this->getDefaultData(),
-            'order' => $this->faker->numberBetween(1, 100),
-            'visible' => $this->faker->boolean(80), // 80% chance of being visible
+            'order' => fake()->numberBetween(1, 100),
+            'visible' => fake()->boolean(80), // 80% chance of being visible
         ];
     }
 
@@ -50,7 +50,7 @@ class ContentBlockFactory extends Factory
      */
     protected function getDefaultData(): array
     {
-        $type = $this->faker->randomElement([
+        $type = fake()->randomElement([
             'content-area',
             'call-to-action',
             'contact',
@@ -61,61 +61,61 @@ class ContentBlockFactory extends Factory
 
         return match ($type) {
             'content-area' => [
-                'content' => ['en' => $this->faker->paragraph()],
-                'background_color' => $this->faker->randomElement(['bg-white', 'bg-gray-100', 'bg-blue-50']),
-                'text_color' => $this->faker->randomElement(['text-gray-900', 'text-gray-800', 'text-blue-900']),
+                'content' => ['en' => fake()->paragraph()],
+                'background_color' => fake()->randomElement(['bg-white', 'bg-gray-100', 'bg-blue-50']),
+                'text_color' => fake()->randomElement(['text-gray-900', 'text-gray-800', 'text-blue-900']),
             ],
             'call-to-action' => [
-                'title' => ['en' => $this->faker->sentence()],
-                'content' => ['en' => $this->faker->paragraph()],
-                'button_text' => ['en' => $this->faker->words(2, true)],
-                'button_url' => $this->faker->url(),
-                'background_color' => $this->faker->randomElement(['bg-blue-600', 'bg-green-600', 'bg-purple-600']),
+                'title' => ['en' => fake()->sentence()],
+                'content' => ['en' => fake()->paragraph()],
+                'button_text' => ['en' => fake()->words(2, true)],
+                'button_url' => fake()->url(),
+                'background_color' => fake()->randomElement(['bg-blue-600', 'bg-green-600', 'bg-purple-600']),
                 'text_color' => 'text-white',
             ],
             'contact' => [
-                'title' => ['en' => $this->faker->sentence()],
-                'description' => ['en' => $this->faker->paragraph()],
-                'form_id' => $this->faker->numberBetween(1, 10),
+                'title' => ['en' => fake()->sentence()],
+                'description' => ['en' => fake()->paragraph()],
+                'form_id' => fake()->numberBetween(1, 10),
             ],
             'hero' => [
-                'title' => ['en' => $this->faker->sentence()],
-                'subtitle' => ['en' => $this->faker->sentence()],
-                'background_image' => $this->faker->imageUrl(1920, 1080),
-                'overlay_color' => $this->faker->randomElement(['bg-black/50', 'bg-blue-900/50', 'bg-gray-900/50']),
+                'title' => ['en' => fake()->sentence()],
+                'subtitle' => ['en' => fake()->sentence()],
+                'background_image' => fake()->imageUrl(1920, 1080),
+                'overlay_color' => fake()->randomElement(['bg-black/50', 'bg-blue-900/50', 'bg-gray-900/50']),
             ],
             'image-gallery' => [
-                'title' => ['en' => $this->faker->sentence()],
+                'title' => ['en' => fake()->sentence()],
                 'images' => [
-                    $this->faker->imageUrl(800, 600),
-                    $this->faker->imageUrl(800, 600),
-                    $this->faker->imageUrl(800, 600),
+                    fake()->imageUrl(800, 600),
+                    fake()->imageUrl(800, 600),
+                    fake()->imageUrl(800, 600),
                 ],
-                'columns' => $this->faker->randomElement([2, 3, 4]),
+                'columns' => fake()->randomElement([2, 3, 4]),
             ],
             'testimonials' => [
-                'title' => ['en' => $this->faker->sentence()],
+                'title' => ['en' => fake()->sentence()],
                 'testimonials' => [
                     [
-                        'name' => $this->faker->name(),
-                        'position' => $this->faker->jobTitle(),
-                        'company' => $this->faker->company(),
-                        'content' => ['en' => $this->faker->paragraph()],
-                        'rating' => $this->faker->numberBetween(4, 5),
-                        'avatar' => $this->faker->imageUrl(100, 100),
+                        'name' => fake()->name(),
+                        'position' => fake()->jobTitle(),
+                        'company' => fake()->company(),
+                        'content' => ['en' => fake()->paragraph()],
+                        'rating' => fake()->numberBetween(4, 5),
+                        'avatar' => fake()->imageUrl(100, 100),
                     ],
                     [
-                        'name' => $this->faker->name(),
-                        'position' => $this->faker->jobTitle(),
-                        'company' => $this->faker->company(),
-                        'content' => ['en' => $this->faker->paragraph()],
-                        'rating' => $this->faker->numberBetween(4, 5),
-                        'avatar' => $this->faker->imageUrl(100, 100),
+                        'name' => fake()->name(),
+                        'position' => fake()->jobTitle(),
+                        'company' => fake()->company(),
+                        'content' => ['en' => fake()->paragraph()],
+                        'rating' => fake()->numberBetween(4, 5),
+                        'avatar' => fake()->imageUrl(100, 100),
                     ],
                 ],
             ],
             default => [
-                'content' => ['en' => $this->faker->paragraph()],
+                'content' => ['en' => fake()->paragraph()],
             ],
         };
     }
@@ -125,12 +125,12 @@ class ContentBlockFactory extends Factory
      */
     public function contentArea(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'content-area',
             'data' => [
-                'content' => ['en' => $this->faker->paragraph()],
-                'background_color' => $this->faker->randomElement(['bg-white', 'bg-gray-100', 'bg-blue-50']),
-                'text_color' => $this->faker->randomElement(['text-gray-900', 'text-gray-800', 'text-blue-900']),
+                'content' => ['en' => fake()->paragraph()],
+                'background_color' => fake()->randomElement(['bg-white', 'bg-gray-100', 'bg-blue-50']),
+                'text_color' => fake()->randomElement(['text-gray-900', 'text-gray-800', 'text-blue-900']),
             ],
         ]);
     }
@@ -140,14 +140,14 @@ class ContentBlockFactory extends Factory
      */
     public function callToAction(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'call-to-action',
             'data' => [
-                'title' => ['en' => $this->faker->sentence()],
-                'content' => ['en' => $this->faker->paragraph()],
-                'button_text' => ['en' => $this->faker->words(2, true)],
-                'button_url' => $this->faker->url(),
-                'background_color' => $this->faker->randomElement(['bg-blue-600', 'bg-green-600', 'bg-purple-600']),
+                'title' => ['en' => fake()->sentence()],
+                'content' => ['en' => fake()->paragraph()],
+                'button_text' => ['en' => fake()->words(2, true)],
+                'button_url' => fake()->url(),
+                'background_color' => fake()->randomElement(['bg-blue-600', 'bg-green-600', 'bg-purple-600']),
                 'text_color' => 'text-white',
             ],
         ]);
@@ -158,12 +158,12 @@ class ContentBlockFactory extends Factory
      */
     public function contact(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'contact',
             'data' => [
-                'title' => ['en' => $this->faker->sentence()],
-                'description' => ['en' => $this->faker->paragraph()],
-                'form_id' => $this->faker->numberBetween(1, 10),
+                'title' => ['en' => fake()->sentence()],
+                'description' => ['en' => fake()->paragraph()],
+                'form_id' => fake()->numberBetween(1, 10),
             ],
         ]);
     }
@@ -173,13 +173,13 @@ class ContentBlockFactory extends Factory
      */
     public function hero(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'hero',
             'data' => [
-                'title' => ['en' => $this->faker->sentence()],
-                'subtitle' => ['en' => $this->faker->sentence()],
-                'background_image' => $this->faker->imageUrl(1920, 1080),
-                'overlay_color' => $this->faker->randomElement(['bg-black/50', 'bg-blue-900/50', 'bg-gray-900/50']),
+                'title' => ['en' => fake()->sentence()],
+                'subtitle' => ['en' => fake()->sentence()],
+                'background_image' => fake()->imageUrl(1920, 1080),
+                'overlay_color' => fake()->randomElement(['bg-black/50', 'bg-blue-900/50', 'bg-gray-900/50']),
             ],
         ]);
     }
@@ -189,16 +189,16 @@ class ContentBlockFactory extends Factory
      */
     public function imageGallery(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'image-gallery',
             'data' => [
-                'title' => ['en' => $this->faker->sentence()],
+                'title' => ['en' => fake()->sentence()],
                 'images' => [
-                    $this->faker->imageUrl(800, 600),
-                    $this->faker->imageUrl(800, 600),
-                    $this->faker->imageUrl(800, 600),
+                    fake()->imageUrl(800, 600),
+                    fake()->imageUrl(800, 600),
+                    fake()->imageUrl(800, 600),
                 ],
-                'columns' => $this->faker->randomElement([2, 3, 4]),
+                'columns' => fake()->randomElement([2, 3, 4]),
             ],
         ]);
     }
@@ -208,26 +208,26 @@ class ContentBlockFactory extends Factory
      */
     public function testimonials(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'type' => 'testimonials',
             'data' => [
-                'title' => ['en' => $this->faker->sentence()],
+                'title' => ['en' => fake()->sentence()],
                 'testimonials' => [
                     [
-                        'name' => $this->faker->name(),
-                        'position' => $this->faker->jobTitle(),
-                        'company' => $this->faker->company(),
-                        'content' => ['en' => $this->faker->paragraph()],
-                        'rating' => $this->faker->numberBetween(4, 5),
-                        'avatar' => $this->faker->imageUrl(100, 100),
+                        'name' => fake()->name(),
+                        'position' => fake()->jobTitle(),
+                        'company' => fake()->company(),
+                        'content' => ['en' => fake()->paragraph()],
+                        'rating' => fake()->numberBetween(4, 5),
+                        'avatar' => fake()->imageUrl(100, 100),
                     ],
                     [
-                        'name' => $this->faker->name(),
-                        'position' => $this->faker->jobTitle(),
-                        'company' => $this->faker->company(),
-                        'content' => ['en' => $this->faker->paragraph()],
-                        'rating' => $this->faker->numberBetween(4, 5),
-                        'avatar' => $this->faker->imageUrl(100, 100),
+                        'name' => fake()->name(),
+                        'position' => fake()->jobTitle(),
+                        'company' => fake()->company(),
+                        'content' => ['en' => fake()->paragraph()],
+                        'rating' => fake()->numberBetween(4, 5),
+                        'avatar' => fake()->imageUrl(100, 100),
                     ],
                 ],
             ],
@@ -239,7 +239,7 @@ class ContentBlockFactory extends Factory
      */
     public function published(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             // No changes needed, default is published
         ]);
     }

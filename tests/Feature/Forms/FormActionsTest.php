@@ -5,10 +5,11 @@ declare(strict_types=1);
 use App\Actions\Forms\DiscardFormDraftAction;
 use App\Actions\Forms\PublishFormAction;
 use App\Actions\Forms\SaveDraftFormAction;
+use App\Enums\FormElementType;
 use App\Models\Form;
 use App\Models\User;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->form = Form::factory()->for($this->user)->create();
     $this->saveDraftAction = new SaveDraftFormAction;
@@ -16,9 +17,9 @@ beforeEach(function () {
     $this->discardAction = new DiscardFormDraftAction;
 });
 
-describe('SaveDraftFormAction', function () {
-    it('can save draft form data', function () {
-        $elements = [['type' => 'text', 'id' => '1', 'properties' => ['label' => 'Name']]];
+describe('SaveDraftFormAction', function (): void {
+    it('can save draft form data', function (): void {
+        $elements = [['type' => FormElementType::TEXT->value, 'id' => '1', 'properties' => ['label' => 'Name']]];
         $settings = ['backgroundColor' => '#fff', 'defaultFont' => 'Inter'];
         $name = ['en' => 'Contact Form', 'fr' => 'Formulaire de Contact'];
         $locale = 'en';
@@ -38,8 +39,8 @@ describe('SaveDraftFormAction', function () {
             ->and($updatedForm->last_draft_at)->not->toBeNull();
     });
 
-    it('can save draft data with empty name translations', function () {
-        $elements = [['type' => 'email', 'id' => '1']];
+    it('can save draft data with empty name translations', function (): void {
+        $elements = [['type' => FormElementType::EMAIL->value, 'id' => '1']];
         $settings = ['backgroundColor' => '#000'];
         $name = [];
         $locale = 'en';
@@ -57,8 +58,8 @@ describe('SaveDraftFormAction', function () {
             ->and($updatedForm->last_draft_at)->not->toBeNull();
     });
 
-    it('can save draft data with partial name translations', function () {
-        $elements = [['type' => 'textarea', 'id' => '1']];
+    it('can save draft data with partial name translations', function (): void {
+        $elements = [['type' => FormElementType::TEXTAREA->value, 'id' => '1']];
         $settings = ['backgroundColor' => '#fff'];
         $name = ['en' => 'Contact Form']; // Only English
         $locale = 'en';
@@ -75,7 +76,7 @@ describe('SaveDraftFormAction', function () {
             ->and($updatedForm->getTranslation('draft_name', 'fr'))->toBe('Contact Form'); // fallback
     });
 
-    it('updates last_draft_at timestamp', function () {
+    it('updates last_draft_at timestamp', function (): void {
         $originalTime = $this->form->last_draft_at;
 
         $updatedForm = $this->saveDraftAction->execute(
@@ -91,11 +92,11 @@ describe('SaveDraftFormAction', function () {
     });
 });
 
-describe('PublishFormAction', function () {
-    it('can publish draft changes to published fields', function () {
+describe('PublishFormAction', function (): void {
+    it('can publish draft changes to published fields', function (): void {
         // Set up draft data
         $draftName = ['en' => 'Draft Form'];
-        $draftElements = [['type' => 'text', 'id' => '1']];
+        $draftElements = [['type' => FormElementType::TEXT->value, 'id' => '1']];
         $draftSettings = ['backgroundColor' => '#fff'];
 
         $this->form->draft_name = $draftName;
@@ -115,7 +116,7 @@ describe('PublishFormAction', function () {
             ->and($updatedForm->last_draft_at)->toBeNull();
     });
 
-    it('does not publish when no draft changes exist', function () {
+    it('does not publish when no draft changes exist', function (): void {
         $originalName = $this->form->name;
         $originalElements = $this->form->elements;
         $originalSettings = $this->form->settings;
@@ -127,7 +128,7 @@ describe('PublishFormAction', function () {
             ->and($updatedForm->settings)->toBe($originalSettings);
     });
 
-    it('can publish partial draft changes', function () {
+    it('can publish partial draft changes', function (): void {
         $draftName = ['en' => 'Draft Form'];
         $this->form->draft_name = $draftName;
         $this->form->save();
@@ -140,11 +141,11 @@ describe('PublishFormAction', function () {
             ->and($updatedForm->draft_settings)->toBeNull();
     });
 
-    it('preserves existing published data when no draft exists for that field', function () {
+    it('preserves existing published data when no draft exists for that field', function (): void {
         $publishedName = ['en' => 'Published Form'];
-        $publishedElements = [['type' => 'text', 'id' => '1']];
+        $publishedElements = [['type' => FormElementType::TEXT->value, 'id' => '1']];
         $publishedSettings = ['backgroundColor' => '#fff'];
-        $draftElements = [['type' => 'email', 'id' => '2']];
+        $draftElements = [['type' => FormElementType::EMAIL->value, 'id' => '2']];
 
         $this->form->name = $publishedName;
         $this->form->elements = $publishedElements;
@@ -160,11 +161,11 @@ describe('PublishFormAction', function () {
     });
 });
 
-describe('DiscardFormDraftAction', function () {
-    it('can discard all draft changes', function () {
+describe('DiscardFormDraftAction', function (): void {
+    it('can discard all draft changes', function (): void {
         // Set up draft data
         $this->form->draft_name = ['en' => 'Draft Form'];
-        $this->form->draft_elements = [['type' => 'text', 'id' => '1']];
+        $this->form->draft_elements = [['type' => FormElementType::TEXT->value, 'id' => '1']];
         $this->form->draft_settings = ['backgroundColor' => '#fff'];
         $this->form->last_draft_at = now();
         $this->form->save();
@@ -177,10 +178,10 @@ describe('DiscardFormDraftAction', function () {
             ->and($updatedForm->last_draft_at)->toBeNull();
     });
 
-    it('does not affect published data when discarding drafts', function () {
+    it('does not affect published data when discarding drafts', function (): void {
         // Set up published data
         $publishedName = ['en' => 'Published Form'];
-        $publishedElements = [['type' => 'email', 'id' => '1']];
+        $publishedElements = [['type' => FormElementType::EMAIL->value, 'id' => '1']];
         $publishedSettings = ['backgroundColor' => '#000'];
 
         $this->form->name = $publishedName;
@@ -190,7 +191,7 @@ describe('DiscardFormDraftAction', function () {
 
         // Set up draft data
         $this->form->draft_name = ['en' => 'Draft Form'];
-        $this->form->draft_elements = [['type' => 'text', 'id' => '2']];
+        $this->form->draft_elements = [['type' => FormElementType::TEXT->value, 'id' => '2']];
         $this->form->draft_settings = ['backgroundColor' => '#fff'];
         $this->form->last_draft_at = now();
         $this->form->save();
@@ -208,7 +209,7 @@ describe('DiscardFormDraftAction', function () {
             ->and($updatedForm->draft_settings)->toBeNull();
     });
 
-    it('can discard drafts when no draft data exists', function () {
+    it('can discard drafts when no draft data exists', function (): void {
         $updatedForm = $this->discardAction->execute($this->form);
 
         expect(($updatedForm->draft_name === null || $updatedForm->draft_name === ''))->toBeTrue()
@@ -218,10 +219,10 @@ describe('DiscardFormDraftAction', function () {
     });
 });
 
-describe('Form Actions Integration', function () {
-    it('can perform a complete draft workflow', function () {
+describe('Form Actions Integration', function (): void {
+    it('can perform a complete draft workflow', function (): void {
         // 1. Save draft
-        $elements = [['type' => 'text', 'id' => '1', 'properties' => ['label' => 'Name']]];
+        $elements = [['type' => FormElementType::TEXT->value, 'id' => '1', 'properties' => ['label' => 'Name']]];
         $settings = ['backgroundColor' => '#fff'];
         $name = ['en' => 'Contact Form'];
 
@@ -244,7 +245,7 @@ describe('Form Actions Integration', function () {
             ->and($publishedForm->settings)->toBe($settings);
 
         // 3. Create new draft
-        $newElements = [['type' => 'email', 'id' => '2', 'properties' => ['label' => 'Email']]];
+        $newElements = [['type' => FormElementType::EMAIL->value, 'id' => '2', 'properties' => ['label' => 'Email']]];
         $newSettings = ['backgroundColor' => '#000'];
         $newName = ['en' => 'Updated Contact Form'];
 

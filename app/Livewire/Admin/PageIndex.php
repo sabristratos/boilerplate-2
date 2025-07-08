@@ -48,7 +48,7 @@ class PageIndex extends Component
         $this->pageService = $pageService;
     }
 
-    public function getPagesProperty()
+    public function getPagesProperty(): \Illuminate\Pagination\LengthAwarePaginator
     {
         return $this->pageService->getPagesWithFilters(
             $this->search,

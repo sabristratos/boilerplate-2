@@ -11,7 +11,7 @@ class IconService
 {
     private array $availableIcons;
 
-    private array $categories;
+    private readonly array $categories;
 
     /**
      * IconService constructor.

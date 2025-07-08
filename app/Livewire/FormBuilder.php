@@ -16,8 +16,9 @@ use App\Services\FormBuilder\ElementManager;
 use App\Services\FormBuilder\FieldNameGeneratorService;
 use App\Services\FormBuilder\IconService;
 use App\Services\FormBuilder\OptionParserService;
-use App\Services\FormBuilder\ValidationService;
-use App\Services\FormService;
+use App\Services\FormBuilder\FormValidationService;
+use App\Services\FormBuilder\FormPreviewService;
+use App\Services\Contracts\FormServiceInterface;
 use App\Traits\WithConfirmationModal;
 use App\Traits\WithToastNotifications;
 use Illuminate\Support\Str;
@@ -79,8 +80,6 @@ class FormBuilder extends Component
 
     private ElementManager $elementManager;
 
-    private ValidationService $validationService;
-
     private IconService $iconService;
 
     private ElementFactory $elementFactory;
@@ -88,45 +87,39 @@ class FormBuilder extends Component
     private OptionParserService $optionParser;
 
     private FieldNameGeneratorService $fieldNameGenerator;
-    private FormService $formService;
+    private FormServiceInterface $formService;
+
+    private FormValidationService $formValidationService;
+
+    private FormPreviewService $formPreviewService;
 
     /**
      * Boot the component with dependencies.
-     *
-     * @param ElementManager $elementManager
-     * @param ValidationService $validationService
-     * @param IconService $iconService
-     * @param ElementFactory $elementFactory
-     * @param OptionParserService $optionParser
-     * @param FieldNameGeneratorService $fieldNameGenerator
-     * @param FormService $formService
-     * @return void
      */
     public function boot(
         ElementManager $elementManager,
-        ValidationService $validationService,
         IconService $iconService,
         ElementFactory $elementFactory,
         OptionParserService $optionParser,
         FieldNameGeneratorService $fieldNameGenerator,
-        FormService $formService
-    ) {
+        FormServiceInterface $formService,
+        FormValidationService $formValidationService,
+        FormPreviewService $formPreviewService
+    ): void {
         $this->elementManager = $elementManager;
-        $this->validationService = $validationService;
         $this->iconService = $iconService;
         $this->elementFactory = $elementFactory;
         $this->optionParser = $optionParser;
         $this->fieldNameGenerator = $fieldNameGenerator;
         $this->formService = $formService;
+        $this->formValidationService = $formValidationService;
+        $this->formPreviewService = $formPreviewService;
     }
 
     /**
      * Mount the component with the given form ID.
-     *
-     * @param int $id
-     * @return void
      */
-    public function mount(int $id)
+    public function mount(int $id): void
     {
         $this->form = Form::findOrFail($id);
         $latestRevision = $this->form->latestRevision();
@@ -149,26 +142,24 @@ class FormBuilder extends Component
         $this->updateSelectedElementData();
 
         // Ensure proper structure for all elements
-        $this->ensureValidationStructure();
-        $this->ensurePropertiesStructure();
+        $this->elements = $this->formValidationService->ensureValidationStructure($this->elements);
+        $this->elements = $this->elementManager->ensurePropertiesStructure($this->elements);
     }
 
     /**
      * Hydrate the component when it's loaded from the database.
-     *
-     * @return void
      */
-    public function hydrate()
+    public function hydrate(): void
     {
         try {
             // Ensure preview form data is properly synchronized
-            $this->synchronizePreviewFormData();
+            $this->previewFormData = $this->formPreviewService->synchronizePreviewFormData($this->elements, $this->previewFormData);
             
             // Ensure validation structure is maintained
-            $this->ensureValidationStructure();
+            $this->elements = $this->formValidationService->ensureValidationStructure($this->elements);
             
             // Ensure properties structure is maintained
-            $this->ensurePropertiesStructure();
+            $this->elements = $this->elementManager->ensurePropertiesStructure($this->elements);
         } catch (\Exception $e) {
             logger()->error('Error during FormBuilder hydration', [
                 'error' => $e->getMessage(),
@@ -182,10 +173,8 @@ class FormBuilder extends Component
 
     /**
      * Clean up component state before serialization.
-     *
-     * @return void
      */
-    public function dehydrate()
+    public function dehydrate(): void
     {
         try {
             // Ensure all arrays are properly initialized to prevent serialization issues
@@ -246,111 +235,41 @@ class FormBuilder extends Component
         }
     }
 
-    /**
-     * Ensure all elements have proper validation structure.
-     */
-    private function ensureValidationStructure(): void
-    {
-        // Ensure all elements have proper validation structure
-        foreach ($this->elements as $index => $element) {
-            if (! isset($this->elements[$index]['validation'])) {
-                $this->elements[$index]['validation'] = config('forms.elements.default_validation');
-            } else {
-                // Ensure all required validation keys exist
-                $defaultValidation = config('forms.elements.default_validation');
-                foreach ($defaultValidation as $key => $defaultValue) {
-                    if (! isset($this->elements[$index]['validation'][$key])) {
-                        $this->elements[$index]['validation'][$key] = $defaultValue;
-                    }
-                }
-            }
-        }
-    }
 
-    /**
-     * Ensure all elements have proper properties structure.
-     */
-    private function ensurePropertiesStructure(): void
-    {
-        // Ensure all elements have proper properties structure
-        foreach ($this->elements as $index => $element) {
-            if (! isset($this->elements[$index]['properties'])) {
-                $this->elements[$index]['properties'] = [];
-            }
-
-            // Get the renderer for this element type to ensure proper default properties
-            $renderer = $this->elementFactory->getRenderer($element['type']);
-            if ($renderer) {
-                $defaultProperties = $renderer->getDefaultProperties();
-                foreach ($defaultProperties as $key => $defaultValue) {
-                    if (! isset($this->elements[$index]['properties'][$key])) {
-                        $this->elements[$index]['properties'][$key] = $defaultValue;
-                    }
-                }
-            }
-
-            // Special handling for date elements to ensure locale is always valid
-            if ($element['type'] === 'date') {
-                if (empty($this->elements[$index]['properties']['locale'])) {
-                    $this->elements[$index]['properties']['locale'] = 'en';
-                }
-            }
-        }
-    }
 
     /**
      * Add a new element of the given type.
-     *
-     * @param string $type
-     * @return void
      */
     public function addElement(string $type): void
     {
-        // Validate element type
-        if (! $this->elementFactory->getRenderer($type)) {
-            $this->handleValidationError(__('forms.errors.invalid_element_type', ['type' => $type]), 'element_type');
-            return;
-        }
-
         try {
-            // Add to elements array
+            // Add to elements array using the service (modifies by reference)
             $this->elementManager->addElement($this->elements, $type);
 
             // Select the newly added element (last element)
             $lastElement = end($this->elements);
             $this->selectElement($lastElement['id']);
 
-            // Ensure properties structure is maintained
-            $this->ensurePropertiesStructure();
-            
             // Initialize preview form data for the new element (skip submit button)
             if ($type !== 'submit_button') {
-                $fieldName = $this->generateFieldName($lastElement);
-                if (in_array($type, ['checkbox', 'radio'])) {
-                    $this->previewFormData[$fieldName] = [];
-                } else {
-                    $this->previewFormData[$fieldName] = '';
-                }
+                $this->previewFormData = $this->formPreviewService->addPreviewFormData($this->previewFormData, $lastElement);
             }
         } catch (\Exception $e) {
-            $this->handleValidationError($e->getMessage(), 'element_creation');
+            $this->addError('element_creation', $e->getMessage());
+            $this->showErrorToast($e->getMessage());
         }
     }
 
     /**
      * Delete an element by its ID.
-     *
-     * @param string $elementId
-     * @return void
      */
     #[On('deleteElement')]
     public function deleteElement(string $elementId): void
     {
         // Find the element before deletion to get its field name
         $element = $this->elementManager->findElement($this->elements, $elementId);
-        $fieldName = $element ? $this->generateFieldName($element) : null;
         
-        // Remove from elements array
+        // Remove from elements array (modifies by reference)
         $this->elementManager->deleteElement($this->elements, $elementId);
 
         // Clear selection if the deleted element was selected
@@ -359,8 +278,8 @@ class FormBuilder extends Component
         }
 
         // Clean up preview form data for the deleted element
-        if ($fieldName && isset($this->previewFormData[$fieldName])) {
-            unset($this->previewFormData[$fieldName]);
+        if ($element) {
+            $this->previewFormData = $this->formPreviewService->removePreviewFormData($this->previewFormData, $element);
         }
 
         // Update selected element data
@@ -374,8 +293,10 @@ class FormBuilder extends Component
         $propertyPath = $data['propertyPath'];
         $optionsString = $data['optionsString'];
 
-        // Update the options string in the element
-        data_set($this->elements, "{$elementIndex}.properties.{$propertyPath}", $optionsString);
+        // Update the options string in the element directly
+        if (isset($this->elements[$elementIndex])) {
+            $this->elements[$elementIndex]['properties'][$propertyPath] = $optionsString;
+        }
         
         // Refresh the preview and edit elements
         if (isset($elementIndex)) {
@@ -394,9 +315,7 @@ class FormBuilder extends Component
 
     public function handleReorder(array $orderedOrders): void
     {
-        if (is_array($orderedOrders)) {
-            $this->elementManager->reorderElements($this->elements, $orderedOrders);
-        }
+        $this->elementManager->reorderElements($this->elements, $orderedOrders);
     }
 
     public function save(): void
@@ -412,7 +331,7 @@ class FormBuilder extends Component
 
             // Validate the DTO
             if (!$formDto->isValid()) {
-                $this->handleValidationError($formDto->getValidationErrorsAsString(), 'form');
+                $this->addError('form', $formDto->getValidationErrorsAsString());
                 return;
             }
 
@@ -436,27 +355,28 @@ class FormBuilder extends Component
                 'trace' => $e->getTraceAsString()
             ]);
 
-            $this->handleValidationError(__('forms.errors.failed_to_save_form'), 'form');
+            $this->addError('form', __('forms.errors.failed_to_save_form'));
+            $this->showErrorToast(__('forms.errors.failed_to_save_form'));
         }
     }
 
-    public function updatedname($value, $key)
+    public function updatedname($value, $key): void
     {
         // Handle draft name updates
         $this->dispatch('draft-name-updated', key: $key, value: $value);
     }
 
-    public function updatedelements($value, $key)
+    public function updatedelements($value, $key): void
     {
         try {
             // Clear options cache when elements are updated
             $this->clearOptionsCache();
 
             // Parse the key once to avoid multiple explode() calls
-            $parts = explode('.', $key);
+            $parts = explode('.', (string) $key);
             $elementIndex = null;
             
-            if (count($parts) >= 1 && is_numeric($parts[0])) {
+            if (is_numeric($parts[0])) {
                 $elementIndex = (int) $parts[0];
             }
 
@@ -471,10 +391,8 @@ class FormBuilder extends Component
             }
 
             // Handle locale property updates to ensure it's never empty
-            if (str_contains($key, 'properties.locale') && $elementIndex !== null) {
-                if (empty($value)) {
-                    $this->elements[$elementIndex]['properties']['locale'] = 'en';
-                }
+            if (str_contains((string) $key, 'properties.locale') && $elementIndex !== null && empty($value)) {
+                $this->elements[$elementIndex]['properties']['locale'] = 'en';
             }
 
             // Handle checkbox and radio field preview data initialization
@@ -483,15 +401,13 @@ class FormBuilder extends Component
                 $fieldName = $this->generateFieldName($element);
                 
                 // Ensure checkbox and radio fields have array values in preview data
-                if (in_array($element['type'], ['checkbox', 'radio'])) {
-                    if (!isset($this->previewFormData[$fieldName]) || !is_array($this->previewFormData[$fieldName])) {
-                        $this->previewFormData[$fieldName] = [];
-                    }
+                if (in_array($element['type'], ['checkbox', 'radio']) && (!isset($this->previewFormData[$fieldName]) || !is_array($this->previewFormData[$fieldName]))) {
+                    $this->previewFormData[$fieldName] = [];
                 }
             }
 
             // Handle validation rule activation based on input values
-            if (str_contains($key, 'validation.values.') && count($parts) >= 4) {
+            if (str_contains((string) $key, 'validation.values.') && count($parts) >= 4) {
                 $ruleKey = $parts[3];
 
                 // Ensure the validation structure exists
@@ -512,7 +428,7 @@ class FormBuilder extends Component
                     }
                 } else {
                     // Remove the rule if input is empty
-                    $rules = array_values(array_filter($rules, fn ($rule) => $rule !== $ruleKey));
+                    $rules = array_values(array_filter($rules, fn ($rule): bool => $rule !== $ruleKey));
 
                     // Also remove any associated messages
                     if (isset($this->elements[$elementIndex]['validation']['messages'][$ruleKey])) {
@@ -533,7 +449,7 @@ class FormBuilder extends Component
             $this->refreshRenderedElements();
 
             // Ensure properties structure is maintained after updates
-            $this->ensurePropertiesStructure();
+            $this->elementManager->ensurePropertiesStructure($this->elements);
 
             // Dispatch event for real-time updates with more detailed information
             $this->dispatch('element-updated', [
@@ -550,7 +466,7 @@ class FormBuilder extends Component
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Don't add error to avoid breaking the UI, just log it
         }
     }
@@ -559,9 +475,6 @@ class FormBuilder extends Component
 
     /**
      * Select an element by its ID.
-     *
-     * @param string $elementId
-     * @return void
      */
     public function selectElement(string $elementId): void
     {
@@ -624,7 +537,7 @@ class FormBuilder extends Component
         ]);
     }
 
-    public function refreshPreviewElement($elementIndex)
+    public function refreshPreviewElement($elementIndex): void
     {
         if (isset($this->elements[$elementIndex])) {
             $element = $this->elements[$elementIndex];
@@ -647,7 +560,7 @@ class FormBuilder extends Component
         }
     }
 
-    public function refreshEditElement($elementIndex)
+    public function refreshEditElement($elementIndex): void
     {
         if (isset($this->elements[$elementIndex])) {
             $element = $this->elements[$elementIndex];
@@ -664,96 +577,59 @@ class FormBuilder extends Component
 
     public function updateElementWidth(string $elementId, string $breakpoint, string $width): void
     {
-        $this->elementManager->updateElementWidth($this->elements, $elementId, $breakpoint, $width);
+        try {
+            $this->elementManager->updateElementWidth($this->elements, $elementId, $breakpoint, $width);
+        } catch (\Exception) {
+            // Silently handle the error as this is a UI update
+        }
     }
 
     public function updateElementAlignment(string $elementId, string $breakpoint, string $alignment): void
     {
-        $elementIndex = $this->elementManager->findElementIndex($this->elements, $elementId);
-        
-        if ($elementIndex !== null) {
-            // Ensure the styles structure exists
-            if (!isset($this->elements[$elementIndex]['styles'])) {
-                $this->elements[$elementIndex]['styles'] = [];
-            }
-            if (!isset($this->elements[$elementIndex]['styles'][$breakpoint])) {
-                $this->elements[$elementIndex]['styles'][$breakpoint] = [];
-            }
-            
-            // Update the alignment
-            $this->elements[$elementIndex]['styles'][$breakpoint]['alignment'] = $alignment;
+        try {
+            $this->elementManager->updateElementAlignment($this->elements, $elementId, $breakpoint, $alignment);
             
             // Refresh the preview and edit elements
-            $this->refreshPreviewElement($elementIndex);
-            $this->refreshEditElement($elementIndex);
-            
-            // Force refresh of rendered elements to update the canvas
-            $this->refreshRenderedElements();
+            $elementIndex = $this->elementManager->findElementIndex($this->elements, $elementId);
+            if ($elementIndex !== null) {
+                $this->refreshPreviewElement($elementIndex);
+                $this->refreshEditElement($elementIndex);
+                
+                // Force refresh of rendered elements to update the canvas
+                $this->refreshRenderedElements();
+            }
+        } catch (\Exception) {
+            // Silently handle the error as this is a UI update
         }
     }
 
     public function updateValidationRules(string $elementId, array $rules): void
     {
-        $this->validationService->updateValidationRules($this->elements, $elementId, $rules);
+        $this->formValidationService->updateValidationRules($this->elements, $elementId, $rules);
     }
 
     public function updateValidationMessage(string $elementId, string $rule, string $message): void
     {
-        $this->validationService->updateValidationMessage($this->elements, $elementId, $rule, $message);
+        $this->formValidationService->updateValidationMessage($this->elements, $elementId, $rule, $message);
     }
 
     public function updateValidationRuleValue(string $elementId, string $rule, string $value): void
     {
-        $this->validationService->updateValidationRuleValue($this->elements, $elementId, $rule, $value);
+        $this->formValidationService->updateValidationRuleValue($this->elements, $elementId, $rule, $value);
     }
 
-    public function toggleValidationRule(string $elementIndex, string $ruleKey): void
+    public function toggleValidationRule(string $elementId, string $ruleKey): void
     {
-        // Ensure the validation structure exists
-        if (! isset($this->elements[$elementIndex]['validation'])) {
-            $this->elements[$elementIndex]['validation'] = config('forms.elements.default_validation');
+        $elementIndex = $this->elementManager->findElementIndex($this->elements, $elementId);
+        if ($elementIndex === null) {
+            return; // Element not found, do nothing
         }
-
-        if (! isset($this->elements[$elementIndex]['validation']['rules'])) {
-            $this->elements[$elementIndex]['validation']['rules'] = [];
-        }
-
-        $rules = $this->elements[$elementIndex]['validation']['rules'];
-
-        // Toggle the rule
-        if (in_array($ruleKey, $rules)) {
-            // Remove the rule
-            $rules = array_values(array_filter($rules, fn ($rule) => $rule !== $ruleKey));
-
-            // Also remove any associated values and messages
-            if (isset($this->elements[$elementIndex]['validation']['values'][$ruleKey])) {
-                unset($this->elements[$elementIndex]['validation']['values'][$ruleKey]);
-            }
-            if (isset($this->elements[$elementIndex]['validation']['messages'][$ruleKey])) {
-                unset($this->elements[$elementIndex]['validation']['messages'][$ruleKey]);
-            }
-        } else {
-            // Add the rule
-            $rules[] = $ruleKey;
-        }
-
-        $this->elements[$elementIndex]['validation']['rules'] = $rules;
+        $this->elements = $this->formValidationService->toggleValidationRule($this->elements, $elementIndex, $ruleKey);
     }
 
     public function getValidationPlaceholder(string $ruleKey): string
     {
-        return match ($ruleKey) {
-            'min' => 'e.g., 3 (minimum characters)',
-            'max' => 'e.g., 50 (maximum characters)',
-            'min_value' => 'e.g., 0 (minimum value)',
-            'max_value' => 'e.g., 100 (maximum value)',
-            'date_after' => 'e.g., 2024-01-01 (date after)',
-            'date_before' => 'e.g., 2024-12-31 (date before)',
-            'regex' => 'e.g., ^[A-Za-z]+$ (letters only)',
-            'mimes' => 'e.g., jpg,png,pdf (file types)',
-            'max_file_size' => 'e.g., 2048 (kilobytes)',
-            default => 'Enter value...',
-        };
+        return $this->formValidationService->getValidationPlaceholder($ruleKey);
     }
 
     #[Computed]
@@ -787,7 +663,7 @@ class FormBuilder extends Component
             return $this->cachedOptions[$cacheKey];
         }
 
-        if (! $this->selectedElement || $this->selectedElement['type'] !== 'select') {
+        if ($this->selectedElement === null || $this->selectedElement === [] || $this->selectedElement['type'] !== 'select') {
             $this->cachedOptions[$cacheKey] = [];
             return [];
         }
@@ -809,7 +685,7 @@ class FormBuilder extends Component
     #[Computed]
     public function selectedElementOptionsArray(): array
     {
-        if (! $this->selectedElement || ! in_array($this->selectedElement['type'], ['select', 'checkbox', 'radio'])) {
+        if ($this->selectedElement === null || $this->selectedElement === [] || ! in_array($this->selectedElement['type'], ['select', 'checkbox', 'radio'])) {
             return [
                 [
                     'value' => '',
@@ -823,46 +699,33 @@ class FormBuilder extends Component
 
     public function getElementOptionsArray(int $elementIndex): array
     {
-        $element = $this->elements[$elementIndex] ?? null;
-        if (! $element) {
-            return [
-                [
-                    'value' => '',
-                    'label' => '',
-                ],
-            ];
+        if (!isset($this->elements[$elementIndex])) {
+            return [];
         }
 
-        $options = $element['properties']['options'] ?? '';
+        $options = $this->elements[$elementIndex]['properties']['options'] ?? '';
 
-        // If options is already an array, return it directly
         if (is_array($options)) {
             return $options;
         }
 
-        // If options is a string, parse it using the injected OptionParserService
+        // Parse options from string format using injected OptionParserService
         return $this->optionParser->parseOptions($options);
     }
 
     public function parseOptionsForPreview($options): array
     {
-        // If options is already an array, return it directly
-        if (is_array($options)) {
-            return $options;
-        }
-
-        // If options is a string, parse it using the injected OptionParserService
         return $this->optionParser->parseOptionsForPreview($options);
     }
 
     #[Computed]
     public function availableValidationRules(): array
     {
-        if (! $this->selectedElement) {
+        if ($this->selectedElement === null || $this->selectedElement === []) {
             return [];
         }
 
-        return $this->validationService->getRelevantRules($this->selectedElement['type']);
+        return $this->formValidationService->getAvailableValidationRules($this->selectedElement['type']);
     }
 
     #[Computed]
@@ -873,12 +736,12 @@ class FormBuilder extends Component
 
     public function generateValidationRules(array $element): array
     {
-        return $this->validationService->generateRules($element);
+        return $this->formValidationService->generateValidationRules($element);
     }
 
     public function generateValidationMessages(array $element): array
     {
-        return $this->validationService->generateMessages($element);
+        return $this->formValidationService->generateValidationMessages($element);
     }
 
     #[Computed]
@@ -892,7 +755,7 @@ class FormBuilder extends Component
         $this->isPreviewMode = ! $this->isPreviewMode;
 
         if ($this->isPreviewMode) {
-            $this->initializePreviewFormData();
+            $this->previewFormData = $this->formPreviewService->initializePreviewFormData($this->elements);
         }
     }
 
@@ -943,66 +806,15 @@ class FormBuilder extends Component
         }
     }
 
-    private function initializePreviewFormData(): void
-    {
-        $this->previewFormData = [];
 
-        foreach ($this->elements as $element) {
-            // Skip submit button as it's not a form field that collects data
-            if ($element['type'] === 'submit_button') {
-                continue;
-            }
-            
-            $fieldName = $this->generateFieldName($element);
-            
-            // Initialize checkbox and radio fields with empty arrays
-            // since they can have multiple selected values
-            if (in_array($element['type'], ['checkbox', 'radio'])) {
-                $this->previewFormData[$fieldName] = [];
-            } else {
-                $this->previewFormData[$fieldName] = '';
-            }
-        }
-    }
-
-    private function synchronizePreviewFormData(): void
-    {
-        // Initialize preview form data for all current elements
-        foreach ($this->elements as $element) {
-            // Skip submit button as it's not a form field that collects data
-            if ($element['type'] === 'submit_button') {
-                continue;
-            }
-            
-            $fieldName = $this->generateFieldName($element);
-            
-            // Initialize checkbox and radio fields with empty arrays
-            // since they can have multiple selected values
-            if (in_array($element['type'], ['checkbox', 'radio'])) {
-                if (!isset($this->previewFormData[$fieldName]) || !is_array($this->previewFormData[$fieldName])) {
-                    $this->previewFormData[$fieldName] = [];
-                }
-            } else {
-                if (!isset($this->previewFormData[$fieldName])) {
-                    $this->previewFormData[$fieldName] = '';
-                }
-            }
-        }
-    }
-
-    private function generateFieldName(array $element): string
-    {
-        return $this->fieldNameGenerator->generateFieldName($element);
-    }
 
     public function submitPreview(): void
     {
-        $errorHandler = app(\App\Services\FormBuilder\FormSubmissionErrorHandler::class);
-        $result = $errorHandler->handleSubmission($this->form, $this->previewFormData);
+        $result = $this->formPreviewService->submitPreview($this->form, $this->previewFormData);
 
         if ($result['success']) {
             $this->showSuccessToast('Form submitted successfully! (Preview Mode)');
-            $this->initializePreviewFormData();
+            $this->previewFormData = $this->formPreviewService->initializePreviewFormData($this->elements);
         } else {
             // Handle validation errors
             if (! empty($result['errors'])) {
@@ -1021,44 +833,13 @@ class FormBuilder extends Component
     #[Computed]
     public function hasChanges(): bool
     {
-        $latestRevision = $this->form->latestRevision();
-
-        if (! $latestRevision) {
-            // If there are no revisions, check if there are any elements or settings.
-            return ! empty($this->elements) || ! empty($this->settings) || ! empty($this->name);
-        }
-
-        $revisionData = $latestRevision->data;
-
-        $currentData = [
-            'name' => $this->name,
-            'elements' => $this->elements,
-            'settings' => $this->settings,
-        ];
-
-        // Normalize data for comparison
-        $normalizedRevisionData = json_decode(json_encode($revisionData), true);
-        $normalizedCurrentData = json_decode(json_encode($currentData), true);
-        
-        return $normalizedRevisionData !== $normalizedCurrentData;
+        return $this->formPreviewService->hasChanges($this->form, $this->name, $this->elements, $this->settings);
     }
 
     #[Computed]
     public function renderedElements(): array
     {
-        return collect($this->elements)->map(function ($element, $index) {
-            $fieldName = $this->generateFieldName($element);
-            
-            // For submit button elements, we need to pass the active breakpoint
-            if ($element['type'] === 'submit_button') {
-                // Store the active breakpoint in the element data temporarily
-                $elementWithBreakpoint = $element;
-                $elementWithBreakpoint['properties']['_activeBreakpoint'] = $this->activeBreakpoint;
-                return $this->elementFactory->renderElement($elementWithBreakpoint, 'preview', $fieldName);
-            }
-            
-            return $this->elementFactory->renderElement($element, 'preview', $fieldName);
-        })->toArray();
+        return $this->formPreviewService->renderElements($this->elements, $this->activeBreakpoint);
     }
 
     /**
@@ -1073,9 +854,6 @@ class FormBuilder extends Component
 
     /**
      * Save element draft data from JavaScript.
-     *
-     * @param array $data
-     * @return void
      */
     #[On('saveElementDraft')]
     public function saveElementDraft(array $data): void
@@ -1088,36 +866,23 @@ class FormBuilder extends Component
             return;
         }
 
-        if (empty($state)) {
-            $this->addError('draft_save', 'Element state cannot be empty');
-            return;
+        try {
+            // Find the element and update its state
+            $index = $this->elementManager->findElementIndex($this->elements, $elementId);
+            if ($index !== null) {
+                $this->elements[$index] = array_merge($this->elements[$index], $state);
+                
+                // Refresh preview and edit elements
+                $this->refreshPreviewElement($index);
+                $this->refreshEditElement($index);
+            }
+        } catch (\Exception $e) {
+            $this->addError('draft_save', $e->getMessage());
         }
-
-        $index = $this->elementManager->findElementIndex($this->elements, $elementId);
-        
-        if ($index === null) {
-            $this->addError('draft_save', __('forms.errors.element_not_found', ['id' => $elementId]));
-            return;
-        }
-
-        // Update the element with the new state
-        $this->elements[$index] = array_merge($this->elements[$index], $state);
-        
-        // Ensure properties structure is maintained
-        $this->ensurePropertiesStructure();
-        
-        // Refresh preview and edit elements
-        $this->refreshPreviewElement($index);
-        $this->refreshEditElement($index);
-        
-        logger()->debug('Element draft saved', ['elementId' => $elementId]);
     }
 
     /**
      * Load element data for JavaScript editing.
-     *
-     * @param array $data
-     * @return void
      */
     #[On('loadElementData')]
     public function loadElementData(array $data): void
@@ -1129,41 +894,22 @@ class FormBuilder extends Component
             return;
         }
 
-        $element = $this->elementManager->findElement($this->elements, $elementId);
-        
-        if (! $element) {
-            $this->addError('element_load', __('forms.errors.element_not_found', ['id' => $elementId]));
-            return;
+        try {
+            $element = $this->elementManager->findElement($this->elements, $elementId);
+
+            $this->dispatch('element-data-loaded', [
+                'elementId' => $elementId,
+                'elementState' => $element
+            ]);
+        } catch (\Exception $e) {
+            $this->addError('element_load', $e->getMessage());
         }
-
-        $this->dispatch('element-data-loaded', [
-            'elementId' => $elementId,
-            'elementState' => $element
-        ]);
-        
-        logger()->debug('Element data loaded', ['elementId' => $elementId]);
     }
 
-    /**
-     * Handle form validation errors and provide user feedback.
-     *
-     * @param string $error
-     * @param string $context
-     * @return void
-     */
-    private function handleValidationError(string $error, string $context = 'form'): void
-    {
-        logger()->error("Form validation error in {$context}: {$error}");
-        $this->addError($context, $error);
-        
-        // Show toast notification for user feedback
-        $this->showErrorToast("Form error: {$error}");
-    }
+
 
     /**
      * Validate the form structure and ensure data integrity.
-     *
-     * @return void
      */
     private function validateFormStructure(): void
     {
@@ -1200,7 +946,7 @@ class FormBuilder extends Component
             }
 
             // Validate element type
-            if (! $this->elementFactory->getRenderer($element['type'])) {
+            if (!$this->elementFactory->getRenderer($element['type']) instanceof \App\Services\FormBuilder\Contracts\ElementRendererInterface) {
                 unset($this->elements[$index]);
                 continue;
             }
@@ -1212,8 +958,6 @@ class FormBuilder extends Component
 
     /**
      * Clear the options cache when elements are updated.
-     *
-     * @return void
      */
     private function clearOptionsCache(): void
     {
@@ -1225,22 +969,22 @@ class FormBuilder extends Component
         return view('livewire.form-builder');
     }
 
-    public function duplicateElement($elementId): void
+    public function duplicateElement(string $elementId): void
     {
         try {
-            $originalIndex = $this->elementManager->findElementIndex($this->elements, $elementId);
-            if ($originalIndex === null) {
-                $this->handleValidationError(__('forms.errors.element_not_found', ['id' => $elementId]), 'element_duplication');
-                return;
-            }
+            // Duplicate the element using the service (modifies by reference)
             $this->elementManager->duplicateElement($this->elements, $elementId);
-            $this->ensurePropertiesStructure();
-            $this->ensureValidationStructure();
-            $newElement = end($this->elements);
-            $this->selectElement($newElement['id']);
+            
+            // Get the last element (the duplicated one)
+            $lastElement = end($this->elements);
+            
+            // Select the newly duplicated element
+            $this->selectElement($lastElement['id']);
+            
             $this->showSuccessToast(__('forms.buttons.duplicate') . ' ' . __('forms.ui.form_submitted'));
         } catch (\Exception $e) {
-            $this->handleValidationError($e->getMessage(), 'element_duplication');
+            $this->addError('element_duplication', $e->getMessage());
+            $this->showErrorToast($e->getMessage());
         }
     }
 

@@ -18,11 +18,6 @@ class TemporaryMedia extends Model implements HasMedia
         'field_name',
     ];
 
-    protected $casts = [
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-    ];
-
     /**
      * Register media collections for the model.
      */
@@ -64,5 +59,28 @@ class TemporaryMedia extends Model implements HasMedia
     public static function cleanupOld(): int
     {
         return static::where('created_at', '<', now()->subDay())->delete();
+    }
+
+    /**
+     * Clear temporary media for a specific session and field.
+     */
+    public static function clearForSession(string $sessionId, string $fieldName): bool
+    {
+        $temporaryMedia = static::getForSession($sessionId, $fieldName);
+        
+        if ($temporaryMedia) {
+            $temporaryMedia->clearMediaCollection('temp');
+            $temporaryMedia->delete();
+            return true;
+        }
+        
+        return false;
+    }
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+            'updated_at' => 'datetime',
+        ];
     }
 }

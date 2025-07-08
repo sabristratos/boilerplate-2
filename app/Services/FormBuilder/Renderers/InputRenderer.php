@@ -2,6 +2,7 @@
 
 namespace App\Services\FormBuilder\Renderers;
 
+use App\Enums\FormElementType;
 use App\Services\FormBuilder\ElementDTO;
 
 /**
@@ -14,7 +15,7 @@ class InputRenderer extends BaseElementRenderer
      */
     public function supports(string $type): bool
     {
-        return in_array($type, ['text', 'email']);
+        return in_array($type, [FormElementType::TEXT->value, FormElementType::EMAIL->value]);
     }
 
     /**
@@ -42,7 +43,7 @@ class InputRenderer extends BaseElementRenderer
         $fluxProps = $properties['fluxProps'] ?? [];
 
         return [
-            'type' => $element->type === 'email' ? 'email' : 'text',
+            'type' => $element->type === FormElementType::EMAIL->value ? 'email' : 'text',
             'label' => $properties['label'] ?? 'Text Input',
             'placeholder' => $properties['placeholder'] ?? '',
             'required' => in_array('required', $element->validation['rules'] ?? []),
@@ -72,7 +73,7 @@ class InputRenderer extends BaseElementRenderer
         $data['mode'] = $mode;
 
         // Use the provided fieldName if available
-        if ($fieldName) {
+        if ($fieldName !== null && $fieldName !== '' && $fieldName !== '0') {
             $data['wireModel'] = "previewFormData.{$fieldName}";
         }
 
@@ -102,7 +103,7 @@ class InputRenderer extends BaseElementRenderer
         $properties = parent::getDefaultProperties();
 
         // Add input-specific properties
-        $properties['type'] = 'text';
+        $properties['type'] = FormElementType::TEXT->value;
 
         return $properties;
     }

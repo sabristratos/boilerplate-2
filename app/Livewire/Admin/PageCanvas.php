@@ -118,11 +118,11 @@ class PageCanvas extends Component
 
         // Get block data from the latest revision or fall back to current model data
         $latestRevision = $block->latestRevision();
-        $blockData = $latestRevision && isset($latestRevision->data['data'])
+        $blockData = $latestRevision instanceof \App\Models\Revision && isset($latestRevision->data['data'])
             ? $latestRevision->data['data']
             : $block->getTranslatedData($this->activeLocale);
 
-        $blockSettings = $latestRevision && isset($latestRevision->data['settings'])
+        $blockSettings = $latestRevision instanceof \App\Models\Revision && isset($latestRevision->data['settings'])
             ? $latestRevision->data['settings']
             : $block->getSettingsArray();
 
@@ -179,7 +179,7 @@ class PageCanvas extends Component
 
             $this->dispatch('block-order-updated', ['sort' => $sort]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.block_order_update_failed_text'),
                 __('messages.page_manager.block_order_update_failed_title')
@@ -231,7 +231,7 @@ class PageCanvas extends Component
 
             $this->dispatch('block-deleted', ['blockId' => $blockId]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.block_deletion_failed_text'),
                 __('messages.page_manager.block_deletion_failed_title')

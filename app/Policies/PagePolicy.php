@@ -19,7 +19,7 @@ class PagePolicy
         }
 
         // Draft pages require authentication and proper permissions
-        if (! $user) {
+        if (!$user instanceof \App\Models\User) {
             return false;
         }
 

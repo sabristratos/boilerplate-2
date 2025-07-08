@@ -1,6 +1,7 @@
 @props(['selectedElement', 'selectedElementIndex', 'availableValidationRules'])
+@if($selectedElement['type'] !== \App\Enums\FormElementType::SubmitButton->value)
 <div class="space-y-4">
-    <flux:heading size="md" class="flex items-center gap-2">
+    <flux:heading size="lg" class="flex items-center gap-2">
         <flux:icon name="shield-check" class="size-5" />
         Validation Rules
         <flux:tooltip toggleable>
@@ -28,10 +29,10 @@
 
         <!-- Required Field Toggle -->
         <div class="space-y-3">
-            <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Basic</flux:heading>
+            <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Basic</flux:heading>
             <flux:field variant="inline">
                 <flux:checkbox 
-                    wire:click="toggleValidationRule('{{ $selectedElementIndex }}', 'required')" 
+                    wire:click="toggleValidationRule('{{ $selectedElement['id'] }}', 'required')" 
                     value="required"
                     :checked="in_array('required', $selectedRules)"
                 />
@@ -58,7 +59,7 @@
         <!-- Length Validation: Min/Max always visible and grouped -->
         @if(isset($groupedRules['Length']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Length</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Length</flux:heading>
                 
                 <div class="flex gap-2">
                     @foreach($groupedRules['Length'] as $ruleKey => $rule)
@@ -93,7 +94,7 @@
         <!-- Format Validation: regex and others -->
         @if(isset($groupedRules['Format']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Format</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Format</flux:heading>
                 @foreach($groupedRules['Format'] as $ruleKey => $rule)
                     @if($ruleKey === 'regex')
                         <flux:input 
@@ -115,7 +116,7 @@
                     @elseif(!$rule['has_value'])
                         <flux:field variant="inline">
                             <flux:checkbox 
-                                wire:click="toggleValidationRule('{{ $selectedElementIndex }}', '{{ $ruleKey }}')" 
+                                wire:click="toggleValidationRule('{{ $selectedElement['id'] }}', '{{ $ruleKey }}')" 
                                 value="{{ $ruleKey }}"
                                 :checked="in_array('{{ $ruleKey }}', $selectedRules)"
                             />
@@ -145,7 +146,7 @@
         <!-- Range Validation: min_value/max_value always visible and grouped -->
         @if(isset($groupedRules['Range']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Range</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Range</flux:heading>
                 <div class="flex gap-2">
                     @foreach(['min_value', 'max_value'] as $ruleKey)
                         @if(isset($groupedRules['Range'][$ruleKey]))
@@ -176,7 +177,7 @@
                     @if(!$rule['has_value'])
                         <flux:field variant="inline">
                             <flux:checkbox 
-                                wire:click="toggleValidationRule('{{ $selectedElementIndex }}', '{{ $ruleKey }}')" 
+                                wire:click="toggleValidationRule('{{ $selectedElement['id'] }}', '{{ $ruleKey }}')" 
                                 value="{{ $ruleKey }}"
                                 :checked="in_array('{{ $ruleKey }}', $selectedRules)"
                             />
@@ -206,7 +207,7 @@
         <!-- Date Range Validation: always visible -->
         @if(isset($groupedRules['Date Range']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Date Range</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Date Range</flux:heading>
                 @foreach($groupedRules['Date Range'] as $ruleKey => $rule)
                     <flux:input 
                         wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
@@ -232,11 +233,11 @@
         <!-- Security Validation -->
         @if(isset($groupedRules['Security']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Security</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Security</flux:heading>
                 @foreach($groupedRules['Security'] as $ruleKey => $rule)
                     <flux:field variant="inline">
                         <flux:checkbox 
-                            wire:click="toggleValidationRule('{{ $selectedElementIndex }}', '{{ $ruleKey }}')" 
+                            wire:click="toggleValidationRule('{{ $selectedElement['id'] }}', '{{ $ruleKey }}')" 
                             value="{{ $ruleKey }}"
                             :checked="in_array('{{ $ruleKey }}', $selectedRules)"
                         />
@@ -265,7 +266,7 @@
         <!-- Size Validation: always visible -->
         @if(isset($groupedRules['Size']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Size</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Size</flux:heading>
                 @foreach($groupedRules['Size'] as $ruleKey => $rule)
                     <flux:input 
                         wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
@@ -292,7 +293,7 @@
         <!-- Advanced Validation: always visible -->
         @if(isset($groupedRules['Advanced']))
             <div class="space-y-3">
-                <flux:heading size="sm" class="text-zinc-600 dark:text-zinc-400">Advanced</flux:heading>
+                <flux:heading size="md" class="text-zinc-600 dark:text-zinc-400">Advanced</flux:heading>
                 @foreach($groupedRules['Advanced'] as $ruleKey => $rule)
                     <flux:input 
                         wire:model.live.debounce.500ms="elements.{{ $selectedElementIndex }}.validation.values.{{ $ruleKey }}" 
@@ -315,4 +316,5 @@
         @endif
 
     @endif
-</div> 
+</div>
+@endif 

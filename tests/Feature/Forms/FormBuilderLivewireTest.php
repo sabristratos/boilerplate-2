@@ -2,52 +2,53 @@
 
 declare(strict_types=1);
 
+use App\Enums\FormElementType;
 use App\Livewire\FormBuilder;
 use App\Models\Form;
 use App\Models\User;
 use Livewire\Livewire;
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->form = Form::factory()->for($this->user)->create();
     // Create an initial published revision
     $this->form->createRevision([
         'name' => ['en' => 'Test Form'],
-        'elements' => [
-            [
-                'id' => '1',
-                'type' => 'text',
-                'order' => 0,
-                'properties' => ['label' => 'Name'],
-                'validation' => ['rules' => ['required']],
+                    'elements' => [
+                [
+                    'id' => '1',
+                    'type' => FormElementType::TEXT->value,
+                    'order' => 0,
+                    'properties' => ['label' => 'Name'],
+                    'validation' => ['rules' => ['required']],
+                ],
             ],
-        ],
         'settings' => ['backgroundColor' => '#fff'],
     ], is_published: true);
 });
 
-describe('FormBuilder Livewire Component', function () {
-    it('can mount and load the latest revision', function () {
+describe('FormBuilder Livewire Component', function (): void {
+    it('can mount and load the latest revision', function (): void {
         // Create a draft revision to ensure it loads this one
         $this->form->createRevision([
             'name' => ['en' => 'Draft Form'],
-            'elements' => [['id' => '2', 'type' => 'email']],
+            'elements' => [['id' => '2', 'type' => FormElementType::EMAIL->value]],
             'settings' => [],
         ], is_published: false);
 
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->assertSet('form.id', $this->form->id)
-            ->assertSet('elements.0.type', 'email')
+            ->assertSet('elements.0.type', FormElementType::EMAIL->value)
             ->assertSet('name.en', 'Draft Form');
     });
 
-    it('can add a new element', function () {
+    it('can add a new element', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->call('addElement', 'text')
+            ->call('addElement', FormElementType::TEXT->value)
             ->assertCount('elements', 2); // Original + new element
     });
 
-    it('can delete an element', function () {
+    it('can delete an element', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->set('selectedElementId', '1')
             ->call('deleteElement', '1')
@@ -64,13 +65,13 @@ describe('FormBuilder Livewire Component', function () {
     //         ->assertSet('draftElements.0.properties.label', 'Updated Label');
     // });
 
-    it('can update validation rules', function () {
+    it('can update validation rules', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('updateValidationRules', '1', ['required', 'email'])
             ->assertSet('draftElements.0.validation.rules', ['required', 'email']);
     });
 
-    it('can toggle validation rules', function () {
+    it('can toggle validation rules', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('toggleValidationRule', 0, 'email')
             ->assertSet('draftElements.0.validation.rules', ['required', 'email'])
@@ -78,27 +79,27 @@ describe('FormBuilder Livewire Component', function () {
             ->assertSet('draftElements.0.validation.rules', ['required']);
     });
 
-    it('can update element width for breakpoints', function () {
+    it('can update element width for breakpoints', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('updateElementWidth', '1', 'desktop', 'full')
             ->assertSet('draftElements.0.styles.desktop.width', 'full');
     });
 
-    it('can handle element reordering', function () {
+    it('can handle element reordering', function (): void {
         // Add a second element
         $this->form->elements = [
-            ['id' => '1', 'type' => 'text', 'order' => 0],
-            ['id' => '2', 'type' => 'email', 'order' => 1],
+            ['id' => '1', 'type' => FormElementType::TEXT->value, 'order' => 0],
+            ['id' => '2', 'type' => FormElementType::EMAIL->value, 'order' => 1],
         ];
         $this->form->save();
 
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('handleReorder', [1, 0]) // Reorder: email first, then text
-            ->assertSet('draftElements.0.type', 'email')
-            ->assertSet('draftElements.1.type', 'text');
+            ->assertSet('draftElements.0.type', FormElementType::EMAIL->value)
+            ->assertSet('draftElements.1.type', FormElementType::TEXT->value);
     });
 
-    it('can toggle preview mode', function () {
+    it('can toggle preview mode', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->assertSet('isPreviewMode', false)
             ->call('togglePreview')
@@ -107,15 +108,15 @@ describe('FormBuilder Livewire Component', function () {
             ->assertSet('isPreviewMode', false);
     });
 
-    it('can load prebuilt forms', function () {
+    it('can load prebuilt forms', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->call('loadPrebuiltForm', \App\Services\FormBuilder\PrebuiltForms\ContactForm::class)
-            ->assertSet('draftElements.0.type', 'text')
-            ->assertSet('draftElements.1.type', 'email')
-            ->assertSet('draftElements.2.type', 'textarea');
+            ->assertSet('draftElements.0.type', FormElementType::TEXT->value)
+            ->assertSet('draftElements.1.type', FormElementType::EMAIL->value)
+            ->assertSet('draftElements.2.type', FormElementType::TEXTAREA->value);
     });
 
-    it('can save a draft revision', function () {
+    it('can save a draft revision', function (): void {
         $initialRevisionCount = $this->form->revisions()->count();
 
         Livewire::test(FormBuilder::class, ['form' => $this->form])
@@ -131,7 +132,7 @@ describe('FormBuilder Livewire Component', function () {
         $this->assertNotEquals('New Draft Name', $this->form->name);
     });
 
-    it('can publish a revision', function () {
+    it('can publish a revision', function (): void {
         $initialRevisionCount = $this->form->revisions()->count();
 
         Livewire::test(FormBuilder::class, ['form' => $this->form])
@@ -147,7 +148,7 @@ describe('FormBuilder Livewire Component', function () {
         $this->assertEquals('New Published Name', $this->form->name);
     });
 
-    it('can discard changes and revert to the last published revision', function () {
+    it('can discard changes and revert to the last published revision', function (): void {
         // Create a draft revision to be discarded
         $this->form->createRevision(['name' => ['en' => 'My Draft']], is_published: false);
 
@@ -166,7 +167,7 @@ describe('FormBuilder Livewire Component', function () {
         $this->assertTrue($this->form->latestRevision()->is_published);
     });
 
-    it('can detect unsaved changes against the latest revision', function () {
+    it('can detect unsaved changes against the latest revision', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->assertSet('hasChanges', false)
             ->set('elements.0.properties.label', 'Updated Label')
@@ -175,15 +176,15 @@ describe('FormBuilder Livewire Component', function () {
             ->assertSet('hasChanges', false);
     });
 
-    it('can generate validation rules for elements', function () {
+    it('can generate validation rules for elements', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->call('generateValidationRules', ['type' => 'text', 'validation' => ['rules' => ['required', 'email']]])
+            ->call('generateValidationRules', ['type' => FormElementType::TEXT->value, 'validation' => ['rules' => ['required', 'email']]])
             ->assertReturned(['required', 'email']);
     });
 
-    it('can generate validation messages for elements', function () {
+    it('can generate validation messages for elements', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->call('generateValidationMessages', ['type' => 'text', 'validation' => ['rules' => ['required']]])
+            ->call('generateValidationMessages', ['type' => FormElementType::TEXT->value, 'validation' => ['rules' => ['required']]])
             ->assertReturned(['required' => 'The field field is required.']);
     });
 
@@ -195,18 +196,14 @@ describe('FormBuilder Livewire Component', function () {
     //         });
     // });
 
-    it('can get available icons', function () {
+    it('can get available icons', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->assertSet('availableIcons', function ($icons) {
-                return is_array($icons) && ! empty($icons);
-            });
+            ->assertSet('availableIcons', fn($icons): bool => is_array($icons) && $icons !== []);
     });
 
-    it('can get available prebuilt forms', function () {
+    it('can get available prebuilt forms', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
-            ->assertSet('availablePrebuiltForms', function ($forms) {
-                return is_array($forms);
-            });
+            ->assertSet('availablePrebuiltForms', fn($forms): bool => is_array($forms));
     });
 
     // Remove problematic tests that require missing methods
@@ -220,7 +217,7 @@ describe('FormBuilder Livewire Component', function () {
     //         ->assertSet('draftElements.0.properties.options', 'Option 1\nOption 2');
     // });
 
-    it('can parse options for preview', function () {
+    it('can parse options for preview', function (): void {
         $options = "Option 1\nOption 2\nOption 3";
 
         Livewire::test(FormBuilder::class, ['form' => $this->form])
@@ -255,8 +252,8 @@ describe('FormBuilder Livewire Component', function () {
     // });
 });
 
-describe('FormBuilder Component Properties', function () {
-    it('has correct default values', function () {
+describe('FormBuilder Component Properties', function (): void {
+    it('has correct default values', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->assertSet('selectedElementId', null)
             ->assertSet('activeBreakpoint', 'desktop')
@@ -271,13 +268,13 @@ describe('FormBuilder Component Properties', function () {
     //         ->assertSet('selectedElement.id', '1');
     // });
 
-    it('can update active breakpoint', function () {
+    it('can update active breakpoint', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->set('activeBreakpoint', 'mobile')
             ->assertSet('activeBreakpoint', 'mobile');
     });
 
-    it('can update tabs', function () {
+    it('can update tabs', function (): void {
         Livewire::test(FormBuilder::class, ['form' => $this->form])
             ->set('tab', 'settings')
             ->assertSet('tab', 'settings');

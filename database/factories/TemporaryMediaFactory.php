@@ -25,9 +25,9 @@ class TemporaryMediaFactory extends Factory
     public function definition(): array
     {
         return [
-            'session_id' => $this->faker->uuid(),
-            'field_name' => $this->faker->word(),
-            'model_type' => 'App\Models\Testimonial',
+            'session_id' => fake()->uuid(),
+            'field_name' => fake()->word(),
+            'model_type' => \App\Models\Testimonial::class,
             'collection_name' => 'avatar',
         ];
     }

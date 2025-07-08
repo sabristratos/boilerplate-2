@@ -50,7 +50,6 @@ class CheckboxRenderer extends BaseElementRenderer
     protected function prepareViewData(ElementDTO $element): array
     {
         $properties = $element->properties ?? [];
-        $fluxProps = $properties['fluxProps'] ?? [];
 
         // Parse options using the OptionParserService
         $optionParser = app(\App\Services\FormBuilder\OptionParserService::class);
@@ -90,7 +89,7 @@ class CheckboxRenderer extends BaseElementRenderer
         $data['mode'] = $mode;
 
         // Use the provided fieldName if available
-        if ($fieldName) {
+        if ($fieldName !== null && $fieldName !== '' && $fieldName !== '0') {
             $data['wireModel'] = "previewFormData.{$fieldName}";
         }
 

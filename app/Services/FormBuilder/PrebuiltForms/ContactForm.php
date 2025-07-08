@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Services\FormBuilder\PrebuiltForms;
 
+use App\Enums\FormElementType;
+
 class ContactForm implements PrebuiltFormInterface
 {
     public function getName(): string
@@ -20,7 +22,7 @@ class ContactForm implements PrebuiltFormInterface
     {
         return [
             [
-                'type' => 'text',
+                'type' => FormElementType::TEXT->value,
                 'properties' => [
                     'label' => 'Name',
                     'placeholder' => 'Your Name',
@@ -35,7 +37,7 @@ class ContactForm implements PrebuiltFormInterface
                 ],
             ],
             [
-                'type' => 'email',
+                'type' => FormElementType::EMAIL->value,
                 'properties' => [
                     'label' => 'Email',
                     'placeholder' => 'you@example.com',
@@ -50,7 +52,7 @@ class ContactForm implements PrebuiltFormInterface
                 ],
             ],
             [
-                'type' => 'textarea',
+                'type' => FormElementType::TEXTAREA->value,
                 'properties' => [
                     'label' => 'Message',
                     'placeholder' => 'How can we help you?',

@@ -12,7 +12,7 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
 
@@ -20,8 +20,8 @@ beforeEach(function () {
     $this->blockManager = app(BlockManager::class);
 });
 
-describe('BlockEditor', function () {
-    it('renders the block editor with hero block', function () {
+describe('BlockEditor', function (): void {
+    it('renders the block editor with hero block', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -43,7 +43,7 @@ describe('BlockEditor', function () {
             ->assertSee('Test Subheading');
     });
 
-    it('can edit hero block data', function () {
+    it('can edit hero block data', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -67,7 +67,7 @@ describe('BlockEditor', function () {
             ->assertDispatched('block-save-needed', ['blockId' => $block->id]);
     });
 
-    it('can save block draft', function () {
+    it('can save block draft', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -91,7 +91,7 @@ describe('BlockEditor', function () {
         expect($block->getTranslatedData('en')['heading'])->toBe('Original Heading'); // Original data unchanged
     });
 
-    it('can handle contact block editing', function () {
+    it('can handle contact block editing', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'contact',
@@ -113,7 +113,7 @@ describe('BlockEditor', function () {
             ->assertSee('Get in touch');
     });
 
-    it('can update block visibility', function () {
+    it('can update block visibility', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -137,7 +137,7 @@ describe('BlockEditor', function () {
         expect($block->isVisible())->toBeTrue(); // Original visibility unchanged
     });
 
-    it('can cancel editing', function () {
+    it('can cancel editing', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -158,7 +158,7 @@ describe('BlockEditor', function () {
             ->assertSet('editingBlockState', []);
     });
 
-    it('handles edit block events', function () {
+    it('handles edit block events', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -176,7 +176,7 @@ describe('BlockEditor', function () {
             ->assertSet('editingBlockId', $block->id);
     });
 
-    it('handles cancel block edit events', function () {
+    it('handles cancel block edit events', function (): void {
         Livewire::actingAs($this->user)
             ->test(BlockEditor::class, [
                 'page' => $this->page,

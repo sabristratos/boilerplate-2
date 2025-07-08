@@ -100,7 +100,7 @@
             @endif
 
             <flux:button
-                href="{{ route('admin.import-export.index') }}?tab=export&type=resources&resource={{ $this->resource }}"
+                href="{{ route('admin.import-export.index') }}?tab=export&type=resources&resource={{ $this->resourceClass }}"
                 variant="outline"
                 icon="arrow-down-tray"
             >
@@ -108,7 +108,7 @@
             </flux:button>
 
             <flux:button
-                href="{{ route('admin.resources.' . $this->resource::uriKey() . '.create') }}"
+                href="{{ route('admin.resources.' . $this->resourceClass::uriKey() . '.create') }}"
                 variant="primary"
                 icon="plus"
             >
@@ -204,8 +204,8 @@
                             </td>
                         @endforeach
                         <td class="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
-                             <flux:button href="{{ route('admin.resources.' . $this->resource::uriKey() . '.edit', $resource->id) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="{{ __('buttons.edit') }}" />
-                             <x-revision-link :model="$resource" :model-type="$this->resource::uriKey()" />
+                             <flux:button href="{{ route('admin.resources.' . $this->resourceClass::uriKey() . '.edit', $resource->id) }}" variant="ghost" size="xs" icon="pencil-square" square tooltip="{{ __('buttons.edit') }}" />
+                             <x-revision-link :model="$resource" :model-type="$this->resourceClass::uriKey()" />
                              <flux:button wire:click="confirmDelete({{ $resource->id }})" variant="danger" size="xs" icon="trash" square tooltip="{{ __('buttons.delete') }}" />
                         </td>
                     </tr>

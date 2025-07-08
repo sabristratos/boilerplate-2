@@ -77,28 +77,20 @@ class BlockLibrary extends Component
         $blocks = $this->blockManager->getAvailableBlocks();
 
         // Filter by search
-        if (! empty($this->blockSearch)) {
-            $blocks = $blocks->filter(function ($block) {
-                return str_contains(strtolower($block->getName()), strtolower($this->blockSearch)) ||
-                       str_contains(strtolower($block->getDescription()), strtolower($this->blockSearch)) ||
-                       collect($block->getTags())->contains(function ($tag) {
-                           return str_contains(strtolower($tag), strtolower($this->blockSearch));
-                       });
-            });
+        if ($this->blockSearch !== '' && $this->blockSearch !== '0') {
+            $blocks = $blocks->filter(fn($block): bool => str_contains(strtolower((string) $block->getName()), strtolower($this->blockSearch)) ||
+                   str_contains(strtolower((string) $block->getDescription()), strtolower($this->blockSearch)) ||
+                   collect($block->getTags())->contains(fn($tag): bool => str_contains(strtolower((string) $tag), strtolower($this->blockSearch))));
         }
 
         // Filter by category
-        if (! empty($this->selectedCategory)) {
-            $blocks = $blocks->filter(function ($block) {
-                return $block->getCategory() === $this->selectedCategory;
-            });
+        if ($this->selectedCategory !== '' && $this->selectedCategory !== '0') {
+            $blocks = $blocks->filter(fn($block): bool => $block->getCategory() === $this->selectedCategory);
         }
 
         // Filter by complexity
-        if (! empty($this->selectedComplexity)) {
-            $blocks = $blocks->filter(function ($block) {
-                return $block->getComplexity() === $this->selectedComplexity;
-            });
+        if ($this->selectedComplexity !== '' && $this->selectedComplexity !== '0') {
+            $blocks = $blocks->filter(fn($block): bool => $block->getComplexity() === $this->selectedComplexity);
         }
 
         return $blocks;
@@ -146,7 +138,7 @@ class BlockLibrary extends Component
                 'blockType' => $type,
             ]);
 
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast(
                 __('messages.page_manager.block_creation_failed_text'),
                 __('messages.page_manager.block_creation_failed_title')

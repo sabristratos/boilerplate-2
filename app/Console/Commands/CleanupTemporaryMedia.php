@@ -24,7 +24,7 @@ class CleanupTemporaryMedia extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
         $query = TemporaryMedia::where('created_at', '<', now()->subDay());
 

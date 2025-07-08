@@ -12,16 +12,15 @@ use Illuminate\View\View;
 class PageController extends Controller
 {
     /**
-     * Page service instance.
-     */
-    protected PageService $pageService;
-
-    /**
      * Constructor.
      */
-    public function __construct(PageService $pageService)
+    public function __construct(
+        /**
+         * Page service instance.
+         */
+        protected PageService $pageService
+    )
     {
-        $this->pageService = $pageService;
     }
 
     /**

@@ -1,6 +1,6 @@
 @props(['selectedElement', 'selectedElementIndex', 'activeBreakpoint'])
 <div class="space-y-4">
-    <flux:heading size="md" class="flex items-center gap-2">
+    <flux:heading size="lg" class="flex items-center gap-2">
         Styles ({{ Str::title($activeBreakpoint) }})
         <flux:tooltip toggleable>
             <flux:button icon="information-circle" size="sm" variant="ghost" />
@@ -12,12 +12,7 @@
             </flux:tooltip.content>
         </flux:tooltip>
     </flux:heading>
-    <flux:callout variant="secondary" icon="information-circle">
-        <flux:callout.text>
-            Width settings for <strong>{{ Str::title($activeBreakpoint) }}</strong> breakpoint. 
-            Elements will automatically flow in a 12-column grid system.
-        </flux:callout.text>
-    </flux:callout>
+    
     <div class="flex gap-2 mb-4">
         <flux:button 
             wire:click="$set('activeBreakpoint', 'mobile')" 
@@ -44,6 +39,7 @@
             Desktop
         </flux:button>
     </div>
+    
     <!-- Desktop Width Select -->
     @if($activeBreakpoint === 'desktop')
         <flux:select 
@@ -97,49 +93,6 @@
             <flux:select.option value="3/4">Three Quarters (3/4)</flux:select.option>
         </flux:select>
     @endif
-    @php
-        $currentWidth = $selectedElement['styles'][$activeBreakpoint]['width'] ?? 'full';
-        $breakpointName = ucfirst($activeBreakpoint);
-        $widthDescription = match($currentWidth) {
-            'full' => "Takes up the full width (12 columns) on {$breakpointName}",
-            '1/2' => "Takes up half the width (6 columns) on {$breakpointName}",
-            '1/3' => "Takes up one-third width (4 columns) on {$breakpointName}",
-            '2/3' => "Takes up two-thirds width (8 columns) on {$breakpointName}",
-            '1/4' => "Takes up quarter width (3 columns) on {$breakpointName}",
-            '3/4' => "Takes up three-quarters width (9 columns) on {$breakpointName}",
-            default => "Takes up the full width (12 columns) on {$breakpointName}"
-        };
-    @endphp
-    <flux:text size="sm" variant="subtle">{{ $widthDescription }}</flux:text>
-    <div class="mt-2">
-        <flux:text size="xs" variant="subtle" class="mb-2">Grid Preview ({{ $breakpointName }}):</flux:text>
-        <div class="grid grid-cols-12 gap-1 h-4">
-            @php
-                // Build grid cells HTML
-                $gridCells = '';
-                for ($i = 1; $i <= 12; $i++) {
-                    $isActive = match($currentWidth) {
-                        'full' => $i <= 12,
-                        '1/2' => $i <= 6,
-                        '1/3' => $i <= 4,
-                        '2/3' => $i <= 8,
-                        '1/4' => $i <= 3,
-                        '3/4' => $i <= 9,
-                        default => $i <= 12
-                    };
-                    $gridClass = $isActive ? 'bg-primary-500' : 'bg-zinc-200 dark:bg-zinc-700';
-                    $gridCells .= '<div class="h-full rounded-sm ' . $gridClass . '"></div>';
-                }
-            @endphp
-            {!! $gridCells !!}
-        </div>
-    </div>
-    <flux:input 
-        wire:model.live.debounce="elements.{{ $selectedElementIndex }}.styles.{{ $activeBreakpoint }}.fontSize" 
-        label="Font Size" 
-        placeholder="e.g. 16px or 1rem"
-        tooltip="Set a custom font size for this element. Use CSS units like px, rem, em, or %"
-    />
     
     @if($selectedElement['type'] === \App\Enums\FormElementType::SubmitButton->value)
         <!-- Desktop Alignment Select -->

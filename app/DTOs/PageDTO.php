@@ -370,25 +370,36 @@ class PageDTO extends BaseDTO
      */
     public function validate(): array
     {
-        $errors = [];
-
-        // Validate title translations
-        if (empty($this->title)) {
-            $errors['title'] = 'Page title is required';
-        } else {
-            foreach ($this->title as $locale => $value) {
-                if (empty($value)) {
-                    $errors["title.$locale"] = "Page title is required for locale $locale";
-                }
+        $validationService = app(\App\Services\DTOValidationService::class);
+        
+        // Get validation rules
+        $rules = $validationService->getPageDataRules();
+        
+        // Add ID validation for updates
+        if ($this->id !== null) {
+            $rules['id'] = 'required|integer|min:1';
+        }
+        
+        // Get custom messages and attributes
+        $messages = $validationService->getCustomValidationMessages();
+        $attributes = $validationService->getCustomAttributeNames();
+        
+        // Validate using the service
+        $errors = $validationService->validateDTO($this, $rules, $messages, $attributes);
+        
+        // Add custom validation for translatable fields
+        $titleErrors = $validationService->validateTranslatableField($this->toArray(), 'title');
+        $errors = array_merge($errors, $titleErrors);
+        
+        // Add custom validation for meta fields
+        $metaFields = ['meta_title', 'meta_description', 'meta_keywords', 'og_title', 'og_description', 'twitter_title', 'twitter_description'];
+        foreach ($metaFields as $field) {
+            if (!empty($this->toArray()[$field])) {
+                $metaErrors = $validationService->validateTranslatableField($this->toArray(), $field, false);
+                $errors = array_merge($errors, $metaErrors);
             }
         }
-
-        if (empty($this->slug)) {
-            $errors['slug'] = 'Page slug is required';
-        } elseif (!preg_match('/^[a-z0-9-]+$/', $this->slug)) {
-            $errors['slug'] = 'Page slug must contain only lowercase letters, numbers, and hyphens';
-        }
-
+        
         return $errors;
     }
 

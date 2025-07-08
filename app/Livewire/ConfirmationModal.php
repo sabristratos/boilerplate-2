@@ -30,7 +30,7 @@ class ConfirmationModal extends Component
     public array $params = [];
 
     #[On('show-confirmation')]
-    public function open(array $data)
+    public function open(array $data): void
     {
         $this->action = $data['action'];
         $this->actionParams = $data['actionParams'];

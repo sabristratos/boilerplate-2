@@ -50,7 +50,7 @@ class ContentBlock extends Model implements HasMedia, Sortable
             $changes = $block->getDirty();
             $significantChanges = array_diff_key($changes, array_flip([]));
 
-            if (! empty($significantChanges)) {
+            if ($significantChanges !== []) {
                 Log::info('Updating content block', [
                     'user_id' => auth()->id(),
                     'block_id' => $block->id,

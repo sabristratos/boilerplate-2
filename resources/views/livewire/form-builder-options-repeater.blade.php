@@ -1,5 +1,5 @@
 <div class="space-y-4">
-    <flux:heading size="sm" class="flex items-center gap-2">
+    <flux:heading size="md" class="flex items-center gap-2">
         <flux:icon name="list-bullet" class="size-4" />
         Options
     </flux:heading>

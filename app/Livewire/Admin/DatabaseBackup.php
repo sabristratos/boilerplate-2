@@ -24,12 +24,12 @@ class DatabaseBackup extends Component
 
     public string $backupSupportMessage = '';
 
-    public function mount()
+    public function mount(): void
     {
         $this->checkBackupSupport();
     }
 
-    public function checkBackupSupport()
+    public function checkBackupSupport(): void
     {
         $this->backupSupported = true;
         $this->backupSupportMessage = '';
@@ -61,7 +61,7 @@ class DatabaseBackup extends Component
         }
     }
 
-    private function findMysqldump()
+    private function findMysqldump(): string|false
     {
         // Check common Windows paths for mysqldump
         $possiblePaths = [
@@ -82,7 +82,7 @@ class DatabaseBackup extends Component
         return false;
     }
 
-    private function findPgDump()
+    private function findPgDump(): string|false
     {
         // Check common Windows paths for pg_dump
         $possiblePaths = [
@@ -101,7 +101,7 @@ class DatabaseBackup extends Component
         return false;
     }
 
-    private function commandExists($command)
+    private function commandExists(string $command): bool
     {
         $output = [];
         $returnCode = 0;
@@ -117,7 +117,7 @@ class DatabaseBackup extends Component
         return $returnCode === 0;
     }
 
-    public function createBackup()
+    public function createBackup(): void
     {
         $this->authorize('create', 'backup');
 
@@ -178,24 +178,24 @@ class DatabaseBackup extends Component
         if (! $disk->exists($path)) {
             $this->showErrorToast(__('backup.file_not_found'));
 
-            return;
+            return null;
         }
 
         // Redirect to a dedicated download route
         return redirect()->route('admin.backup.download', ['filename' => $backupName]);
     }
 
-    public function confirmDeleteBackup(string $backupName)
+    public function confirmDeleteBackup(string $backupName): void
     {
         $this->backupToDelete = $backupName;
         $this->showDeleteModal = true;
     }
 
-    public function deleteBackup()
+    public function deleteBackup(): void
     {
         $this->authorize('delete', 'backup');
 
-        if (! $this->backupToDelete) {
+        if ($this->backupToDelete === null || $this->backupToDelete === '' || $this->backupToDelete === '0') {
             return;
         }
 
@@ -215,7 +215,7 @@ class DatabaseBackup extends Component
         $this->backupToDelete = null;
     }
 
-    public function cancelDelete()
+    public function cancelDelete(): void
     {
         $this->showDeleteModal = false;
         $this->backupToDelete = null;
@@ -234,11 +234,10 @@ class DatabaseBackup extends Component
             $files = $disk->files($path);
 
             return collect($files)
-                ->filter(function ($file) {
+                ->filter(fn($file): bool =>
                     // Look for both .sql files and .zip files (backup archives)
-                    return str_ends_with($file, '.sql') || str_ends_with($file, '.zip');
-                })
-                ->map(function ($file) use ($disk) {
+                    str_ends_with((string) $file, '.sql') || str_ends_with((string) $file, '.zip'))
+                ->map(function ($file) use ($disk): array {
                     $filename = basename($file);
                     $size = $disk->size($file);
                     $date = $disk->lastModified($file);
@@ -260,7 +259,7 @@ class DatabaseBackup extends Component
         }
     }
 
-    private function formatBytes($bytes, $precision = 2)
+    private function formatBytes($bytes, $precision = 2): string
     {
         $units = ['B', 'KB', 'MB', 'GB', 'TB'];
 

@@ -1,5 +1,9 @@
 @props(['selectedElement', 'selectedElementIndex', 'availableIcons'])
-@if($selectedElement['type'] !== 'textarea')
+<flux:heading size="md" class="flex items-center gap-2">
+    <flux:icon name="star" class="size-4" />
+    Icon Settings
+</flux:heading>
+@if($selectedElement['type'] !== \App\Enums\FormElementType::TEXTAREA->value)
     <div class="space-y-4">
         <flux:heading size="sm" class="flex items-center gap-2">
             <flux:icon name="photo" class="size-4" />

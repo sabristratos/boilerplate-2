@@ -68,7 +68,7 @@ class Login extends Component
             }
 
             $this->redirect(route('social.redirect', $provider));
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             $this->showErrorToast('Unable to process social login. Please try again.');
         }
     }
@@ -82,7 +82,7 @@ class Login extends Component
             $socialLoginService = app(SocialLoginService::class);
 
             return $socialLoginService->getEnabledProviders();
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return [];
         }
     }

@@ -134,7 +134,7 @@ class ScaffoldResourceCommand extends GeneratorCommand
 
             if ($column === 'status') {
                 $imports[] = 'use App\Services\ResourceSystem\Columns\BadgeColumn;';
-                $cols[] = "BadgeColumn::make('Status')->colors([\n                'published' => 'success',\n                'draft' => 'zinc',\n            ])";
+                $cols[] = "BadgeColumn::make('Status')->colors([\n                '" . \App\Enums\PublishStatus::PUBLISHED->value . "' => 'success',\n                '" . \App\Enums\PublishStatus::DRAFT->value . "' => 'zinc',\n            ])";
 
                 continue;
             }

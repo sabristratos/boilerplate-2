@@ -28,7 +28,7 @@
                                 </div>
                                 <div class="flex-1 min-w-0">
                                     <flux:heading size="xs" class="text-zinc-900 dark:text-zinc-100">
-                                        {{ $elementType->getLabel() }}
+                                        {{ $elementType->label() }}
                                     </flux:heading>
                                 </div>
                                 <div class="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">

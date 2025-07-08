@@ -105,7 +105,7 @@ class DateRenderer extends BaseElementRenderer
         $data['mode'] = $mode;
 
         // Use the provided fieldName if available
-        if ($fieldName) {
+        if ($fieldName !== null && $fieldName !== '' && $fieldName !== '0') {
             $data['fieldName'] = $fieldName;
         }
 

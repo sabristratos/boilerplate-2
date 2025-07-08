@@ -211,7 +211,7 @@ class FormSubmissionDTO extends BaseDTO
      */
     public function getAgeInDays(): ?int
     {
-        if ($this->createdAt === null) {
+        if (!$this->createdAt instanceof \Carbon\Carbon) {
             return null;
         }
         
@@ -225,7 +225,7 @@ class FormSubmissionDTO extends BaseDTO
      */
     public function isRecent(): bool
     {
-        if ($this->createdAt === null) {
+        if (!$this->createdAt instanceof \Carbon\Carbon) {
             return false;
         }
         
@@ -244,7 +244,7 @@ class FormSubmissionDTO extends BaseDTO
             'form_id' => $this->formId,
             'data' => $this->data,
             'ip_address' => $this->ipAddress,
-            'user_agent' => $this->userAgent,
+            'user_agent' => $this->userAgent ?? '',
             'created_at' => $this->createdAt?->toISOString(),
             'updated_at' => $this->updatedAt?->toISOString(),
             'form_data' => $this->formData,
@@ -257,9 +257,9 @@ class FormSubmissionDTO extends BaseDTO
      * Create a copy of this DTO with updated values.
      *
      * @param array<string, mixed> $changes The changes to apply
-     * @return self A new DTO with the changes applied
+     * @return static A new DTO with the changes applied
      */
-    public function with(array $changes): self
+    public function with(array $changes): static
     {
         return new self(
             id: $changes['id'] ?? $this->id,
@@ -280,26 +280,36 @@ class FormSubmissionDTO extends BaseDTO
      */
     public function validate(): array
     {
-        $errors = [];
-
-        if ($this->formId <= 0) {
-            $errors['form_id'] = 'Valid form ID is required';
+        $validationService = app(\App\Services\DTOValidationService::class);
+        
+        // Get validation rules
+        $rules = $validationService->getFormSubmissionDataRules();
+        
+        // Add ID validation for updates
+        if ($this->id !== null) {
+            $rules['id'] = 'required|integer|min:1';
         }
-
-        if (empty($this->data)) {
-            $errors['data'] = 'Form data is required';
+        
+        // Add form data validation
+        $rules['form_data'] = 'nullable|array';
+        
+        // Get custom messages and attributes
+        $messages = $validationService->getCustomValidationMessages();
+        $attributes = $validationService->getCustomAttributeNames();
+        
+        // Validate using the service
+        $errors = $validationService->validateDTO($this, $rules, $messages, $attributes);
+        
+        // Add custom validation for data structure
+        if ($this->data !== [] && !is_array($this->data)) {
+            $errors['data'] = __('dto.validation.submission_data_invalid');
         }
-
-        if (empty($this->ipAddress)) {
-            $errors['ip_address'] = 'IP address is required';
-        } elseif (! filter_var($this->ipAddress, FILTER_VALIDATE_IP)) {
-            $errors['ip_address'] = 'Valid IP address is required';
+        
+        // Add custom validation for sensitive data
+        if ($this->containsSensitiveData()) {
+            $errors['data'] = __('dto.validation.submission_contains_sensitive_data');
         }
-
-        if (empty($this->userAgent)) {
-            $errors['user_agent'] = 'User agent is required';
-        }
-
+        
         return $errors;
     }
 
@@ -317,7 +327,7 @@ class FormSubmissionDTO extends BaseDTO
         $result = [];
         
         foreach ($array as $key => $value) {
-            $newKey = $prefix ? "{$prefix}.{$key}" : $key;
+            $newKey = $prefix !== '' && $prefix !== '0' ? "{$prefix}.{$key}" : $key;
             
             if (is_array($value)) {
                 $result = array_merge($result, $this->flattenArray($value, $newKey));

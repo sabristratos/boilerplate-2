@@ -45,10 +45,10 @@ class Repeater extends Component
         }
     }
 
-    public function updated($property)
+    public function updated($property): void
     {
         // Only dispatch for nested item changes that wire:model might not catch
-        if (str_starts_with($property, 'items.')) {
+        if (str_starts_with((string) $property, 'items.')) {
             $this->dispatchItemsUpdated();
         }
     }

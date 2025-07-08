@@ -20,12 +20,12 @@ class FormSubmissionFactory extends Factory
         return [
             'form_id' => Form::factory(),
             'data' => [
-                'name' => $this->faker->name(),
-                'email' => $this->faker->email(),
-                'message' => $this->faker->paragraph(),
+                'name' => fake()->name(),
+                'email' => fake()->email(),
+                'message' => fake()->paragraph(),
             ],
-            'ip_address' => $this->faker->ipv4(),
-            'user_agent' => $this->faker->userAgent(),
+            'ip_address' => fake()->ipv4(),
+            'user_agent' => fake()->userAgent(),
         ];
     }
 
@@ -34,7 +34,7 @@ class FormSubmissionFactory extends Factory
      */
     public function withData(array $data): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'data' => $data,
         ]);
     }
@@ -44,7 +44,7 @@ class FormSubmissionFactory extends Factory
      */
     public function forForm(Form $form): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'form_id' => $form->id,
         ]);
     }

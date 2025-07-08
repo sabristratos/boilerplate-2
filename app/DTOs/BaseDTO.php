@@ -15,7 +15,7 @@ use JsonSerializable;
  * including JSON serialization, array conversion, and validation.
  * All DTOs should extend this class to ensure consistency.
  */
-abstract class BaseDTO implements Arrayable, Jsonable, JsonSerializable
+abstract class BaseDTO implements Arrayable, Jsonable, JsonSerializable, \Stringable
 {
     /**
      * Get the DTO as an array.
@@ -59,7 +59,7 @@ abstract class BaseDTO implements Arrayable, Jsonable, JsonSerializable
      */
     public function isValid(): bool
     {
-        return empty($this->validate());
+        return $this->validate() === [];
     }
 
     /**
@@ -71,7 +71,7 @@ abstract class BaseDTO implements Arrayable, Jsonable, JsonSerializable
     {
         $errors = $this->validate();
         
-        if (empty($errors)) {
+        if ($errors === []) {
             return '';
         }
 

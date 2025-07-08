@@ -7,7 +7,7 @@
                 <div>
                     <flux:heading size="lg">Properties</flux:heading>
                     <flux:text variant="subtle">
-                        {{ \App\Enums\FormElementType::tryFrom($selectedElement['type'])->getLabel() }}
+                        {{ \App\Enums\FormElementType::tryFrom($selectedElement['type'])->label() }}
                     </flux:text>
                 </div>
                 <flux:button wire:click="$set('selectedElementId', null)" icon="x-mark" variant="ghost" size="sm" />

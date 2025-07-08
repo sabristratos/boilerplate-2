@@ -20,7 +20,7 @@ class CreateRevisionAction
      * Create a new action instance.
      */
     public function __construct(
-        private RevisionService $revisionService
+        private readonly RevisionService $revisionService
     ) {}
 
     /**

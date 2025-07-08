@@ -36,15 +36,6 @@ class FormSubmission extends Model
     ];
 
     /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'data' => 'array',
-    ];
-
-    /**
      * Get the form that owns the submission.
      *
      * @return BelongsTo<Form, FormSubmission>
@@ -52,5 +43,16 @@ class FormSubmission extends Model
     public function form(): BelongsTo
     {
         return $this->belongsTo(Form::class);
+    }
+    /**
+     * The attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'data' => 'array',
+        ];
     }
 }

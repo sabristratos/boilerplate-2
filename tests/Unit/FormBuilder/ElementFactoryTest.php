@@ -5,13 +5,13 @@ declare(strict_types=1);
 use App\Services\FormBuilder\ElementDTO;
 use App\Services\FormBuilder\ElementFactory;
 
-describe('ElementFactory', function () {
-    beforeEach(function () {
+describe('ElementFactory', function (): void {
+    beforeEach(function (): void {
         $this->factory = new ElementFactory;
     });
 
-    describe('createElement', function () {
-        it('can create a text element', function () {
+    describe('createElement', function (): void {
+        it('can create a text element', function (): void {
             $element = $this->factory->createElement('text', 'field_1');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -26,7 +26,7 @@ describe('ElementFactory', function () {
                 ->and($element->validation['rules'])->toBeArray();
         });
 
-        it('can create an email element', function () {
+        it('can create an email element', function (): void {
             $element = $this->factory->createElement('email', 'field_2');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -36,7 +36,7 @@ describe('ElementFactory', function () {
                 ->and($element->validation['rules'])->toBeArray();
         });
 
-        it('can create a textarea element', function () {
+        it('can create a textarea element', function (): void {
             $element = $this->factory->createElement('textarea', 'field_3');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -46,7 +46,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['placeholder'])->toBe('');
         });
 
-        it('can create a select element', function () {
+        it('can create a select element', function (): void {
             $element = $this->factory->createElement('select', 'field_4');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -56,7 +56,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['placeholder'])->toBe('');
         });
 
-        it('can create a checkbox element', function () {
+        it('can create a checkbox element', function (): void {
             $element = $this->factory->createElement('checkbox', 'field_5');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -66,7 +66,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['placeholder'])->toBe('');
         });
 
-        it('can create a radio element', function () {
+        it('can create a radio element', function (): void {
             $element = $this->factory->createElement('radio', 'field_6');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -76,7 +76,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['placeholder'])->toBe('');
         });
 
-        it('can create a date element', function () {
+        it('can create a date element', function (): void {
             $element = $this->factory->createElement('date', 'field_7');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -85,7 +85,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['label'])->toBe('New Date');
         });
 
-        it('can create a file element', function () {
+        it('can create a file element', function (): void {
             $element = $this->factory->createElement('file', 'field_8');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -95,7 +95,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['placeholder'])->toBe('');
         });
 
-        it('can create a number element', function () {
+        it('can create a number element', function (): void {
             $element = $this->factory->createElement('number', 'field_9');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -105,7 +105,7 @@ describe('ElementFactory', function () {
                 ->and($element->properties['placeholder'])->toBe('');
         });
 
-        it('can create a password element', function () {
+        it('can create a password element', function (): void {
             $element = $this->factory->createElement('password', 'field_12');
 
             expect($element)->toBeInstanceOf(ElementDTO::class)
@@ -114,17 +114,17 @@ describe('ElementFactory', function () {
                 ->and($element->properties['label'])->toBe('New Password');
         });
 
-        it('throws exception for unknown element type', function () {
+        it('throws exception for unknown element type', function (): void {
             expect(fn () => $this->factory->createElement('unknown', 'field_19'))
                 ->toThrow(InvalidArgumentException::class, 'No renderer found for element type: unknown');
         });
     });
 
-    describe('renderElement', function () {
-        it('can render a text element', function () {
+    describe('renderElement', function (): void {
+        it('can render a text element', function (): void {
             $element = [
                 'id' => 'test_1',
-                'type' => 'text',
+                'type' => \App\Enums\FormElementType::TEXT->value,
                 'properties' => ['label' => 'Test Field'],
             ];
 
@@ -134,7 +134,7 @@ describe('ElementFactory', function () {
                 ->and($rendered)->toContain('Test Field');
         });
 
-        it('throws exception for unknown element type', function () {
+        it('throws exception for unknown element type', function (): void {
             $element = [
                 'id' => 'test_1',
                 'type' => 'unknown',

@@ -23,7 +23,7 @@ class ImportExportService
         $model = $resource::$model;
         $query = $model::query();
 
-        if (! empty($ids)) {
+        if ($ids !== []) {
             $query->whereIn('id', $ids);
         }
 
@@ -64,7 +64,7 @@ class ImportExportService
                         if (! File::exists($mediaInfo['full_path'])) {
                             $mediaInfo['full_path'] = $media->getPath();
                         }
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         $mediaInfo['full_path'] = null;
                     }
 
@@ -93,7 +93,7 @@ class ImportExportService
 
         return [
             'type' => 'resource',
-            'resource_class' => get_class($resource),
+            'resource_class' => $resource::class,
             'model_class' => $model,
             'exported_at' => now()->toISOString(),
             'version' => '1.0',
@@ -108,7 +108,7 @@ class ImportExportService
     {
         $query = Page::query();
 
-        if (! empty($ids)) {
+        if ($ids !== []) {
             $query->whereIn('id', $ids);
         }
 
@@ -119,9 +119,7 @@ class ImportExportService
             $data = $page->toArray();
 
             // Include content blocks
-            $data['content_blocks'] = $page->contentBlocks->map(function ($block) {
-                return $block->toArray();
-            })->toArray();
+            $data['content_blocks'] = $page->contentBlocks->map(fn($block) => $block->toArray())->toArray();
 
             // Handle media files - get all collections
             $mediaData = [];
@@ -154,7 +152,7 @@ class ImportExportService
                         if (! File::exists($mediaInfo['full_path'])) {
                             $mediaInfo['full_path'] = $media->getPath();
                         }
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         $mediaInfo['full_path'] = null;
                     }
 
@@ -181,7 +179,7 @@ class ImportExportService
     {
         $query = Form::query();
 
-        if (! empty($ids)) {
+        if ($ids !== []) {
             $query->whereIn('id', $ids);
         }
 
@@ -192,9 +190,7 @@ class ImportExportService
             $data = $form->toArray();
 
             // Include submissions
-            $data['submissions'] = $form->submissions->map(function ($submission) {
-                return $submission->toArray();
-            })->toArray();
+            $data['submissions'] = $form->submissions->map(fn($submission) => $submission->toArray())->toArray();
 
             // Handle media files - get all collections (only if model supports media)
             $mediaData = [];
@@ -227,7 +223,7 @@ class ImportExportService
                         if (! File::exists($mediaInfo['full_path'])) {
                             $mediaInfo['full_path'] = $media->getPath();
                         }
-                    } catch (\Exception $e) {
+                    } catch (\Exception) {
                         $mediaInfo['full_path'] = null;
                     }
 
@@ -504,7 +500,7 @@ class ImportExportService
                     if ($filePath) {
                         $mediaFiles[] = [
                             'path' => $filePath,
-                            'name' => $media['file_name'] ?? basename($filePath),
+                            'name' => $media['file_name'] ?? basename((string) $filePath),
                         ];
                     }
                 }

@@ -16,7 +16,10 @@ enum FormElementType: string
     case FILE = 'file';
     case SubmitButton = 'submit_button';
 
-    public function getLabel(): string
+    /**
+     * Get the label for the form element type
+     */
+    public function label(): string
     {
         return match ($this) {
             self::TEXT => 'Text Input',
@@ -33,6 +36,9 @@ enum FormElementType: string
         };
     }
 
+    /**
+     * Get the icon for the form element type
+     */
     public function getIcon(): string
     {
         return match ($this) {
@@ -50,6 +56,9 @@ enum FormElementType: string
         };
     }
 
+    /**
+     * Get the description for the form element type
+     */
     public function getDescription(): string
     {
         return match ($this) {
@@ -65,5 +74,98 @@ enum FormElementType: string
             self::FILE => 'File upload input for documents, images, and other files',
             self::SubmitButton => 'Submission button for sending the form',
         };
+    }
+
+    /**
+     * Get all available form element types as an array for select inputs
+     */
+    public static function options(): array
+    {
+        return [
+            self::TEXT->value => 'Text Input',
+            self::TEXTAREA->value => 'Text Area',
+            self::EMAIL->value => 'Email',
+            self::SELECT->value => 'Select',
+            self::CHECKBOX->value => 'Checkbox',
+            self::RADIO->value => 'Radio',
+            self::DATE->value => 'Date Picker',
+            self::NUMBER->value => 'Number Input',
+            self::PASSWORD->value => 'Password',
+            self::FILE->value => 'File Upload',
+            self::SubmitButton->value => 'Submit Button',
+        ];
+    }
+
+    /**
+     * Get the color for the form element type
+     */
+    public function getColor(): string
+    {
+        return match ($this) {
+            self::TEXT => 'blue',
+            self::TEXTAREA => 'cyan',
+            self::EMAIL => 'sky',
+            self::SELECT => 'indigo',
+            self::CHECKBOX => 'green',
+            self::RADIO => 'emerald',
+            self::DATE => 'amber',
+            self::NUMBER => 'teal',
+            self::PASSWORD => 'red',
+            self::FILE => 'purple',
+            self::SubmitButton => 'lime',
+        };
+    }
+
+    /**
+     * Check if the element type is a text input
+     */
+    public function isTextInput(): bool
+    {
+        return in_array($this, [self::TEXT, self::TEXTAREA, self::EMAIL, self::PASSWORD]);
+    }
+
+    /**
+     * Check if the element type is a choice input
+     */
+    public function isChoiceInput(): bool
+    {
+        return in_array($this, [self::SELECT, self::CHECKBOX, self::RADIO]);
+    }
+
+    /**
+     * Check if the element type is a date/time input
+     */
+    public function isDateTimeInput(): bool
+    {
+        return $this == self::DATE;
+    }
+
+    /**
+     * Check if the element type is a numeric input
+     */
+    public function isNumericInput(): bool
+    {
+        return $this == self::NUMBER;
+    }
+
+    /**
+     * Check if the element type is a file input
+     */
+    public function isFileInput(): bool
+    {
+        return $this == self::FILE;
+    }
+
+    /**
+     * Check if the element type is a submit button
+     */
+    public function isSubmitButton(): bool
+    {
+        return $this === self::SubmitButton;
+    }
+
+    public static function values(): array
+    {
+        return array_map(fn($case) => $case->value, self::cases());
     }
 }

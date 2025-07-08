@@ -25,21 +25,21 @@ class MediaFactory extends Factory
     public function definition(): array
     {
         return [
-            'model_type' => 'App\Models\Testimonial',
+            'model_type' => \App\Models\Testimonial::class,
             'model_id' => 1,
-            'uuid' => $this->faker->uuid(),
+            'uuid' => fake()->uuid(),
             'collection_name' => 'avatar',
-            'name' => $this->faker->word().'.jpg',
-            'file_name' => $this->faker->word().'.jpg',
+            'name' => fake()->word().'.jpg',
+            'file_name' => fake()->word().'.jpg',
             'mime_type' => 'image/jpeg',
             'disk' => 'public',
             'conversions_disk' => 'public',
-            'size' => $this->faker->numberBetween(1000, 1000000),
+            'size' => fake()->numberBetween(1000, 1000000),
             'manipulations' => [],
             'custom_properties' => [],
             'generated_conversions' => [],
             'responsive_images' => [],
-            'order_column' => $this->faker->numberBetween(1, 100),
+            'order_column' => fake()->numberBetween(1, 100),
         ];
     }
 
@@ -48,10 +48,10 @@ class MediaFactory extends Factory
      */
     public function image(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'mime_type' => 'image/jpeg',
-            'name' => $this->faker->word().'.jpg',
-            'file_name' => $this->faker->word().'.jpg',
+            'name' => fake()->word().'.jpg',
+            'file_name' => fake()->word().'.jpg',
         ]);
     }
 
@@ -60,10 +60,10 @@ class MediaFactory extends Factory
      */
     public function pdf(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn (array $attributes): array => [
             'mime_type' => 'application/pdf',
-            'name' => $this->faker->word().'.pdf',
-            'file_name' => $this->faker->word().'.pdf',
+            'name' => fake()->word().'.pdf',
+            'file_name' => fake()->word().'.pdf',
         ]);
     }
 }

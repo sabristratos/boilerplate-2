@@ -11,15 +11,15 @@ use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-beforeEach(function () {
+beforeEach(function (): void {
     $this->user = User::factory()->create();
     $this->user->assignRole('admin');
 
     $this->page = Page::factory()->create();
 });
 
-describe('PageManager Integration', function () {
-    it('can create and manage blocks', function () {
+describe('PageManager Integration', function (): void {
+    it('can create and manage blocks', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->assertSee('Add Block')
@@ -27,7 +27,7 @@ describe('PageManager Integration', function () {
             ->assertSet('showBlockLibrary', true);
     });
 
-    it('can create a hero block', function () {
+    it('can create a hero block', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->call('handleBlockCreated', ['blockId' => 1, 'blockType' => 'hero'])
@@ -39,7 +39,7 @@ describe('PageManager Integration', function () {
         ]);
     });
 
-    it('can create a contact block', function () {
+    it('can create a contact block', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->call('handleBlockCreated', ['blockId' => 1, 'blockType' => 'contact'])
@@ -51,7 +51,7 @@ describe('PageManager Integration', function () {
         ]);
     });
 
-    it('can edit blocks', function () {
+    it('can edit blocks', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -66,7 +66,7 @@ describe('PageManager Integration', function () {
             ->assertDispatched('edit-block', ['blockId' => $block->id]);
     });
 
-    it('can delete blocks', function () {
+    it('can delete blocks', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -83,7 +83,7 @@ describe('PageManager Integration', function () {
         $this->assertDatabaseMissing('content_blocks', ['id' => $block->id]);
     });
 
-    it('can duplicate blocks', function () {
+    it('can duplicate blocks', function (): void {
         $block = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -106,7 +106,7 @@ describe('PageManager Integration', function () {
         expect($duplicatedBlock->type)->toBe('hero');
     });
 
-    it('can update block order', function () {
+    it('can update block order', function (): void {
         $block1 = ContentBlock::factory()->create([
             'page_id' => $this->page->id,
             'type' => 'hero',
@@ -136,7 +136,7 @@ describe('PageManager Integration', function () {
         ]);
     });
 
-    it('can save page', function () {
+    it('can save page', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->set('page.title.en', 'Updated Title')
@@ -147,7 +147,7 @@ describe('PageManager Integration', function () {
         expect($this->page->title['en'])->toBe('Updated Title');
     });
 
-    it('can publish page', function () {
+    it('can publish page', function (): void {
         Livewire::actingAs($this->user)
             ->test(PageManager::class, ['page' => $this->page])
             ->call('publishPage')
@@ -157,7 +157,7 @@ describe('PageManager Integration', function () {
         expect($this->page->isPublished())->toBeTrue();
     });
 
-    it('can unpublish page', function () {
+    it('can unpublish page', function (): void {
         $this->page->update(['published_at' => now()]);
 
         Livewire::actingAs($this->user)

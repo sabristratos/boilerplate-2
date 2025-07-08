@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\ResourceSystem;
 
 use App\Services\ResourceSystem\Resource;
@@ -9,51 +11,53 @@ use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+/**
+ * Livewire component for displaying resource tables.
+ *
+ * This component provides a comprehensive table view for resources with
+ * search, sorting, filtering, and pagination capabilities. It uses
+ * services for business logic and DTOs for data handling.
+ */
 class ResourceTable extends Component
 {
     use WithPagination, WithToastNotifications;
 
     /**
      * The resource class.
-     *
-     * @var string
      */
-    public $resource;
+    public ?string $resourceClass = null;
+
+    /**
+     * The resource instance.
+     */
+    protected ?Resource $resourceInstance = null;
 
     /**
      * The search query.
-     *
-     * @var string
      */
-    public $search = '';
+    public string $search = '';
 
     /**
      * The column to sort by.
-     *
-     * @var string|null
      */
-    public $sortBy;
+    public ?string $sortBy = null;
 
     /**
      * The direction to sort.
-     *
-     * @var string
      */
-    public $sortDirection = 'asc';
+    public string $sortDirection = 'asc';
 
     /**
      * The filters.
      *
-     * @var array
+     * @var array<string, mixed>
      */
-    public $filters = [];
+    public array $filters = [];
 
     /**
      * The number of items per page.
-     *
-     * @var int
      */
-    public $perPage = 10;
+    public int $perPage = 10;
 
     /**
      * Whether to show the filter popover.
@@ -62,17 +66,13 @@ class ResourceTable extends Component
 
     /**
      * Whether to show the delete confirmation modal.
-     *
-     * @var bool
      */
-    public $showDeleteModal = false;
+    public bool $showDeleteModal = false;
 
     /**
      * The ID of the resource to delete.
-     *
-     * @var int|null
      */
-    public $deleteId;
+    public ?int $deleteId = null;
 
     /**
      * Whether reordering is enabled.
@@ -82,7 +82,7 @@ class ResourceTable extends Component
     /**
      * The querystring properties.
      *
-     * @var array
+     * @var array<string, array<string, mixed>>
      */
     protected $queryString = [
         'search' => ['except' => ''],
@@ -97,7 +97,14 @@ class ResourceTable extends Component
      */
     public function mount(Resource $resource): void
     {
-        $this->resource = $resource::class;
+        $this->resourceInstance = $resource;
+        $this->resourceClass = $resource::class;
+        
+        // Ensure the resource instance is properly set before proceeding
+        if ($this->resourceInstance === null) {
+            throw new \RuntimeException('Failed to initialize resource instance during mount.');
+        }
+        
         $modelTable = $this->getResourceInstance()::$model::make()->getTable();
 
         if (Schema::hasColumn($modelTable, 'order')) {
@@ -108,12 +115,19 @@ class ResourceTable extends Component
 
     /**
      * Get the resource instance.
-     *
-     * @return resource
      */
-    public function getResourceInstance()
+    public function getResourceInstance(): Resource
     {
-        return $this->resource::make();
+        if ($this->resourceInstance === null) {
+            // Try to initialize the resource instance if it's not set
+            if (!empty($this->resourceClass)) {
+                $this->resourceInstance = new $this->resourceClass;
+            } else {
+                throw new \RuntimeException('Resource instance not initialized. Make sure the component is properly mounted.');
+            }
+        }
+        
+        return $this->resourceInstance;
     }
 
     /**
@@ -135,6 +149,7 @@ class ResourceTable extends Component
     public function resetSearch(): void
     {
         $this->search = '';
+        $this->resetPage();
     }
 
     /**
@@ -144,12 +159,13 @@ class ResourceTable extends Component
     {
         $this->filters = [];
         $this->showFiltersPopover = false;
+        $this->resetPage();
     }
 
     /**
      * Reset the pagination.
      */
-    public function resetPage(): void
+    public function resetPagination(): void
     {
         $this->resetPage();
     }
@@ -168,16 +184,34 @@ class ResourceTable extends Component
      */
     public function delete(): void
     {
-        $model = $this->resource::$model;
-        $model::findOrFail($this->deleteId)->delete();
+        try {
+            $model = $this->resourceClass::$model;
+            $resource = $model::findOrFail($this->deleteId);
+            
+            // Use the resource's delete method if available
+            $resourceInstance = $this->getResourceInstance();
+            if (method_exists($resourceInstance, 'deleteResource')) {
+                $resourceInstance->deleteResource($resource);
+            } else {
+                $resource->delete();
+            }
 
-        $this->showDeleteModal = false;
-        $this->deleteId = null;
+            $this->showDeleteModal = false;
+            $this->deleteId = null;
 
-        $this->showSuccessToast(
-            __('messages.resource.deleted', ['Resource' => $this->getResourceInstance()::singularLabel()]),
-            __('messages.success.generic')
-        );
+            $this->showSuccessToast(
+                __('messages.resource.deleted', ['Resource' => $this->getResourceInstance()::singularLabel()])
+            );
+
+        } catch (\Exception $e) {
+            logger()->error('Failed to delete resource', [
+                'resource_id' => $this->deleteId,
+                'resource_class' => $this->resourceClass,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->showErrorToast(__('messages.resource.delete_failed'));
+        }
     }
 
     /**
@@ -194,120 +228,127 @@ class ResourceTable extends Component
      */
     public function reorder(array $order): void
     {
-        $modelClass = $this->resource::$model;
+        try {
+            $modelClass = $this->resourceClass::$model;
 
-        if (in_array(\Spatie\EloquentSortable\SortableTrait::class, class_uses_recursive($modelClass))) {
-            $modelClass::setNewOrder($order);
-            $this->showSuccessToast(__('messages.success.generic'));
+            if (in_array(\Spatie\EloquentSortable\SortableTrait::class, class_uses_recursive($modelClass))) {
+                $modelClass::setNewOrder($order);
+                
+                $this->showSuccessToast(__('messages.resource.reordered'));
+            }
+        } catch (\Exception $e) {
+            logger()->error('Failed to reorder resources', [
+                'resource_class' => $this->resourceClass,
+                'order' => $order,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->showErrorToast(__('messages.resource.reorder_failed'));
         }
     }
 
     /**
-     * Build the query for the resource.
+     * Update filters.
+     */
+    public function updatedFilters(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Update search.
+     */
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Update per page.
+     */
+    public function updatedPerPage(): void
+    {
+        $this->resetPage();
+    }
+
+    /**
+     * Build the query for resources.
      */
     public function buildQuery(array $columns, array $filters): Builder
     {
-        $this->getResourceInstance();
-        $query = $this->resource::newQuery();
+        $modelClass = $this->resourceClass::$model;
+        $query = $modelClass::query();
 
         // Apply search
-        $searchableColumns = collect($columns)
-            ->filter(fn ($column) => $column->isSearchable())
-            ->map(fn ($column) => $column->getName())
-            ->toArray();
-
-        if ($this->search && count($searchableColumns) > 0) {
-            $query->where(function (Builder $query) use ($searchableColumns): void {
+        if ($this->search) {
+            $searchableColumns = $this->getResourceInstance()->searchableColumns();
+            $query->where(function ($q) use ($searchableColumns) {
                 foreach ($searchableColumns as $column) {
-                    $query->orWhere($column, 'like', '%'.$this->search.'%');
+                    $q->orWhere($column, 'like', '%'.$this->search.'%');
                 }
             });
         }
 
-        // Apply sorting
-        if ($this->sortBy) {
-            $column = collect($columns)->first(fn ($column): bool => $column->getName() === $this->sortBy);
-
-            if ($column && $column->isSortable()) {
-                $query = $column->applySort($query, $this->sortDirection);
-            }
-        } else {
-            // Default sorting if no column is specified
-            $model = $this->getResourceInstance()::$model::make();
-            if (Schema::hasColumn($model->getTable(), 'order')) {
-                $query->orderBy('order');
+        // Apply filters
+        foreach ($filters as $filter) {
+            $filterName = $filter->getName();
+            $filterValue = $this->filters[$filterName] ?? null;
+            
+            if ($filterValue !== null && $filterValue !== '') {
+                $query = $filter->apply($query, $filterValue);
             }
         }
 
-        // Apply filters
-        foreach ($this->filters as $name => $value) {
-            $filter = collect($filters)->first(fn ($filter): bool => $filter->getName() === $name);
-
-            if ($filter) {
-                $query = $filter->apply($query, $value);
-            }
+        // Apply sorting
+        if ($this->sortBy) {
+            $query->orderBy($this->sortBy, $this->sortDirection);
         }
 
         return $query;
     }
 
     /**
-     * Get the resources.
-     *
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * Get resources with pagination.
      */
     public function getResources(array $columns, array $filters)
     {
         $query = $this->buildQuery($columns, $filters);
-
-        // Check if the model has an 'order' column. If so, don't paginate.
-        // This is a simple way to handle reorderable resources.
-        $model = $this->resource::newModel();
-        if (in_array('order', $model->getFillable()) || in_array('order', $model->getGuarded()) === false && Schema::hasColumn($model->getTable(), 'order')) {
-            return $query->get();
-        }
-
+        
         return $query->paginate($this->perPage);
     }
 
     /**
+     * Get available filters for the resource.
+     */
+    public function getAvailableFilters(): array
+    {
+        return $this->getResourceInstance()->filters();
+    }
+
+    /**
+     * Get sortable columns for the resource.
+     */
+    public function getSortableColumns(): array
+    {
+        return $this->getResourceInstance()->sortableColumns();
+    }
+
+    /**
      * Render the component.
-     *
-     * @return \Illuminate\View\View
      */
     public function render()
     {
         $resourceInstance = $this->getResourceInstance();
         $columns = $resourceInstance->columns();
-        $filters = $resourceInstance->filters();
+        $availableFilters = $this->getAvailableFilters();
 
-        $orderColumn = null;
-        $orderColumnIndex = -1;
-        $handleColumnIndex = -1;
-
-        foreach ($columns as $index => $column) {
-            if ($column->getName() === 'order') {
-                $orderColumn = $column;
-                $orderColumnIndex = $index;
-            }
-            if ($column->getName() === 'handle') {
-                $handleColumnIndex = $index;
-            }
-        }
-
-        if ($orderColumn && $handleColumnIndex !== -1 && $orderColumnIndex !== -1) {
-            unset($columns[$orderColumnIndex]);
-            $columns = array_values($columns);
-            $handleColumnIndex = array_search('handle', array_map(fn ($col) => $col->getName(), $columns));
-            if ($handleColumnIndex !== false) {
-                array_splice($columns, $handleColumnIndex + 1, 0, [$orderColumn]);
-            }
-        }
+        $resources = $this->getResources($columns, $availableFilters);
 
         return view('livewire.resource-system.resource-table', [
-            'resources' => $this->getResources($columns, $filters),
+            'resources' => $resources,
             'columns' => $columns,
-            'availableFilters' => $filters,
-        ]);
+            'availableFilters' => $availableFilters,
+            'resourceInstance' => $resourceInstance,
+        ])->title($resourceInstance::pluralLabel());
     }
 }

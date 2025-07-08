@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services\FormBuilder;
 
+use App\Enums\FormElementType;
 use App\Services\FormBuilder\Contracts\ElementRendererInterface;
 use App\Services\FormBuilder\Renderers\CheckboxRenderer;
 use App\Services\FormBuilder\Renderers\DateRenderer;
@@ -55,13 +56,13 @@ class ElementFactory
      */
     public function createElement(string $type): ElementDTO
     {
-        if (empty($type)) {
+        if ($type === '' || $type === '0') {
             throw new \InvalidArgumentException(__('forms.errors.element_type_required'));
         }
 
         $renderer = $this->getRenderer($type);
 
-        if (! $renderer) {
+        if (!$renderer instanceof \App\Services\FormBuilder\Contracts\ElementRendererInterface) {
             throw new \InvalidArgumentException(__('forms.errors.no_renderer_found', ['type' => $type]));
         }
 
@@ -117,7 +118,7 @@ class ElementFactory
 
         $renderer = $this->getRenderer($element->type);
 
-        if (! $renderer) {
+        if (!$renderer instanceof \App\Services\FormBuilder\Contracts\ElementRendererInterface) {
             throw new \InvalidArgumentException(__('forms.errors.no_renderer_found', ['type' => $element->type]));
         }
 
@@ -138,7 +139,6 @@ class ElementFactory
      * Register a new renderer for a custom element type at runtime.
      *
      * @param ElementRendererInterface $renderer The renderer instance
-     * @return void
      */
     public function addRenderer(ElementRendererInterface $renderer): void
     {
@@ -158,30 +158,28 @@ class ElementFactory
             // Use the renderer's supports method to determine supported types
             if (method_exists($renderer, 'getSupportedTypes')) {
                 $types = array_merge($types, $renderer->getSupportedTypes());
-            } else {
+            } elseif ($renderer instanceof InputRenderer) {
                 // Fallback: check common types that each renderer supports
-                if ($renderer instanceof InputRenderer) {
-                    $types[] = 'text';
-                    $types[] = 'email';
-                } elseif ($renderer instanceof TextareaRenderer) {
-                    $types[] = 'textarea';
-                } elseif ($renderer instanceof SelectRenderer) {
-                    $types[] = 'select';
-                } elseif ($renderer instanceof CheckboxRenderer) {
-                    $types[] = 'checkbox';
-                } elseif ($renderer instanceof RadioRenderer) {
-                    $types[] = 'radio';
-                } elseif ($renderer instanceof DateRenderer) {
-                    $types[] = 'date';
-                } elseif ($renderer instanceof NumberRenderer) {
-                    $types[] = 'number';
-                } elseif ($renderer instanceof PasswordRenderer) {
-                    $types[] = 'password';
-                } elseif ($renderer instanceof FileRenderer) {
-                    $types[] = 'file';
-                } elseif ($renderer instanceof SubmitButtonRenderer) {
-                    $types[] = 'submit_button';
-                }
+                $types[] = FormElementType::TEXT->value;
+                $types[] = FormElementType::EMAIL->value;
+            } elseif ($renderer instanceof TextareaRenderer) {
+                $types[] = FormElementType::TEXTAREA->value;
+            } elseif ($renderer instanceof SelectRenderer) {
+                $types[] = FormElementType::SELECT->value;
+            } elseif ($renderer instanceof CheckboxRenderer) {
+                $types[] = FormElementType::CHECKBOX->value;
+            } elseif ($renderer instanceof RadioRenderer) {
+                $types[] = FormElementType::RADIO->value;
+            } elseif ($renderer instanceof DateRenderer) {
+                $types[] = FormElementType::DATE->value;
+            } elseif ($renderer instanceof NumberRenderer) {
+                $types[] = FormElementType::NUMBER->value;
+            } elseif ($renderer instanceof PasswordRenderer) {
+                $types[] = FormElementType::PASSWORD->value;
+            } elseif ($renderer instanceof FileRenderer) {
+                $types[] = FormElementType::FILE->value;
+            } elseif ($renderer instanceof SubmitButtonRenderer) {
+                $types[] = FormElementType::SubmitButton->value;
             }
         }
 

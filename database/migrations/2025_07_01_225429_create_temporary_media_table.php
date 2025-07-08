@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('temporary_media', function (Blueprint $table) {
+        Schema::create('temporary_media', function (Blueprint $table): void {
             $table->id();
             $table->string('session_id');
             $table->string('field_name');

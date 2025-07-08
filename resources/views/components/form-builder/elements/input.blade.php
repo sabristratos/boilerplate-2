@@ -5,7 +5,7 @@
     $errors = $errors ?? new \Illuminate\Support\ViewErrorBag;
     $hasIcon = $fluxProps['icon'] ?? false;
     $hasIconTrailing = $fluxProps['iconTrailing'] ?? false;
-    $type = $element->type === 'email' ? 'email' : 'text';
+    $type = $element->type === \App\Enums\FormElementType::EMAIL->value ? 'email' : 'text';
     $isPreview = $mode === 'preview';
     $wireModel = $isPreview && $fieldName ? "formData.{$fieldName}" : null;
     $required = $isPreview ? (in_array('required', $properties['validation']['rules'] ?? []) ? 'true' : '') : '';

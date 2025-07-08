@@ -46,7 +46,7 @@ class SocialLoginService
 
             $user = $this->findUser($provider, $socialiteUser);
 
-            if (! $user) {
+            if (!$user instanceof \App\Models\User) {
                 return redirect()->route('login')
                     ->withErrors(['email' => 'No account found with this social login. Please register first or contact an administrator.']);
             }

@@ -133,9 +133,7 @@ class PageService
         $pages = $query->orderBy('title')->paginate($perPage);
 
         // Convert to DTOs
-        $pages->getCollection()->transform(function ($page) {
-            return DTOFactory::createPageDTO($page);
-        });
+        $pages->getCollection()->transform(fn($page): \App\DTOs\PageDTO => DTOFactory::createPageDTO($page));
 
         return $pages;
     }
@@ -156,7 +154,6 @@ class PageService
      *
      * @param Page $page The page model
      * @param PageDTO $dto The DTO
-     * @return void
      */
     private function fillPageFromDTO(Page $page, PageDTO $dto): void
     {
@@ -249,7 +246,7 @@ class PageService
         $query = Page::query();
 
         // Apply search
-        if ($search) {
+        if ($search !== '' && $search !== '0') {
             $locale = $filters['locale'] ?? app()->getLocale() ?? 'en';
             $query->where(fn ($q) => $q->where('slug', 'like', "%$search%")
                 ->orWhereRaw("JSON_EXTRACT(title, '$.\"{$locale}\"') LIKE ?", ["%{$search}%"])
@@ -275,7 +272,7 @@ class PageService
      */
     public function getPageWithContent(Page $page): Page
     {
-        return $page->load(['contentBlocks' => function ($query) {
+        return $page->load(['contentBlocks' => function ($query): void {
             $query->ordered();
         }]);
     }
@@ -319,7 +316,7 @@ class PageService
      */
     public function searchPages(string $searchTerm, ?string $locale = null): Collection
     {
-        $locale = $locale ?? app()->getLocale() ?? 'en';
+        $locale ??= app()->getLocale() ?? 'en';
         
         return Page::where('slug', 'like', "%$searchTerm%")
             ->orWhereRaw("JSON_EXTRACT(title, '$.\"{$locale}\"') LIKE ?", ["%{$searchTerm}%"])

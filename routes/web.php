@@ -71,18 +71,12 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function ():
     Route::get('pages/{page:id}/editor', \App\Livewire\Admin\PageManager::class)->name('pages.editor');
 
     // Analytics & Reports (placeholder routes for future implementation)
-    Route::get('analytics', function () {
-        return view('admin.analytics.index');
-    })->name('analytics.index');
+    Route::get('analytics', fn() => view('admin.analytics.index'))->name('analytics.index');
 
-    Route::get('reports', function () {
-        return view('admin.reports.index');
-    })->name('reports.index');
+    Route::get('reports', fn() => view('admin.reports.index'))->name('reports.index');
 
     // Help & Documentation
-    Route::get('help', function () {
-        return view('admin.help.index');
-    })->name('help.index');
+    Route::get('help', fn() => view('admin.help.index'))->name('help.index');
 
     // Database Backup
     Route::get('backup', \App\Livewire\Admin\DatabaseBackup::class)->name('backup.index');
@@ -101,7 +95,7 @@ require __DIR__.'/auth.php';
 Route::get('/form/{form}', \App\Livewire\Frontend\FormDisplay::class)->name('forms.display');
 
 // Debug route for testing
-Route::get('/debug/form/{id}', function ($id) {
+Route::get('/debug/form/{id}', function ($id): void {
     $form = \App\Models\Form::find($id);
     dd([
         'form_id' => $id,

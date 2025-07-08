@@ -29,7 +29,7 @@ class ApplySettingsMiddleware
                     }
                 }
             }
-        } catch (QueryException $e) {
+        } catch (QueryException) {
             // This can happen if the database connection is not available yet
             // or if migrations haven't run. In this case, we'll just proceed
             // with the default config values.

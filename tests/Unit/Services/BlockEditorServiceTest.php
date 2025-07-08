@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Services;
 
 use App\Models\ContentBlock;
-use App\Services\BlockEditorService;
+use App\Services\Contracts\BlockEditorServiceInterface;
 use App\Services\BlockManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,7 +14,7 @@ class BlockEditorServiceTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected BlockEditorService $service;
+    protected BlockEditorServiceInterface $service;
 
     protected BlockManager $blockManager;
 
@@ -23,11 +23,11 @@ class BlockEditorServiceTest extends TestCase
         parent::setUp();
 
         $this->blockManager = app(BlockManager::class);
-        $this->service = new BlockEditorService($this->blockManager);
+        $this->service = new \App\Services\BlockEditorService($this->blockManager);
     }
 
     /** @test */
-    public function it_can_get_block_by_id()
+    public function it_can_get_block_by_id(): void
     {
         $block = ContentBlock::factory()->create();
 
@@ -38,7 +38,7 @@ class BlockEditorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_returns_null_for_invalid_block_id()
+    public function it_returns_null_for_invalid_block_id(): void
     {
         $result = $this->service->getBlockById(999);
 
@@ -46,7 +46,7 @@ class BlockEditorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_can_check_if_block_is_valid()
+    public function it_can_check_if_block_is_valid(): void
     {
         $block = ContentBlock::factory()->create();
 
@@ -55,7 +55,7 @@ class BlockEditorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_can_get_block_visibility()
+    public function it_can_get_block_visibility(): void
     {
         $block = ContentBlock::factory()->create(['visible' => true]);
 
@@ -66,7 +66,7 @@ class BlockEditorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_can_update_repeater_state()
+    public function it_can_update_repeater_state(): void
     {
         $currentState = [
             'title' => 'Test Title',
@@ -75,14 +75,14 @@ class BlockEditorServiceTest extends TestCase
 
         $newItems = ['new item 1', 'new item 2'];
 
-        $result = $this->service->updateRepeaterState($currentState, 'items', $newItems);
+        $result = $this->service->updateRepeaterStateInArray($currentState, 'items', $newItems);
 
         $this->assertEquals($newItems, $result['items']);
         $this->assertEquals('Test Title', $result['title']);
     }
 
     /** @test */
-    public function it_can_update_nested_repeater_state()
+    public function it_can_update_nested_repeater_state(): void
     {
         $currentState = [
             'sections' => [
@@ -92,13 +92,13 @@ class BlockEditorServiceTest extends TestCase
 
         $newButtons = ['new button 1', 'new button 2'];
 
-        $result = $this->service->updateRepeaterState($currentState, 'sections.buttons', $newButtons);
+        $result = $this->service->updateRepeaterStateInArray($currentState, 'sections.buttons', $newButtons);
 
         $this->assertEquals($newButtons, $result['sections']['buttons']);
     }
 
     /** @test */
-    public function it_can_load_block_data()
+    public function it_can_load_block_data(): void
     {
         $block = ContentBlock::factory()->hero()->create([
             'settings' => ['background_color' => 'blue'],
@@ -112,7 +112,7 @@ class BlockEditorServiceTest extends TestCase
     }
 
     /** @test */
-    public function it_can_load_block_data_with_translatable_content()
+    public function it_can_load_block_data_with_translatable_content(): void
     {
         $block = ContentBlock::factory()->hero()->create([
             'settings' => ['background_color' => 'blue'],

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\FormStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,6 +28,7 @@ class FormFactory extends Factory
             ],
             'settings' => null,
             'elements' => null,
+            'status' => FormStatus::DRAFT,
         ];
     }
 
@@ -39,14 +41,14 @@ class FormFactory extends Factory
             'elements' => [
                 [
                     'id' => 'field_1',
-                    'type' => 'text',
+                    'type' => FormElementType::TEXT->value,
                     'order' => 0,
                     'properties' => ['label' => 'Name'],
                     'validation' => ['rules' => ['required']],
                 ],
                 [
                     'id' => 'field_2',
-                    'type' => 'email',
+                    'type' => FormElementType::EMAIL->value,
                     'order' => 1,
                     'properties' => ['label' => 'Email'],
                     'validation' => ['rules' => ['required', 'email']],
@@ -65,6 +67,26 @@ class FormFactory extends Factory
             'name' => [
                 'en' => fake()->words(3, true),
             ],
+        ]);
+    }
+
+    /**
+     * Indicate that the form is published.
+     */
+    public function published(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'status' => FormStatus::PUBLISHED,
+        ]);
+    }
+
+    /**
+     * Indicate that the form is archived.
+     */
+    public function archived(): static
+    {
+        return $this->state(fn (array $attributes): array => [
+            'status' => FormStatus::ARCHIVED,
         ]);
     }
 }
